@@ -137,3 +137,49 @@ def VectorSphericalHarmonicB ( l , m , n ):
                                                     * (1j) * np.exp ( (1j) * m * phi ) )
     
     return -( DY_Dphi_OVER_sinTheta * e_theta - DY_Dtheta * e_phi ) / np.sqrt ( l * ( l + 1 ) )
+
+
+
+
+
+
+# The Div Vector Spherical Harmonics, ((Y^l_m)^E(n))_i
+# The Variable n Is A Array of Unit Three-Vectors
+def Vectorised_VectorSphericalHarmonicE ( l , m , n ):
+    
+    # The Spherical Polar Angles Of The Position Vector n
+    theta = np.arccos ( n[...,2] )
+    phi = np.arctan2 ( n[...,1] , n[...,0] )
+    
+    #  Useful to Define x = cos ( theta )
+    x = np.cos ( theta )
+    
+    # The Coordinate Basis Vectors Associated With The Spherical Polar Angles
+    e_theta = np.array ( [ x * np.cos ( phi ) , x * np.sin ( phi ) , -np.sqrt ( 1. - x * x ) ] ).T
+    e_phi = np.array ( [ -np.sin ( phi ) , np.cos ( phi ) , np.zeros(len(phi)) ] ).T
+    
+    # The Derivative Of The Spherical Harmonic Function Y^l_m WRT To Theta
+    if m == 0:
+        DY_Dtheta = -( -np.sqrt ( l * ( l + 1 ) ) * NormalisedAssociatedLegendrePolynomial ( l , 1 , x ) 
+                     * np.exp ( (1j) * m * phi ) )
+    elif m == l:
+        DY_Dtheta = ( -np.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
+                     * np.exp ( (1j) * m * phi ) )
+    elif m == -l:
+        DY_Dtheta = np.power ( -1. , m) * ( -np.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
+                     * np.exp ( (1j) * m * phi ) )
+    else:
+        c1 = 0.5 * np.sqrt ( ( l + m ) * ( l - m + 1 ) )
+        c2 = 0.5 * np.sqrt ( ( l + m + 1 ) * ( l - m ) )
+        DY_Dtheta = -( c1 * NormalisedAssociatedLegendrePolynomial ( l , m-1 , x ) - 
+                     c2 * NormalisedAssociatedLegendrePolynomial ( l , m+1 , x ) ) * np.exp ( (1j) * m * phi )
+    
+    # The Derivative Of The Spherical Harmonic Function Y^l_m WRT To Phi Divided By Sin(Theta)
+    c1 = np.sqrt ( ( 2*l+1 ) * ( l-m+1 ) * ( l-m+2 ) / ( 2*l+3 ) )
+    c2 = np.sqrt ( ( 2*l+1 ) * ( l+m+1 ) * ( l+m+2 ) / ( 2*l+3 ) )
+    DY_Dphi_OVER_sinTheta = -( ( 1. / 2. ) * ( c1 * NormalisedAssociatedLegendrePolynomial ( l+1 , m-1 , x )
+                                                    + c2 * NormalisedAssociatedLegendrePolynomial ( l+1 , m+1 , x ) )
+                                                    * (1j) * np.exp ( (1j) * m * phi ) )
+    
+    return (( np.einsum("i,ik->ik", DY_Dtheta , e_theta ) + np.einsum("i,ik->ik", DY_Dphi_OVER_sinTheta , e_phi ) )
+            / np.sqrt ( l * ( l + 1 ) ) )
