@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --account=sesanaa-grav-waves
+#SBATCH --qos bbdefault
+#SBATCH --time 0-5
+#SBATCH --chdir=/rds/homes/m/moorecj/pmQSOs/QuasarProperMotions/Cluster/
+#SBATCH --nodes 1-1
+#SBATCH --ntasks 16
+#SBATCH --job-name=VSHfit
+#SBATCH --mail-type NONE
+set -e
+module purge; module load bluebear; module load Python/3.6.3-iomkl-2018a
+python3 main.py
