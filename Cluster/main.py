@@ -39,7 +39,7 @@ class VSHmodel(Model):
 
 # run nested sampling
 model = VSHmodel()
-nest = cpnest.CPNest(model, nlive=2048, maxmcmc=512, nthreads=8, resume=True, verbose=3)
+nest = cpnest.CPNest(model, output='output', nlive=2048, maxmcmc=512, nthreads=8, resume=True, verbose=3)
 nest.run()
 
 # post processing run
