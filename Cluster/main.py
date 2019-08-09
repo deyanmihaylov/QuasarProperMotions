@@ -34,8 +34,8 @@ else:
 data.positions = deg_to_rad(data.positions)
 
 # Change proper motions from mas/yr to rad/s
-data.proper_motions = data.proper_motions * 1.5362818500441604e-16
-data.proper_motions_err = data.proper_motions_err * 1.5362818500441604e-16
+#data.proper_motions = data.proper_motions * 1.5362818500441604e-16
+#data.proper_motions_err = data.proper_motions_err * 1.5362818500441604e-16
     
     
     
