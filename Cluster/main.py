@@ -93,7 +93,7 @@ class VSHmodel(cpnest.model.Model):
         for Q in ['E', 'B']:
             for l in np.arange(1, Lmax+1):
                 for m in np.arange(-l, 0):
-                    aQlm = par['Re_a^E_'+str(l)+str(-m)]+(1j)*par['Im_a^E_'+str(l)+str(-m)]
+                    aQlm = par['Re_a^'+Q+'_'+str(l)+str(-m)]+(1j)*par['Im_a^'+Q+'_'+str(l)+str(-m)]
                     par['Re_a^'+Q+'_'+str(l)+str(m)] = np.real( ((-1)**(-m)) * np.conj(aQlm) )
                     par['Im_a^'+Q+'_'+str(l)+str(m)] = np.imag( ((-1)**(-m)) * np.conj(aQlm) )
         
