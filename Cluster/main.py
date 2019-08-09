@@ -26,9 +26,11 @@ Lmax = int(args.Lmax)
 #  (5) - real type2+type3 (492006 stars)
 dataset = int(args.dataset)
 if dataset==1:
-    pass
+    data = import_Gaia_data("../data/type2.csv")
+    data = generate_scalar_bg (data)
 elif dataset==2:
-    pass
+    data = import_Gaia_data("../data/type2.csv")
+    data = generate_gr_bg (data)
 elif dataset==3:
     data = import_Gaia_data("../data/type2.csv")
 elif dataset==4:
