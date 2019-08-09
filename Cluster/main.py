@@ -27,13 +27,13 @@ Lmax = int(args.Lmax)
 dataset = int(args.dataset)
 if dataset==1:
     pass
-if dataset==2:
+elif dataset==2:
     pass
-if dataset==3:
+elif dataset==3:
     data = import_Gaia_data("data/type2.csv")
-if dataset==4:
+elif dataset==4:
     data = import_Gaia_data("data/type3.csv")
-if dataset==5:
+elif dataset==5:
     data = import_Gaia_data("data/type2and3.csv")
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
