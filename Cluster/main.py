@@ -67,10 +67,26 @@ class VSHmodel(Model):
                         bounds += [-1,1]
                         
 
-    def log_likelihood(self, param):
+    def log_likelihood(self, params):
         
-        vsh_E_coeffs = 1
-        vsh_B_coeffs = 1
+        par = dict(params)
+        for Q in ['E', 'B']:
+            for l in np.arange(1, Lmax+1):
+                for m in np.arange(-l, 1):
+                    aQlm = par['Re_a^E_'+str(l)+str(m)]+(1j)*par['Re_a^E_'+str(l)+str(m)]
+                    par['Re_a^'+Q+'_'+str(l)+str(m)] = ((-1)**m) * aQlm
+        
+        
+        vsh_E_coeffs = [ [ 
+                            par['Re_a^E_'+str(l)+'0']+0*(1j)   
+                            if m==0 else   
+                            par['Re_a^E_'+str(l)+str(m)]+(1j)*par['Re_a^E_'+str(l)+str(m)]
+                       for m in np.arange(-l, l+1)] for l in np.arange(1, Lmax+1)]
+        vsh_B_coeffs = [ [ 
+                            par['Re_a^E_'+str(l)+'0']+0*(1j)   
+                            if m==0 else   
+                            par['Re_a^E_'+str(l)+str(m)]+(1j)*par['Re_a^E_'+str(l)+str(m)])
+                       for m in np.arange(-l, l+1)] for l in np.arange(1, Lmax+1)]
         
         model_pm = generate_model(vsh_E_coeffs, vsh_B_coeffs, data.positions)
         Rvals = R_values(data.proper_motions, data.proper_motions_err, data.proper_motions_err_corr , model_pm)
