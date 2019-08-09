@@ -3,6 +3,7 @@ import cpnest
 import cpnest.model
 
 from data_load import *
+from utils import *
 
 
 Lmax = 4
