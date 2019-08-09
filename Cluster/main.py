@@ -15,6 +15,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--Lmax',    help='the maximum VSH index [default 4]', type=int, default=4)
 parser.add_argument('--dataset', help='the dataset to use [default 1]', type=int, default=1)
 parser.add_argument('--nthreads', help='the number of CPU threads to use [default 2]', type=int, default=2)
+parser.add_argument('--nlive', help='the number cpnest live points [default 1024]', type=int, default=1024)
+parser.add_argument('--maxmcmc', help='the mcmc length in cpnest [default 256]', type=int, default=256)
 args = parser.parse_args()
 
 
@@ -129,7 +131,8 @@ model = VSHmodel()
 outdir = "CPNestOutput/Lmax_"+str(Lmax)+"_dataset_"+str(dataset)+"/"
 if not os.path.isdir(outdir): os.system('mkdir '+outdir)
 
-nest = cpnest.CPNest(model, output=outdir, nlive=4096, maxmcmc=1024, nthreads=int(args.nthreads), resume=True, verbose=3)
+nest = cpnest.CPNest(model, output=outdir, nlive=int(args.nlive), 
+                     maxmcmc=int(args.maxmcmc), nthreads=int(args.nthreads), resume=True, verbose=3)
 nest.run()
 
 
