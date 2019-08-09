@@ -40,7 +40,7 @@ else:
 
     
 print("Analysing dataset {} with Lmax={}".format(Lmax, dataset))
-    
+exit(-1)
     
 # Convert to radians
 data.positions = deg_to_rad(data.positions)
