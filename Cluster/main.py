@@ -66,6 +66,7 @@ class VSHmodel(cpnest.model.Model):
 
     def __init__(self):
 
+        self.prior_bound_aQlm = 5
         self.names = []
         self.bounds = []
         
@@ -81,9 +82,9 @@ class VSHmodel(cpnest.model.Model):
                     else:
                     
                         self.names += ['Re_a^'+Q+'_'+str(l)+str(m)]
-                        self.bounds += [[-10,10]]
+                        self.bounds += [[-self.prior_bound_aQlm, self.prior_bound_aQlm]]
                         self.names += ['Im_a^'+Q+'_'+str(l)+str(m)]
-                        self.bounds += [[-10,10]]
+                        self.bounds += [[-self.prior_bound_aQlm, self.prior_bound_aQlm]]
         print(self.names)
 
     def log_likelihood(self, params):
