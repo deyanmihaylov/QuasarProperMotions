@@ -77,7 +77,7 @@ class VSHmodel(cpnest.model.Model):
                     if m==0:
                         
                         self.names += ['Re_a^'+Q+'_'+str(l)+str(m)]
-                        self.bounds += [[-10,10]]
+                        self.bounds += [[-self.prior_bound_aQlm, self.prior_bound_aQlm]]
                         
                     else:
                     
