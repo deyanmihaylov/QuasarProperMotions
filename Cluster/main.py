@@ -66,45 +66,46 @@ class VSHmodel(cpnest.model.Model):
 
     def __init__(self):
 
-        names = []
-        bounds = []
+        self.names = []
+        self.bounds = []
         
         for Q in ['E', 'B']:
             for l in np.arange(1, Lmax+1):
                 for m in np.arange(0, l+1):
                 
                     if m==0:
-                    
-                        names += 'Re_a^'+Q+'_'+str(l)+str(m)
-                        bounds += [-1,1]
+                        
+                        self.names += ['Re_a^'+Q+'_'+str(l)+str(m)]
+                        self.bounds += [[-10,10]]
                         
                     else:
                     
-                        names += 'Re_a^'+Q+'_'+str(l)+str(m)
-                        bounds += [-1,1]
-                        names += 'Im_a^'+Q+'_'+str(l)+str(m)
-                        bounds += [-1,1]
-                        
+                        self.names += ['Re_a^'+Q+'_'+str(l)+str(m)]
+                        self.bounds += [[-10,10]]
+                        self.names += ['Im_a^'+Q+'_'+str(l)+str(m)]
+                        self.bounds += [[-10,10]]
+        print(self.names)
 
     def log_likelihood(self, params):
         
         par = dict(params)
         for Q in ['E', 'B']:
             for l in np.arange(1, Lmax+1):
-                for m in np.arange(-l, 1):
-                    aQlm = par['Re_a^E_'+str(l)+str(-m)]+(1j)*par['Re_a^E_'+str(l)+str(-m)]
-                    par['Re_a^'+Q+'_'+str(l)+str(m)] = ((-1)**(-m)) * aQlm
+                for m in np.arange(-l, 0):
+                    aQlm = par['Re_a^E_'+str(l)+str(-m)]+(1j)*par['Im_a^E_'+str(l)+str(-m)]
+                    par['Re_a^'+Q+'_'+str(l)+str(m)] = np.real( ((-1)**(-m)) * np.conj(aQlm) )
+                    par['Im_a^'+Q+'_'+str(l)+str(m)] = np.imag( ((-1)**(-m)) * np.conj(aQlm) )
         
         
         vsh_E_coeffs = [ [ 
                             par['Re_a^E_'+str(l)+'0']+0*(1j)   
                             if m==0 else   
-                            par['Re_a^E_'+str(l)+str(m)]+(1j)*par['Re_a^E_'+str(l)+str(m)]
+                            par['Re_a^E_'+str(l)+str(m)]+(1j)*par['Im_a^E_'+str(l)+str(m)]
                        for m in np.arange(-l, l+1)] for l in np.arange(1, Lmax+1)]
         vsh_B_coeffs = [ [ 
                             par['Re_a^E_'+str(l)+'0']+0*(1j)   
                             if m==0 else   
-                            par['Re_a^E_'+str(l)+str(m)]+(1j)*par['Re_a^E_'+str(l)+str(m)]
+                            par['Re_a^E_'+str(l)+str(m)]+(1j)*par['Im_a^E_'+str(l)+str(m)]
                        for m in np.arange(-l, l+1)] for l in np.arange(1, Lmax+1)]
         
         model_pm = generate_model(vsh_E_coeffs, vsh_B_coeffs, data.positions)
@@ -123,7 +124,7 @@ model = VSHmodel()
 outdir = "CPNestOutput/Lmax_"+str(Lmax)+"_dataset_"+str(dataset)+"/"
 if not os.path.isdir(outdir): os.system('mkdir '+outdir)
 
-nest = cpnest.CPNest(model, output=outdir, nlive=4096, maxmcmc=1024, nthreads=16, resume=True, verbose=3)
+nest = cpnest.CPNest(model, output=outdir, nlive=4096, maxmcmc=1024, nthreads=16, resume=True)
 nest.run()
 
 

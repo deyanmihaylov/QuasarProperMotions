@@ -99,7 +99,7 @@ def import_Gaia_data (path_to_Gaia_data):
     return new_dataframe
 
 def generate_scalar_bg (data):
-    scale = 1.0e-15
+    scale = 1.0
     
     vsh_E_coeffs = [[0j, 1.0 * scale + 0j, 0j], [0j, 0j, 0j, 0j, 0j]]
     vsh_B_coeffs = [[0j, 0j, 0j], [0j, 0j, 0j, 0j, 0j]]
@@ -114,7 +114,7 @@ def generate_scalar_bg (data):
     return data
 
 def generate_gr_bg (data):
-    scale = 1.0e-15
+    scale = 1.0
 
     variance = numpy.array([ 0.0 , 0.3490658503988659 , 0.03490658503988659 , 0.006981317007977318 , 0.0019946620022792336 ])
 
