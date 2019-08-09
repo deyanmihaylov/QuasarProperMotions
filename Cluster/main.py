@@ -45,18 +45,19 @@ elif dataset==5:
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
 
+
     
 print("Analysing dataset {} with Lmax={}".format(Lmax, dataset))
-exit(-1)
+
+
 
 # Change proper motions from mas/yr to rad/s
 #data.proper_motions = data.proper_motions * 1.5362818500441604e-16
 #data.proper_motions_err = data.proper_motions_err * 1.5362818500441604e-16
-    
-    
+        
     
 
-class VSHmodel(Model):
+class VSHmodel(cpnest.model.Model):
     """
     Vector Spherical Harmonic (VSH) fit to proper motions
     """
@@ -89,8 +90,8 @@ class VSHmodel(Model):
         for Q in ['E', 'B']:
             for l in np.arange(1, Lmax+1):
                 for m in np.arange(-l, 1):
-                    aQlm = par['Re_a^E_'+str(l)+str(m)]+(1j)*par['Re_a^E_'+str(l)+str(m)]
-                    par['Re_a^'+Q+'_'+str(l)+str(m)] = ((-1)**m) * aQlm
+                    aQlm = par['Re_a^E_'+str(l)+str(-m)]+(1j)*par['Re_a^E_'+str(l)+str(-m)]
+                    par['Re_a^'+Q+'_'+str(l)+str(m)] = ((-1)**(-m)) * aQlm
         
         
         vsh_E_coeffs = [ [ 
