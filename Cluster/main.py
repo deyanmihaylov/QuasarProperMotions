@@ -1,6 +1,6 @@
 import numpy as np
 import cpnest
-from cpnest.model import Model
+import cpnest.model
 
 
 Lmax = 4
@@ -10,9 +10,9 @@ class VSHmodel(Model):
     """
     Vector Spherical Harmonic (VSH) fit to proper motions
     """
-    
+
     def __init__(self):
-    
+
         names = []
         bounds = []
         
@@ -37,11 +37,19 @@ class VSHmodel(Model):
         return 0.0
         
 
-# run nested sampling
+
+# set up model and log-likelihood
 model = VSHmodel()
-nest = cpnest.CPNest(model, output='output', nlive=2048, maxmcmc=512, nthreads=8, resume=True, verbose=3)
+
+
+# run nested sampling 
+outdir = "CPNestOutput/Lmax_"+str(Lmax)+"_test/"
+if not os.path.isdir(outdir): os.system('mkdir '+outdir)
+
+nest = cpnest.CPNest(model, output=outdir, nlive=4096, maxmcmc=1024, nthreads=16, resume=True, verbose=3)
 nest.run()
 
-# post processing run
+
+# post processing
 nest.get_nested_samples()
 nest.get_posterior_samples()
