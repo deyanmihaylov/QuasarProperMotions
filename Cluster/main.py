@@ -30,11 +30,11 @@ if dataset==1:
 elif dataset==2:
     pass
 elif dataset==3:
-    data = import_Gaia_data("data/type2.csv")
+    data = import_Gaia_data("../data/type2.csv")
 elif dataset==4:
-    data = import_Gaia_data("data/type3.csv")
+    data = import_Gaia_data("../data/type3.csv")
 elif dataset==5:
-    data = import_Gaia_data("data/type2and3.csv")
+    data = import_Gaia_data("../data/type2and3.csv")
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
 
