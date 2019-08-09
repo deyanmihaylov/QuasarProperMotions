@@ -2,6 +2,8 @@ import numpy as np
 import cpnest
 import cpnest.model
 
+from data_load import *
+
 
 Lmax = 4
 
