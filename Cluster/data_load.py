@@ -121,22 +121,22 @@ def generate_gr_bg (data):
     vsh_E_coeffs = [ [ scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])) + (1j) * numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))) for m in range (-l,l+1)] for l in range (1,len(variance)+1)]
 
     for l , l_coeffs in enumerate(vsh_E_coeffs):
-        if l > 0:
-            for m in range (-l,l+1):
-                if m < 0:
-                    l_coeffs[m+l] = ((-1)**(-m)) * numpy.conj (l_coeffs[-m+l])
-                elif m == 0:
-                    l_coeffs[l] = numpy.real(l_coeffs[l]) + (1j) * 0.0
+        L = l+1
+        for m in range (-L, L+1):
+            if m < 0:
+                l_coeffs[m+L] = ((-1)**(-m)) * numpy.conj (l_coeffs[-m+L])
+            elif m == 0:
+                l_coeffs[L] = numpy.real(l_coeffs[L]) + (1j) * 0.0
                 
     vsh_B_coeffs = [ [ scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])) + (1j) * numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))) for m in range (-l,l+1)] for l in range (1,len(variance)+1)]
 
     for l , l_coeffs in enumerate(vsh_B_coeffs):
-        if l > 0:
-            for m in range (-l,l+1):
-                if m < 0:
-                    l_coeffs[m+l] = ((-1)**(-m)) * numpy.conj (l_coeffs[-m+l])
-                elif m == 0:
-                    l_coeffs[l] = numpy.real(l_coeffs[l]) + (1j) * 0.0
+        L = l+1
+        for m in range (-L,L+1):
+            if m < 0:
+                l_coeffs[m+L] = ((-1)**(-m)) * numpy.conj (l_coeffs[-m+L])
+            elif m == 0:
+                l_coeffs[L] = numpy.real(l_coeffs[L]) + (1j) * 0.0
 
     model_pm = generate_model ( vsh_E_coeffs , vsh_B_coeffs , data.positions )
     
