@@ -11,23 +11,25 @@ Lmax = 4
 # pm data to analyse:
 #  (1) - mock dipole (? stars)
 #  (2) - mock GW quad patter (? stars)
-#  (3) - real type2 (~1e3 stars)
-#  (4) - real type3 (~1e5 stars)
-#  (5) - real type2+type3 (~1e5 stars)
+#  (3) - real type2 (2843 stars)
+#  (4) - real type3 (489163 stars)
+#  (5) - real type2+type3 (492006 stars)
 dataset = 1
 if dataset==1:
     pass
 if dataset==2:
     pass
 if dataset==3:
-    pass
+    data = import_Gaia_data("data/type2.csv")
 if dataset==4:
-    pass
+    data = import_Gaia_data("data/type3.csv")
 if dataset==5:
-    pass
+    data = import_Gaia_data("data/type2and3.csv")
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
 
+    
+    
 
 
 class VSHmodel(Model):
