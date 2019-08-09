@@ -100,6 +100,7 @@ def import_Gaia_data (path_to_Gaia_data):
 
 def generate_scalar_bg (data):
     scale = 1.0
+    err_scale = 20.0
     
     vsh_E_coeffs = [[0j, 1.0 * scale + 0j, 0j], [0j, 0j, 0j, 0j, 0j]]
     vsh_B_coeffs = [[0j, 0j, 0j], [0j, 0j, 0j, 0j, 0j]]
@@ -108,7 +109,7 @@ def generate_scalar_bg (data):
     
     data.proper_motions = model_pm
 
-    data.proper_motions_err = scale * numpy.ones(data.proper_motions_err.shape, dtype=None, order='C')
+    data.proper_motions_err = err_scale * numpy.ones(data.proper_motions_err.shape, dtype=None, order='C')
     data.proper_motions_err_corr = numpy.zeros(data.proper_motions_err_corr.shape, dtype=None, order='C')
     
     return data

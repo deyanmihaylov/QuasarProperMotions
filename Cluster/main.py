@@ -66,7 +66,7 @@ class VSHmodel(cpnest.model.Model):
 
     def __init__(self):
 
-        self.prior_bound_aQlm = 5
+        self.prior_bound_aQlm = 2
         self.names = []
         self.bounds = []
         
@@ -125,7 +125,7 @@ model = VSHmodel()
 outdir = "CPNestOutput/Lmax_"+str(Lmax)+"_dataset_"+str(dataset)+"/"
 if not os.path.isdir(outdir): os.system('mkdir '+outdir)
 
-nest = cpnest.CPNest(model, output=outdir, nlive=4096, maxmcmc=1024, nthreads=16, resume=True)
+nest = cpnest.CPNest(model, output=outdir, nlive=4096, maxmcmc=1024, nthreads=16, resume=True, verbose=3)
 nest.run()
 
 

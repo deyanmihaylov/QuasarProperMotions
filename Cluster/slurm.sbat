@@ -9,4 +9,4 @@
 #SBATCH --mail-type NONE
 set -e
 module purge; module load bluebear; module load Python/3.6.3-iomkl-2018a
-python3 main.py --Lmax 4 --dataset 1
+python3 main.py --Lmax 1 --dataset 1
