@@ -30,7 +30,15 @@ else:
 
     
     
+# Convert to radians
+data.positions = deg_to_rad(data.positions)
 
+# Change proper motions from mas/yr to rad/s
+data.proper_motions = data.proper_motions * 1.5362818500441604e-16
+data.proper_motions_err = data.proper_motions_err * 1.5362818500441604e-16
+    
+    
+    
 
 class VSHmodel(Model):
     """
@@ -60,7 +68,15 @@ class VSHmodel(Model):
                         
 
     def log_likelihood(self, param):
-        return 0.0
+        
+        vsh_E_coeffs = 1
+        vsh_B_coeffs = 1
+        
+        model_pm = generate_model(vsh_E_coeffs, vsh_B_coeffs, data.positions)
+        Rvals = R_values(data.proper_motions, data.proper_motions_err, data.proper_motions_err_corr , model_pm)
+        log_likelihood = np.log( ( 1. - np.exp ( - Rvals ** 2 / 2.) ) / ( Rvals ** 2 ) ).sum()
+        
+        return log_likelihood
         
 
 
