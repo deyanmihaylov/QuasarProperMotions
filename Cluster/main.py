@@ -15,7 +15,7 @@ parser.add_argument('--dataset', help='the dataset to use [default 1]', type=int
 args = parser.parse_args()
 
 
-Lmax = args.Lmax
+Lmax = int(args.Lmax)
 
 
 # pm data to analyse:
@@ -24,7 +24,7 @@ Lmax = args.Lmax
 #  (3) - real type2 (2843 stars)
 #  (4) - real type3 (489163 stars)
 #  (5) - real type2+type3 (492006 stars)
-dataset = args.dataset
+dataset = int(args.dataset)
 if dataset==1:
     pass
 if dataset==2:
