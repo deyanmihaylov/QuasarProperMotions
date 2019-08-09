@@ -1,4 +1,7 @@
+import argparse
+
 import numpy as np
+
 import cpnest
 import cpnest.model
 
@@ -6,7 +9,13 @@ from data_load import *
 from utils import *
 
 
-Lmax = 4
+parser = argparse.ArgumentParser()
+parser.add_argument('--Lmax',    help='the maximum VSH index [default 4]', type=int, default=4)
+parser.add_argument('--dataset', help='the dataset to use [default 1]', type=int, default=1)
+args = parser.parse_args()
+
+
+Lmax = args.Lmax
 
 
 # pm data to analyse:
@@ -15,7 +24,7 @@ Lmax = 4
 #  (3) - real type2 (2843 stars)
 #  (4) - real type3 (489163 stars)
 #  (5) - real type2+type3 (492006 stars)
-dataset = 1
+dataset = args.dataset
 if dataset==1:
     pass
 if dataset==2:
@@ -29,6 +38,8 @@ if dataset==5:
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
 
+    
+print("Analysing dataset {} with Lmax={}".format(Lmax, dataset))
     
     
 # Convert to radians
