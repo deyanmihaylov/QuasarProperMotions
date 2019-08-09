@@ -95,4 +95,53 @@ def import_Gaia_data (path_to_Gaia_data):
     new_dataframe.proper_motions_err_corr = dataset.as_matrix ( columns = [ 'pmra_pmdec_corr' ] )
     
     return new_dataframe
+
+def generate_scalar_bg (data):
+    scale = 1.0e-15
+    
+    vsh_E_coeffs = [[0j, 1.0 * scale + 0j, 0j], [0j, 0j, 0j, 0j, 0j]]
+    vsh_B_coeffs = [[0j, 0j, 0j], [0j, 0j, 0j, 0j, 0j]]
+    
+    model_pm = generate_model ( vsh_E_coeffs , vsh_B_coeffs , data.positions )
+    
+    data.proper_motions = model_pm
+
+    data.proper_motions_err = scale * numpy.ones(data.proper_motions_err.shape, dtype=None, order='C')
+    data.proper_motions_err_corr = numpy.zeros(data.proper_motions_err_corr.shape, dtype=None, order='C')
+    
+    return data
+
+def generate_gr_bg (data):
+    scale = 1.0e-15
+
+    variance = numpy.array([ 0.0 , 0.3490658503988659 , 0.03490658503988659 , 0.006981317007977318 , 0.0019946620022792336 ])
+
+    vsh_E_coeffs = [ [ scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])) + (1j) * numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))) for m in range (-l,l+1)] for l in range (1,len(variance)+1)]
+
+    for l , l_coeffs in enumerate(vsh_E_coeffs):
+        if l > 0:
+            for m in range (-l,l+1):
+                if m < 0:
+                    l_coeffs[m+l] = ((-1)**(-m)) * numpy.conj (l_coeffs[-m+l])
+                elif m == 0:
+                    l_coeffs[l] = numpy.real(l_coeffs[l]) + (1j) * 0.0
+                
+    vsh_B_coeffs = [ [ scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])) + (1j) * numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))) for m in range (-l,l+1)] for l in range (1,len(variance)+1)]
+
+    for l , l_coeffs in enumerate(vsh_B_coeffs):
+        if l > 0:
+            for m in range (-l,l+1):
+                if m < 0:
+                    l_coeffs[m+l] = ((-1)**(-m)) * numpy.conj (l_coeffs[-m+l])
+                elif m == 0:
+                    l_coeffs[l] = numpy.real(l_coeffs[l]) + (1j) * 0.0
+
+    model_pm = generate_model ( vsh_E_coeffs , vsh_B_coeffs , data.positions )
+    
+    data.proper_motions = model_pm
+
+    data.proper_motions_err = scale * numpy.ones(data.proper_motions_err.shape, dtype=None, order='C')
+    data.proper_motions_err_corr = numpy.zeros(data.proper_motions_err_corr.shape, dtype=None, order='C')
+    
+    return data
     
