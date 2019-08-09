@@ -18,6 +18,7 @@ parser.add_argument('--nthreads', help='the number of CPU threads to use [defaul
 args = parser.parse_args()
 
 
+tol = 1.0e-3 # This is the minimum residual considered by the log_likelihood
 Lmax = int(args.Lmax)
 
 
@@ -112,6 +113,8 @@ class VSHmodel(cpnest.model.Model):
         
         model_pm = generate_model(vsh_E_coeffs, vsh_B_coeffs, data.positions)
         Rvals = R_values(data.proper_motions, data.proper_motions_err, data.proper_motions_err_corr , model_pm)
+        condition = Rvals > tol
+        modify_Rvals = np.extract(condition, Rvals)
         log_likelihood = np.log( ( 1. - np.exp ( - Rvals ** 2 / 2.) ) / ( Rvals ** 2 ) ).sum()
         
         return log_likelihood

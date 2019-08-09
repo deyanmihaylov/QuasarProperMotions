@@ -100,7 +100,7 @@ def import_Gaia_data (path_to_Gaia_data):
 
 def generate_scalar_bg (data):
     scale = 1.0
-    err_scale = 20.0
+    err_scale = 2.0
     
     vsh_E_coeffs = [[0j, 1.0 * scale + 0j, 0j], [0j, 0j, 0j, 0j, 0j]]
     vsh_B_coeffs = [[0j, 0j, 0j], [0j, 0j, 0j, 0j, 0j]]

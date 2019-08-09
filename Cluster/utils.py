@@ -108,10 +108,14 @@ def R_values ( pm , pm_err , pm_err_corr , model ):
     return R_values
 
 def compute_log_likelihood ( R_values ):
-    if R_values.min() == 0.0:
-        raise ValueError('Min of R_values is 0.')
-        
-    log_likelihood = numpy.log ( ( 1. - numpy.exp ( - R_values ** 2 / 2.) ) / ( R_values ** 2 ) ).sum()
+
+    condition = R_values > 1.0e-3
+    print(R_values)
+    
+    modify_R_values = numpy.extract(condition, R_values)
+    print(modify_R_values)
+
+    log_likelihood = numpy.log ( ( 1. - numpy.exp ( - modify_R_values ** 2 / 2.) ) / ( modify_R_values ** 2 ) ).sum()
     
     return log_likelihood
     
