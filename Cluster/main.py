@@ -27,25 +27,27 @@ Lmax = int(args.Lmax)
 dataset = int(args.dataset)
 if dataset==1:
     data = import_Gaia_data("../data/type2.csv")
+    data.positions = deg_to_rad(data.positions)
     data = generate_scalar_bg (data)
 elif dataset==2:
     data = import_Gaia_data("../data/type2.csv")
+    data.positions = deg_to_rad(data.positions)
     data = generate_gr_bg (data)
 elif dataset==3:
     data = import_Gaia_data("../data/type2.csv")
+    data.positions = deg_to_rad(data.positions)
 elif dataset==4:
     data = import_Gaia_data("../data/type3.csv")
+    data.positions = deg_to_rad(data.positions)
 elif dataset==5:
     data = import_Gaia_data("../data/type2and3.csv")
+    data.positions = deg_to_rad(data.positions)
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
 
     
 print("Analysing dataset {} with Lmax={}".format(Lmax, dataset))
 exit(-1)
-    
-# Convert to radians
-data.positions = deg_to_rad(data.positions)
 
 # Change proper motions from mas/yr to rad/s
 #data.proper_motions = data.proper_motions * 1.5362818500441604e-16
