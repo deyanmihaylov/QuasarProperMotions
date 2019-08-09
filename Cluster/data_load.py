@@ -1,6 +1,8 @@
 import pandas
 import numpy
 
+from utils import *
+
 class AstrometricDataframe:
     def __init__(self): 
         self.positions = numpy.array ([])
