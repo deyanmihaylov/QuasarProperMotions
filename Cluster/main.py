@@ -102,7 +102,7 @@ model = VSHmodel()
 
 
 # run nested sampling 
-outdir = "CPNestOutput/Lmax_"+str(Lmax)+"_test/"
+outdir = "CPNestOutput/Lmax_"+str(Lmax)+"_dataset_"+str(dataset)+"/"
 if not os.path.isdir(outdir): os.system('mkdir '+outdir)
 
 nest = cpnest.CPNest(model, output=outdir, nlive=4096, maxmcmc=1024, nthreads=16, resume=True, verbose=3)
