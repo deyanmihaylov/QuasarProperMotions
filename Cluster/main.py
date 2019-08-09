@@ -117,11 +117,9 @@ class VSHmodel(cpnest.model.Model):
         model_pm = generate_model(vsh_E_coeffs, vsh_B_coeffs, data.positions)
         Rvals = R_values(data.proper_motions, data.proper_motions_err, data.proper_motions_err_corr , model_pm)
         condition = Rvals > tol
-        neg_condition = Rvals <= tol
         modify_Rvals = np.extract(condition, Rvals)
-        log_likelihood = np.log( ( 1. - np.exp ( - Rvals ** 2 / 2.) ) / ( Rvals ** 2 ) ).sum()
-        log_likelihood += len( np.extract(neg_condition, Rvals) ) * log1over2
-
+        log_likelihood = np.log( ( 1. - np.exp ( - 0.5 * Rvals**2) ) / ( 0.5 * Rvals**2 ) ).sum()
+        
         return log_likelihood
         
 
