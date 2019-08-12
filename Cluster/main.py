@@ -9,6 +9,7 @@ import cpnest.model
 
 from data_load import *
 from utils import *
+benchmarking = False
 
 
 parser = argparse.ArgumentParser()
@@ -126,7 +127,7 @@ class VSHmodel(cpnest.model.Model):
                        for m in np.arange(-l, l+1)] for l in np.arange(1, Lmax+1)]
         """
         
-        vsh_E_coeffs, vsh_B_coeffs = mapping(param)
+        vsh_E_coeffs, vsh_B_coeffs = mapping(params)
         
         model_pm = generate_model(vsh_E_coeffs, vsh_B_coeffs, data.positions)
         Rvals = R_values(data.proper_motions, data.proper_motions_err, data.proper_motions_err_corr , model_pm)
@@ -152,6 +153,31 @@ class VSHmodel(cpnest.model.Model):
 
 # set up model and log-likelihood
 model = VSHmodel()
+
+
+
+
+
+if benchmarking:
+    import time
+    par = {}
+    for l in np.arange(1,Lmax+1):
+        for m in np.arange(0, l+1):
+            if m==0:
+                par['Re_a^E_'+str(l)+'0'] = 0
+                par['Re_a^B_'+str(l)+'0'] = 0
+            else:
+                par['Re_a^E_'+str(l)+str(m)] = 0
+                par['Im_a^E_'+str(l)+str(m)] = 0
+                par['Re_a^B_'+str(l)+str(m)] = 0
+                par['Im_a^B_'+str(l)+str(m)] = 0
+    t_start = time.time()
+    ll = model.log_likelihood(par)
+    t_end = time.time()
+    print(t_end-t_start, ll)
+    exit(-1)
+
+
 
 
 # run nested sampling 
