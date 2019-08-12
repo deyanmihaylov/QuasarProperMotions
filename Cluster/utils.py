@@ -119,6 +119,10 @@ def compute_log_likelihood ( R_values ):
     
     return log_likelihood
     
+
+
+def logLfunc(R):
+    return numpy.log( ( 1 - numpy.exp(-0.5*R) ) / (0.5*R) )
     
     
     
