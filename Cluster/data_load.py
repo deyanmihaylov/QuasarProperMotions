@@ -115,7 +115,7 @@ def import_Gaia_data (path_to_Gaia_data):
                                                 for i in range(len(raerr))])
     
     new_dataframe.positions_Cartesian = numpy.array([ 
-                                                        utils.geographic_to_Cartesian ([ra[i][0], dec[i][0]])
+                                                        geographic_to_Cartesian ( numpy.array([ra[i][0], dec[i][0]]) )
                                             for i in range(len(raerr))])
       
     

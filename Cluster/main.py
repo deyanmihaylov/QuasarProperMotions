@@ -9,7 +9,7 @@ import cpnest.model
 
 from data_load import *
 from utils import *
-benchmarking = False
+benchmarking = True
 
 
 parser = argparse.ArgumentParser()
@@ -108,7 +108,7 @@ class VSHmodel(cpnest.model.Model):
     def log_likelihood(self, params):
         
         vsh_E_coeffs, vsh_B_coeffs = mapping(params)        
-        model_pm = generate_model(vsh_E_coeffs, vsh_B_coeffs, data.positions)
+        model_pm = generate_model_fast(vsh_E_coeffs, vsh_B_coeffs, data.positions_Cartesian)
         Rvals = R_values(data.proper_motions, data.proper_motions_invcov , model_pm)
         Rvals = np.maximum(Rvals, tol)
         log_likelihood = np.sum( logLfunc( Rvals ) )
