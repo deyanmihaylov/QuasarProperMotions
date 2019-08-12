@@ -138,6 +138,18 @@ class VSHmodel(cpnest.model.Model):
         log_likelihood = np.log( ( 1. - np.exp ( - 0.5 * Rvals**2) ) / ( 0.5 * Rvals**2 ) ).sum()
         
         return log_likelihood
+    
+    
+        # Desired code structure
+        # vsh_E_coeffs, vsh_B_coeffs = CoefficientsFromParams(param)
+        # model_pm = generate_model(vsh_E_coeffs, vsh_B_coeffs, data.positions)
+        # Rvals = R_values(data.proper_motions, data.inv_covs, model_pm)
+        # log_likelihood = np.sum(log_like_func(Rvals))
+        # return log_likelihood
+        #
+        # Functions to be written:
+        #  - log_like_func vectorised implementation of log((1-e^-(-0.5*Rvals^2))/(0.5*Rvals^2))
+        #  - CoefficientsFromParams benchmark hardcoded versus nested loops
         
 
 
