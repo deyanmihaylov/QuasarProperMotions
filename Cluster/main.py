@@ -54,7 +54,7 @@ else:
 
 
     
-print("Analysing dataset {} with Lmax={}".format(Lmax, dataset))
+print("Analysing dataset {0} with Lmax={1}".format(dataset, Lmax))
 
 
 
