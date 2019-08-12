@@ -98,12 +98,11 @@ def covariant_matrix ( errors , corr ):
     covariant_matrix[...,0,1] = covariant_matrix[...,1,0] = numpy.multiply ( covariant_matrix[...,1,0] , corr.flatten() )
     return covariant_matrix
 
-def R_values ( pm , pm_err , pm_err_corr , model ):
-    covariant_matrices = covariant_matrix ( pm_err , pm_err_corr )
+def R_values ( pm , invcovs , model ):
     
     M = pm - model
     
-    R_values = numpy.einsum ( '...i,...ij,...j->...' , M , numpy.linalg.inv ( covariant_matrices ) , M ) 
+    R_values = numpy.einsum ( '...i,...ij,...j->...' , M , invcovs , M ) 
         
     return R_values
 
