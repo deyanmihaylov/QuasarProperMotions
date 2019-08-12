@@ -104,12 +104,12 @@ def import_Gaia_data (path_to_Gaia_data):
     decerr = dataset.as_matrix ( columns = [ 'pmra_error' ] )
     corr = dataset.as_matrix ( columns = [ 'pmra_error' ] )
     
-    new_dataframe.proper_motions_invcov = np.array([ 
+    new_dataframe.proper_motions_invcov = numpy.array([ 
                        
-        [[1./(raerr[i]**2-corr[i]**2*raerr[i]*2), -(corr[i]/(decerr[i]*raerr[i]-decerr[i]*raerr[i]*corr[i]**2))],
-         [-(corr[i]/(decerr[i]*raerr[i]-decerr[i]*raerr[i]*corr[i]**2)), 1/(decerr[i]**2-corr[i]**2*decerr[i]**2)]]
+        [[1./(raerr[i][0]**2-corr[i][0]**2*raerr[i][0]*2), -(corr[i][0]/(decerr[i][0]*raerr[i][0]-decerr[i][0]*raerr[i][0]*corr[i][0]**2))],
+         [-(corr[i][0]/(decerr[i][0]*raerr[i][0]-decerr[i][0]*raerr[i][0]*corr[i][0]**2)), 1/(decerr[i][0]**2-corr[i][0]**2*decerr[i][0]**2)]]
         
-                                                for i in range(len(new_dataframe.positions))])
+                                                for i in range(len(raerr))])
     
     return new_dataframe
 

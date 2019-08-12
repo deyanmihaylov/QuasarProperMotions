@@ -69,6 +69,8 @@ print("Analysing dataset {0} with Lmax={1}".format(dataset, Lmax))
     
 if Lmax==1:
     from MappingTo_aQlm import CoefficientsFromParams_Lmax1 as mapping
+elif Lmax==4:
+    from MappingTo_aQlm import CoefficientsFromParams_Lmax4 as mapping
 else:
     from MappingTo_aQlm import CoefficientsFromParams_General as mapping
     
@@ -107,7 +109,7 @@ class VSHmodel(cpnest.model.Model):
         
         vsh_E_coeffs, vsh_B_coeffs = mapping(params)        
         model_pm = generate_model(vsh_E_coeffs, vsh_B_coeffs, data.positions)
-        Rvals = R_values(data.proper_motions, data.inv_covs , model_pm)
+        Rvals = R_values(data.proper_motions, data.proper_motions_invcov , model_pm)
         Rvals = np.maximum(Rvals, tol)
         log_likelihood = np.sum( logLfunc( Rvals ) )
         

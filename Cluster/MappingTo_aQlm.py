@@ -30,13 +30,13 @@ def CoefficientsFromParams_General(param):
   
   
   
-def CoefficientsFromParams_Lmax1(params):
+def CoefficientsFromParams_Lmax1(param):
   
-    vsh_E_coeffs = [ [-param['Re_a^E_1-1']+(1j)*param['Im_a^E_11'], 
+    vsh_E_coeffs = [ [-param['Re_a^E_11']+(1j)*param['Im_a^E_11'], 
                       param['Re_a^E_10']+(1j)*0, 
                       param['Re_a^E_11']+(1j)*param['Im_a^E_11'] ] ]
                     
-    vsh_B_coeffs = [ [-param['Re_a^B_1-1']+(1j)*param['Im_a^B_11'], 
+    vsh_B_coeffs = [ [-param['Re_a^B_11']+(1j)*param['Im_a^B_11'], 
                       param['Re_a^B_10']+(1j)*0, 
                       param['Re_a^B_11']+(1j)*param['Im_a^B_11'] ] ]
                     
@@ -45,11 +45,11 @@ def CoefficientsFromParams_Lmax1(params):
 
 
 
-def CoefficientsFromParams_Lmax4(params):
+def CoefficientsFromParams_Lmax4(param):
 
     vsh_E_coeffs = [
 
-                     [-param['Re_a^E_11']+(1j)*param['Im_a^E_1-1'],
+                     [-param['Re_a^E_11']+(1j)*param['Im_a^E_11'],
                       param['Re_a^E_10']+(1j)*0,
                       param['Re_a^E_11']+(1j)*param['Im_a^E_11'] ] 
 
@@ -59,7 +59,7 @@ def CoefficientsFromParams_Lmax4(params):
                       -param['Re_a^E_21']+(1j)*param['Im_a^E_21'],
                       param['Re_a^E_20']+(1j)*0,
                       param['Re_a^E_21']+(1j)*param['Im_a^E_21'],
-                      param['Re_a^E_2-1']+(1j)*param['Im_a^E_2-1'] ]
+                      param['Re_a^E_21']+(1j)*param['Im_a^E_21'] ]
 
                      ,
 
@@ -79,7 +79,7 @@ def CoefficientsFromParams_Lmax4(params):
                       -param['Re_a^E_41']+(1j)*param['Im_a^E_41'],
                       param['Re_a^E_40']+(1j)*0,
                       param['Re_a^E_41']+(1j)*param['Im_a^E_41'],
-                      param['Re_a^E_42']+(1j)*param['Im_a^E_12'],
+                      param['Re_a^E_42']+(1j)*param['Im_a^E_42'],
                       param['Re_a^E_43']+(1j)*param['Im_a^E_43'],
                       param['Re_a^E_44']+(1j)*param['Im_a^E_44'] ]
 
@@ -88,7 +88,7 @@ def CoefficientsFromParams_Lmax4(params):
 
     vsh_B_coeffs = [
 
-                     [-param['Re_a^B_11']+(1j)*param['Im_a^B_1-1'],
+                     [-param['Re_a^B_11']+(1j)*param['Im_a^B_11'],
                       param['Re_a^B_10']+(1j)*0,
                       param['Re_a^B_11']+(1j)*param['Im_a^B_11'] ]
 
@@ -98,17 +98,7 @@ def CoefficientsFromParams_Lmax4(params):
                       -param['Re_a^B_21']+(1j)*param['Im_a^B_21'],
                       param['Re_a^B_20']+(1j)*0,
                       param['Re_a^B_21']+(1j)*param['Im_a^B_21'],
-                      param['Re_a^B_2-1']+(1j)*param['Im_a^B_2-1'] ]
-
-                     ,
-
-                     [-param['Re_a^B_33']+(1j)*param['Im_a^B_33'],
-                      param['Re_a^B_32']-(1j)*param['Im_a^B_32'],
-                      -param['Re_a^B_31']+(1j)*param['Im_a^B_31'],
-                      param['Re_a^B_30']+(1j)*0,
-                      param['Re_a^B_31']+(1j)*param['Im_a^B_31'],
-                      param['Re_a^B_32']+(1j)*param['Im_a^B_32'],
-                      param['Re_a^B_33']+(1j)*param['Im_a^B_33'] ]
+                      param['Re_a^B_21']+(1j)*param['Im_a^B_21'] ]
 
                      ,
 
@@ -128,7 +118,7 @@ def CoefficientsFromParams_Lmax4(params):
                       -param['Re_a^B_41']+(1j)*param['Im_a^B_41'],
                       param['Re_a^B_40']+(1j)*0,
                       param['Re_a^B_41']+(1j)*param['Im_a^B_41'],
-                      param['Re_a^B_42']+(1j)*param['Im_a^B_12'],
+                      param['Re_a^B_42']+(1j)*param['Im_a^B_42'],
                       param['Re_a^B_43']+(1j)*param['Im_a^B_43'],
                       param['Re_a^B_44']+(1j)*param['Im_a^B_44'] ]
 
