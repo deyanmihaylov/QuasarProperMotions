@@ -8,6 +8,8 @@ class AstrometricDataframe:
         self.positions = numpy.array ([])
         self.positions_coord_system = ""
 
+        self.positions_Cartesian = numpy.array ([])
+        
         self.positions_err = numpy.array ([])
 
         self.proper_motions = numpy.array ([])
@@ -99,7 +101,8 @@ def import_Gaia_data (path_to_Gaia_data):
     new_dataframe.proper_motions_err_corr = dataset.as_matrix ( columns = [ 'pmra_pmdec_corr' ] )
     
     
-    
+    ra = dataset.as_matrix ( columns = [ 'ra' ] )
+    dec = dataset.as_matrix ( columns = [ 'dec' ] )
     raerr = dataset.as_matrix ( columns = [ 'pmra_error' ] )
     decerr = dataset.as_matrix ( columns = [ 'pmra_error' ] )
     corr = dataset.as_matrix ( columns = [ 'pmra_error' ] )
@@ -110,6 +113,11 @@ def import_Gaia_data (path_to_Gaia_data):
          [-(corr[i][0]/(decerr[i][0]*raerr[i][0]-decerr[i][0]*raerr[i][0]*corr[i][0]**2)), 1/(decerr[i][0]**2-corr[i][0]**2*decerr[i][0]**2)]]
         
                                                 for i in range(len(raerr))])
+    
+    new_dataframe.positions_Cartesian = numpy.array([ 
+                                                        utils.geographic_to_Cartesian ([ra[i][0], dec[i][0]])
+                                            for i in range(len(raerr))])
+      
     
     return new_dataframe
 
