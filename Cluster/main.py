@@ -107,7 +107,7 @@ class VSHmodel(cpnest.model.Model):
         
         vsh_E_coeffs, vsh_B_coeffs = mapping(params)        
         model_pm = generate_model(vsh_E_coeffs, vsh_B_coeffs, data.positions)
-        Rvals = R_values(data.proper_motions, data.proper_motions_err, data.proper_motions_err_corr , model_pm)
+        Rvals = R_values(data.proper_motions, data.inv_covs , model_pm)
         Rvals = np.maximum(Rvals, tol)
         log_likelihood = np.sum( logLfunc( Rvals ) )
         
