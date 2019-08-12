@@ -86,6 +86,17 @@ def generate_model ( vsh_E_coeffs , vsh_B_coeffs , positions ):
     v_Q = numpy.real ( numpy.add ( numpy.array ( v_E ) , numpy.array ( v_B ) ) )
         
     return tangent_Cartesian_to_geographic ( positions_Cartesian , v_Q )
+
+def generate_model_fast ( vsh_E_coeffs , vsh_B_coeffs , positions_Cartesian ):
+    lmax = min ( len( vsh_E_coeffs ) , len( vsh_B_coeffs ) )
+
+    v_E = numpy.sum ( [ numpy.sum ( [ vsh_E_coeffs[ l-1 ][ m+l ] * VectorSphericalHarmonicE ( l , m , positions_Cartesian ) for m in range ( -l , l+1 ) ] , axis = 0 ) for l in range ( 1 , lmax + 1 ) ] , axis = 0 )
+    
+    v_B = numpy.sum ( [ numpy.sum ( [ vsh_B_coeffs[ l-1 ][ m+l ] * VectorSphericalHarmonicB ( l , m , positions_Cartesian ) for m in range ( -l , l+1 ) ] , axis = 0 ) for l in range ( 1 , lmax + 1 ) ] , axis = 0 )
+    
+    v_Q = numpy.real ( numpy.add ( numpy.array ( v_E ) , numpy.array ( v_B ) ) )
+        
+    return tangent_Cartesian_to_geographic ( positions_Cartesian , v_Q )
     
     
     
