@@ -108,6 +108,7 @@ class VSHmodel(cpnest.model.Model):
                         self.bounds += [[-self.prior_bound_aQlm, self.prior_bound_aQlm]]
         print(self.names)
 
+
     def log_likelihood(self, params):
         
         vsh_E_coeffs, vsh_B_coeffs = mapping(params)        
