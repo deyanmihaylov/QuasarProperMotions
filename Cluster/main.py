@@ -2,6 +2,8 @@ import argparse
 
 import numpy as np
 
+import time
+
 import os
 
 import cpnest
@@ -74,6 +76,7 @@ elif Lmax==4:
 else:
     from MappingTo_aQlm import CoefficientsFromParams_General as mapping
     
+
     
     
 
@@ -112,6 +115,12 @@ class VSHmodel(cpnest.model.Model):
         Rvals = R_values(data.proper_motions, data.proper_motions_invcov , model_pm)
         Rvals = np.maximum(Rvals, tol)
         log_likelihood = np.sum( logLfunc( Rvals ) )
+
+        #step1: 1.5020370483398438e-05s
+        #step2: 10.571332931518555s
+        #step3: 0.02649402618408203s
+        #step4: 0.002557992935180664s
+        #step5: 0.009118080139160156s
         
         return log_likelihood
     
