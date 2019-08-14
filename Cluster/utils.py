@@ -115,9 +115,9 @@ def R_values ( pm , invcovs , model ):
     
     M = pm - model
     
-    R_values = numpy.einsum ( '...i,...ij,...j->...' , M , invcovs , M ) 
+    Rsq_values = numpy.einsum ( '...i,...ij,...j->...' , M , invcovs , M ) 
         
-    return R_values
+    return numpy.sqrt(Rsq_values)
 
 def compute_log_likelihood ( R_values ):
 
