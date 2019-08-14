@@ -80,6 +80,9 @@ def generate_model ( coeffs , VSH_bank , Lmax):
                         for m in range ( 1 , l + 1 ) ] , axis=0 )
                     for l in range ( 1 , Lmax + 1 ) ] , axis=0 )
                 for Q in [ 'E' , 'B' ] ] , axis=0 )
+    
+    # proposed structure
+    # v_Q = numpy.sum ( [ factor[name]*coeffs[name]*VSH_bank[name] for name in coeffs.keys() ] , axis=0 )
         
     return v_Q
 
