@@ -20,7 +20,7 @@ class AstrometricDataframe:
         
         self.covariance = numpy.array ([])
         
-        self.covarianc_inv = numpy.array ([])
+        self.covariance_inv = numpy.array ([])
         
         self.positions_Cartesian = numpy.array ([])
     

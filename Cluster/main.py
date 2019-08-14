@@ -126,8 +126,8 @@ class VSHmodel(cpnest.model.Model):
 
     def log_likelihood(self, params):
              
-        model_pm = generate_model(params, VSH_bank)
-        Rvals = R_values(data.proper_motions, data.proper_motions_invcov , model_pm)
+        model_pm = generate_model(params, VSH_bank, Lmax)
+        Rvals = R_values(data.proper_motions, data.covariance_inv , model_pm)
         Rvals = np.maximum(Rvals, tol)
         log_likelihood = np.sum( logLfunc( Rvals ) )
 
