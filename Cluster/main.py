@@ -68,13 +68,7 @@ print("Analysing dataset {0} with Lmax={1}".format(dataset, Lmax))
     
     
     
-    
-if Lmax==1:
-    from MappingTo_aQlm import CoefficientsFromParams_Lmax1 as mapping
-elif Lmax==4:
-    from MappingTo_aQlm import CoefficientsFromParams_Lmax4 as mapping
-else:
-    from MappingTo_aQlm import CoefficientsFromParams_General as mapping
+
     
 
     
@@ -163,7 +157,8 @@ outdir = "CPNestOutput/Lmax_"+str(Lmax)+"_dataset_"+str(dataset)+"/"
 if not os.path.isdir(outdir): os.system('mkdir '+outdir)
 
 nest = cpnest.CPNest(model, output=outdir, nlive=int(args.nlive), 
-                     maxmcmc=int(args.maxmcmc), nthreads=int(args.nthreads), resume=True, verbose=3)
+                     maxmcmc=int(args.maxmcmc), nthreads=int(args.nthreads), 
+                     n_periodic_checkpoint=10, resume=True, verbose=3)
 nest.run()
 
 
