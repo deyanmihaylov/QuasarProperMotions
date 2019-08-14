@@ -4,20 +4,20 @@ import numpy
 from utils import *
 
 class AstrometricDataframe:
+    
     def __init__(self): 
+        
+        # Geographic coord positions and errors
         self.positions = numpy.array ([])
-        self.positions_coord_system = ""
-
-        self.positions_Cartesian = numpy.array ([])
-        
         self.positions_err = numpy.array ([])
+        
+        # Cartesian positions
+        self.positions_Cartesian = numpy.array ([])
 
+        # Geographic coord proper motions and errors
         self.proper_motions = numpy.array ([])
-
         self.proper_motions_err = numpy.array ([])
-        
         self.proper_motions_err_corr = numpy.array ([])
-        
         self.proper_motions_invcov = numpy.array ([])
     
 
