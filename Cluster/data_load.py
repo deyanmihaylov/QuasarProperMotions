@@ -1,12 +1,12 @@
 import pandas
 import numpy
 
+from CoordinateTransformations import *
 from utils import *
 
 class AstrometricDataframe:
     def __init__(self): 
         self.positions = numpy.array ([])
-        self.positions_coord_system = ""
 
         self.positions_Cartesian = numpy.array ([])
         
@@ -18,7 +18,11 @@ class AstrometricDataframe:
         
         self.proper_motions_err_corr = numpy.array ([])
         
-        self.proper_motions_invcov = numpy.array ([])
+        self.covariance = numpy.array ([])
+        
+        self.covarianc_inv = numpy.array ([])
+        
+        self.positions_Cartesian = numpy.array ([])
     
 
 def import_Gaia_data (path_to_Gaia_data):
@@ -90,7 +94,6 @@ def import_Gaia_data (path_to_Gaia_data):
     new_dataframe = AstrometricDataframe()
     
     new_dataframe.positions = dataset.as_matrix ( columns = [ 'ra' , 'dec' ] )
-    new_dataframe.positions_coord_system = "Geographic"
     
     new_dataframe.positions_err = dataset.as_matrix ( columns = [ 'ra_error' , 'dec_error' ] )
     
@@ -104,9 +107,11 @@ def import_Gaia_data (path_to_Gaia_data):
     
     new_dataframe.covariance_inv = numpy.linalg.inv ( new_dataframe.covariance )
     
+    new_dataframe.positions_Cartesian = geographic_to_Cartesian ( new_dataframe.positions )
+    
     return new_dataframe
 
-def generate_scalar_bg (data):
+def generate_scalar_bg ( data ):
     scale = 1.0
     err_scale = 2.0
     
