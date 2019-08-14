@@ -9,7 +9,7 @@ import cpnest.model
 
 from data_load import *
 from utils import *
-benchmarking = True
+benchmarking = False
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--Lmax',    help='the maximum VSH index [default 4]', type=int, default=4)
