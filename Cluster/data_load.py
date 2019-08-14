@@ -100,29 +100,11 @@ def import_Gaia_data (path_to_Gaia_data):
     
     new_dataframe.proper_motions_err_corr = dataset.as_matrix ( columns = [ 'pmra_pmdec_corr' ] )
     
+    new_dataframe.covariance = covariant_matrix ( new_dataframe.proper_motions_err , new_dataframe.proper_motions_err_corr )
     
-    ra = dataset.as_matrix ( columns = [ 'ra' ] )
-    dec = dataset.as_matrix ( columns = [ 'dec' ] )
-    raerr = dataset.as_matrix ( columns = [ 'pmra_error' ] )
-    decerr = dataset.as_matrix ( columns = [ 'pmra_error' ] )
-    corr = dataset.as_matrix ( columns = [ 'pmra_error' ] )
-    
-    new_dataframe.proper_motions_invcov = numpy.array([ 
-                       
-        [[1./(raerr[i][0]**2-corr[i][0]**2*raerr[i][0]*2), -(corr[i][0]/(decerr[i][0]*raerr[i][0]-decerr[i][0]*raerr[i][0]*corr[i][0]**2))],
-         [-(corr[i][0]/(decerr[i][0]*raerr[i][0]-decerr[i][0]*raerr[i][0]*corr[i][0]**2)), 1/(decerr[i][0]**2-corr[i][0]**2*decerr[i][0]**2)]]
-        
-                                                for i in range(len(raerr))])
-    
-    new_dataframe.positions_Cartesian = numpy.array([ 
-                                                        geographic_to_Cartesian ( numpy.array([ra[i][0], dec[i][0]]) )
-                                            for i in range(len(raerr))])
-      
+    new_dataframe.covariance_inv = numpy.linalg.inv ( new_dataframe.covariance )
     
     return new_dataframe
-
-
-
 
 def generate_scalar_bg (data):
     scale = 1.0
