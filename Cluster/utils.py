@@ -71,25 +71,17 @@ def tangent_Cartesian_to_geographic (points , dpoints):
     
     return tangent_vector
 
-def generate_model ( vsh_E_coeffs , vsh_B_coeffs , positions ):
-
-    lmax = min ( len( vsh_E_coeffs ) , len( vsh_B_coeffs ) )
-
-    # (A)
-    positions_Cartesian = geographic_to_Cartesian ( positions ) 
-    
-    v_E = numpy.sum ( [ numpy.sum ( [ vsh_E_coeffs[ l-1 ][ m+l ] * VectorSphericalHarmonicE ( l , m , positions_Cartesian ) for m in range ( -l , l+1 ) ] , axis = 0 ) for l in range ( 1 , lmax + 1 ) ] , axis = 0 )
-    
-    v_B = numpy.sum ( [ numpy.sum ( [ vsh_B_coeffs[ l-1 ][ m+l ] * VectorSphericalHarmonicB ( l , m , positions_Cartesian ) for m in range ( -l , l+1 ) ] , axis = 0 ) for l in range ( 1 , lmax + 1 ) ] , axis = 0 )
-    
-    # (B)
-    numpy.testing.assert_almost_equal(numpy.imag(v_E).sum(), 0.)
-    numpy.testing.assert_almost_equal(numpy.imag(v_B).sum(), 0.)
-    
-    #(C)
-    v_Q = numpy.real ( numpy.add ( numpy.array ( v_E ) , numpy.array ( v_B ) ) )
+def generate_model ( coeffs , VSH_bank ):
+    v_Q = numpy.sum ( [ numpy.sum ( [ 
+                        coeffs['Re_a^' + Q + '_' + str(l) + '0'] * VSH_bank['Re[Y^' + Q + '_' + str(l) + '0]'] 
+                        + 2 * numpy.sum ( [ 
+                        coeffs['Re_a^' + Q + '_'+str(l)+str(m)] * VSH_bank['Re[Y^' + Q + '_' + str(l) + str(m) + ']'] 
+                        - coeffs['Im_a^'+ Q + '_'+str(l)+str(m)] * VSH_bank['Im[Y^' + Q + '_' + str(l) + str(m) + ']'] 
+                        for m in range ( 1 , l + 1 ) ] )
+                    for l in range ( 1 , Lmax + 1 ) ] )
+                for Q in [ 'E' , 'B' ] ] )
         
-    return tangent_Cartesian_to_geographic ( positions_Cartesian , v_Q )
+    return v_Q
 
 
 

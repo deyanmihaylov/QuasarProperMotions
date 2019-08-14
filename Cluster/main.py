@@ -1,10 +1,8 @@
 import argparse
+import time
+import os
 
 import numpy as np
-
-import time
-
-import os
 
 import cpnest
 import cpnest.model
@@ -12,7 +10,6 @@ import cpnest.model
 from data_load import *
 from utils import *
 benchmarking = True
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--Lmax',    help='the maximum VSH index [default 4]', type=int, default=4)
@@ -55,8 +52,26 @@ elif dataset==5:
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
 
-
     
+# Pre-compute VSH at the quasars
+    
+VSH_bank = {}
+
+for l in range ( 1 , Lmax + 1 ):
+    VSH_bank['Re[Y^E_' + str(l) + '0]'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicE ( l , 0 , data.positions_Cartesian ) ) )
+        
+    VSH_bank['Re[Y^B_' + str(l) + '0]'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicB ( l , 0 , data.positions_Cartesian ) ) )
+    
+    for m in range ( 1 , l + 1 ):
+        VSH_bank['Re[Y^E_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicE ( l , m , data.positions_Cartesian ) ) )
+        
+        VSH_bank['Im[Y^E_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.imag ( VectorSphericalHarmonicE ( l , m , data.positions_Cartesian ) ) )
+        
+        VSH_bank['Re[Y^B_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicB ( l , m , data.positions_Cartesian ) ) )
+        
+        VSH_bank['Im[Y^B_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.imag ( VectorSphericalHarmonicB ( l , m , data.positions_Cartesian ) ) )
+
+        
 print("Analysing dataset {0} with Lmax={1}".format(dataset, Lmax))
 
 
