@@ -35,7 +35,8 @@ dataset = int(args.dataset)
 if dataset==1:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)
-    data = generate_scalar_bg (data)
+    VSH_bank = generate_VSH_bank (data , Lmax)
+    generate_scalar_bg (data , Lmax , VSH_bank)
 elif dataset==2:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)
@@ -54,22 +55,6 @@ else:
 
     
 # Pre-compute VSH at the quasars
-    
-VSH_bank = {}
-
-for l in range ( 1 , Lmax + 1 ):
-    VSH_bank['Re[Y^E_' + str(l) + '0]'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicE ( l , 0 , data.positions_Cartesian ) ) )
-        
-    VSH_bank['Re[Y^B_' + str(l) + '0]'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicB ( l , 0 , data.positions_Cartesian ) ) )
-    
-    for m in range ( 1 , l + 1 ):
-        VSH_bank['Re[Y^E_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicE ( l , m , data.positions_Cartesian ) ) )
-        
-        VSH_bank['Im[Y^E_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.imag ( VectorSphericalHarmonicE ( l , m , data.positions_Cartesian ) ) )
-        
-        VSH_bank['Re[Y^B_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicB ( l , m , data.positions_Cartesian ) ) )
-        
-        VSH_bank['Im[Y^B_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.imag ( VectorSphericalHarmonicB ( l , m , data.positions_Cartesian ) ) )
 
         
 print("Analysing dataset {0} with Lmax={1}".format(dataset, Lmax))
@@ -124,9 +109,8 @@ class VSHmodel(cpnest.model.Model):
         print(self.names)
 
 
-    def log_likelihood(self, params):
-             
-        model_pm = generate_model(params, VSH_bank, Lmax)
+    def log_likelihood(self, params):       
+        model_pm = generate_model(params, VSH_bank , Lmax)
         Rvals = R_values(data.proper_motions, data.covariance_inv , model_pm)
         Rvals = np.maximum(Rvals, tol)
         log_likelihood = np.sum( logLfunc( Rvals ) )

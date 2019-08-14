@@ -71,8 +71,7 @@ def tangent_Cartesian_to_geographic (points , dpoints):
     
     return tangent_vector
 
-def generate_model ( coeffs , VSH_bank , Lmax ):  
-
+def generate_model ( coeffs , VSH_bank , Lmax):
     v_Q = numpy.sum ( [ numpy.sum ( [ 
                         coeffs['Re_a^' + Q + '_' + str(l) + '0'] * VSH_bank['Re[Y^' + Q + '_' + str(l) + '0]'] 
                         + 2 * numpy.sum ( [ 
@@ -81,7 +80,7 @@ def generate_model ( coeffs , VSH_bank , Lmax ):
                         for m in range ( 1 , l + 1 ) ] , axis=0 )
                     for l in range ( 1 , Lmax + 1 ) ] , axis=0 )
                 for Q in [ 'E' , 'B' ] ] , axis=0 )
-
+        
     return v_Q
 
 
@@ -112,7 +111,7 @@ def covariant_matrix ( errors , corr ):
 def R_values ( pm , invcovs , model ):
     
     M = pm - model
-
+    
     R_values = numpy.einsum ( '...i,...ij,...j->...' , M , invcovs , M ) 
         
     return R_values

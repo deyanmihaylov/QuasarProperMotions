@@ -111,14 +111,47 @@ def import_Gaia_data (path_to_Gaia_data):
     
     return new_dataframe
 
-def generate_scalar_bg ( data ):
+def generate_VSH_bank (data , Lmax):
+    VSH_bank = {}
+
+    for l in range ( 1 , Lmax + 1 ):
+        VSH_bank['Re[Y^E_' + str(l) + '0]'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicE ( l , 0 , data.positions_Cartesian ) ) )
+
+        VSH_bank['Re[Y^B_' + str(l) + '0]'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicB ( l , 0 , data.positions_Cartesian ) ) )
+
+        for m in range ( 1 , l + 1 ):
+            VSH_bank['Re[Y^E_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicE ( l , m , data.positions_Cartesian ) ) )
+
+            VSH_bank['Im[Y^E_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.imag ( VectorSphericalHarmonicE ( l , m , data.positions_Cartesian ) ) )
+
+            VSH_bank['Re[Y^B_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.real ( VectorSphericalHarmonicB ( l , m , data.positions_Cartesian ) ) )
+
+            VSH_bank['Im[Y^B_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , numpy.imag ( VectorSphericalHarmonicB ( l , m , data.positions_Cartesian ) ) )
+            
+    return VSH_bank
+
+def generate_scalar_bg ( data , Lmax , VSH_bank):
     scale = 1.0
-    err_scale = 2.0
+    err_scale = 1.0
     
-    vsh_E_coeffs = [[0j, 1.0 * scale + 0j, 0j], [0j, 0j, 0j, 0j, 0j]]
-    vsh_B_coeffs = [[0j, 0j, 0j], [0j, 0j, 0j, 0j, 0j]]
+    par = {}
     
-    model_pm = generate_model ( vsh_E_coeffs , vsh_B_coeffs , data.positions )
+    for l in range(1,Lmax+1):
+        for m in range(0, l+1):
+            if m==0:
+                if l==1:
+                    par['Re_a^E_'+str(l)+'0'] = 1.
+                else:
+                    par['Re_a^E_'+str(l)+'0'] = 0.
+                
+                par['Re_a^B_'+str(l)+'0'] = 0.
+            else:
+                par['Re_a^E_'+str(l)+str(m)] = 0.
+                par['Im_a^E_'+str(l)+str(m)] = 0.
+                par['Re_a^B_'+str(l)+str(m)] = 0.
+                par['Im_a^B_'+str(l)+str(m)] = 0.
+    
+    model_pm = generate_model ( par , VSH_bank , Lmax)
     
     data.proper_motions = model_pm
 
