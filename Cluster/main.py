@@ -11,6 +11,9 @@ import numpy as np
 import cpnest
 import cpnest.model
 
+import matplotlib
+matplotlib.use('Agg')
+
 from data_load import *
 from utils import *
 plotting = False
