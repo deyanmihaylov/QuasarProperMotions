@@ -28,17 +28,17 @@ Lmax = int(args.Lmax)
 
 
 # pm data to analyse:
-#  (1) - mock dipole (? stars)
-#  (2) - mock GW quad patter (? stars)
+#  (1) - mock dipole (2843 stars)
+#  (2) - mock GW quad patter (2843 stars)
 #  (3) - real type2 (2843 stars)
 #  (4) - real type3 (489163 stars)
 #  (5) - real type2+type3 (492006 stars)
 dataset = int(args.dataset)
 if dataset==1:
     data = import_Gaia_data("../data/type2.csv")
-    data.positions = deg_to_rad(data.positions)
+    data.positions = deg_to_rad(data.positions) # conversion should be done in import function
     VSH_bank = generate_VSH_bank (data , Lmax)
-    generate_scalar_bg (data , Lmax , VSH_bank, err_scale=5)
+    generate_scalar_bg (data , Lmax , VSH_bank, err_scale=5) # Seperate inject from import
 elif dataset==2:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)
@@ -61,22 +61,9 @@ else:
 
 if plotting: 
     data.plot(self, "fig_dataset{}.png".format(dataset), proper_motions=True, proper_motion_scale=1)
-
-
     
-# Pre-compute VSH at the quasars
-
-        
 print("Analysing dataset {0} with Lmax={1}".format(dataset, Lmax))
 
-
-
-# Change proper motions from mas/yr to rad/s
-#data.proper_motions = data.proper_motions * 1.5362818500441604e-16
-#data.proper_motions_err = data.proper_motions_err * 1.5362818500441604e-16
-        
-   
-    
     
 
 class VSHmodel(cpnest.model.Model):
@@ -86,7 +73,7 @@ class VSHmodel(cpnest.model.Model):
 
     def __init__(self):
 
-        self.prior_bound_aQlm = 2
+        self.prior_bound_aQlm = 4
         self.names = []
         self.bounds = []
         
@@ -105,14 +92,17 @@ class VSHmodel(cpnest.model.Model):
                         self.bounds += [[-self.prior_bound_aQlm, self.prior_bound_aQlm]]
                         self.names += ['Im_a^'+Q+'_'+str(l)+str(m)]
                         self.bounds += [[-self.prior_bound_aQlm, self.prior_bound_aQlm]]
+                        
         print(self.names)
 
 
-    def log_likelihood(self, params):       
+    def log_likelihood(self, params):  
+        
         model_pm = generate_model(params, VSH_bank , Lmax)
         Rvals = R_values(data.proper_motions, data.covariance_inv , model_pm)
         Rvals = np.maximum(Rvals, tol)
         log_likelihood = np.sum( logLfunc( Rvals ) )
+        
         return log_likelihood
     
 
@@ -121,9 +111,7 @@ class VSHmodel(cpnest.model.Model):
 model = VSHmodel()
 
 
-
-
-
+# This can be removed
 if benchmarking:
     import time
     par = {}
@@ -142,8 +130,6 @@ if benchmarking:
     t_end = time.time()
     print(t_end-t_start, ll)
     exit(-1)
-
-
 
 
 # run nested sampling 
