@@ -34,7 +34,7 @@ def Cartesian_to_geographic_vector (points , dpoints):
     dy = dpoints[... , 1]
     dz = dpoints[... , 2]
     
-    tangent_vector[... , 0] = dz / ( numpy.sqrt ( 1 - z ** 2 ) )
-    tangent_vector[... , 1] = ( x * dy - y * dx ) / ( x ** 2 + y ** 2 )
+    tangent_vector[... , 0] = ( x * dy - y * dx ) / ( x ** 2 + y ** 2 )
+    tangent_vector[... , 1] = dz / ( numpy.sqrt ( 1 - z ** 2 ) )
     
     return tangent_vector
