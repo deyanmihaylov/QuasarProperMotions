@@ -9,6 +9,8 @@ import cpnest.model
 
 from data_load import *
 from utils import *
+
+plotting = True
 benchmarking = True
 
 parser = argparse.ArgumentParser()
@@ -50,9 +52,13 @@ elif dataset==4:
     data.positions = deg_to_rad(data.positions)
 elif dataset==5:
     data = import_Gaia_data("../data/type2and3.csv")
-    data.positions = deg_to_rad(data.positions)
+    data.positions = deg_to_rad(data.positions)\
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
+
+if plotting: 
+    data.plot(self, "fig_dataset{}.png".format(dataset), proper_motions=True, proper_motion_scale=1)
+
 
     
 # Pre-compute VSH at the quasars
