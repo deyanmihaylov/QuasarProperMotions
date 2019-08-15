@@ -158,7 +158,7 @@ if not os.path.isdir(outdir): os.system('mkdir '+outdir)
 
 nest = cpnest.CPNest(model, output=outdir, nlive=int(args.nlive), 
                      maxmcmc=int(args.maxmcmc), nthreads=int(args.nthreads), 
-                     n_periodic_checkpoint=10, resume=True, verbose=3)
+                     resume=True, verbose=3) #, n_periodic_checkpoint=1000)
 nest.run()
 
 
