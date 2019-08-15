@@ -35,21 +35,17 @@ Lmax = int(args.Lmax)
 dataset = int(args.dataset)
 if dataset==1:
     data = import_Gaia_data("../data/type2.csv")
-    data.positions = deg_to_rad(data.positions) # conversion should be done in import function
     VSH_bank = generate_VSH_bank (data , Lmax)
     generate_scalar_bg (data , Lmax , VSH_bank, err_scale=5) # Seperate inject from import
 elif dataset==2:
     data = import_Gaia_data("../data/type2.csv")
-    data.positions = deg_to_rad(data.positions)
     VSH_bank = generate_VSH_bank (data , Lmax)
     data = generate_gr_bg (data , Lmax , VSH_bank)
 elif dataset==3:
     data = import_Gaia_data("../data/type2.csv")
-    data.positions = deg_to_rad(data.positions)
     VSH_bank = generate_VSH_bank (data , Lmax)
 elif dataset==4:
     data = import_Gaia_data("../data/type3.csv")
-    data.positions = deg_to_rad(data.positions)
     VSH_bank = generate_VSH_bank (data , Lmax)
 elif dataset==5:
     data = import_Gaia_data("../data/type2and3.csv")
