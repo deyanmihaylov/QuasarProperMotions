@@ -2,6 +2,10 @@ import argparse
 import time
 import os
 
+import corner
+
+import csv
+
 import numpy as np
 
 import cpnest
@@ -139,3 +143,18 @@ nest.run()
 # post processing
 nest.get_nested_samples()
 nest.get_posterior_samples()
+
+# custom corner plot
+if os.path.isfile(outdir+'injectedC.csv'):
+    
+    header_file = outdir+'header.txt'
+    with open(header_file,'r') as f:
+        names = f.readline.split()[0:-1]
+        
+    truths_file = outdir+'injectedC.csv'
+    with csv.reader(truths_file)
+    
+    data_to_plot = np.loadtxt(outdir+'posterior.dat')[:,0:-2]
+    
+    corner.corner(data_to_plot, truths=truths, labels=names)
+    
