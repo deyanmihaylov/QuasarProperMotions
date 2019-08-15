@@ -10,7 +10,7 @@ import cpnest.model
 from data_load import *
 from utils import *
 
-benchmarking = True
+benchmarking = False
 plotting = True
 
 parser = argparse.ArgumentParser()
@@ -111,23 +111,16 @@ class VSHmodel(cpnest.model.Model):
 
 
     def log_likelihood(self, params):       
+
         model_pm = generate_model(params, VSH_bank , Lmax)
         Rvals = R_values(data.proper_motions, data.covariance_inv , model_pm)
         Rvals = np.maximum(Rvals, tol)
         log_likelihood = np.sum( logLfunc( Rvals ) )
-
-        #step1: 1.5020370483398438e-05s
-        #step2: 10.571332931518555s
-        #step3: 0.02649402618408203s
-        #step4: 0.002557992935180664s
-        #step5: 0.009118080139160156s
         
         return log_likelihood
     
-    
-        # Desired code - precomputed cov and invcov matrices
-        # Rvals = R_values(data.proper_motions, data.inv_covs, model_pm)
-        
+
+
 
 
 # set up model and log-likelihood
