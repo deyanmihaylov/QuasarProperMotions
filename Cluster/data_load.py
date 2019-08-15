@@ -4,6 +4,8 @@ import numpy
 from CoordinateTransformations import *
 from utils import *
 
+import matplotlib.pyplot as plt
+
 class AstrometricDataframe:
     def __init__(self): 
         self.positions = numpy.array ([])
@@ -25,36 +27,34 @@ class AstrometricDataframe:
         self.positions_Cartesian = numpy.array ([])
         
         
-        def plot(self, proper_motions=False, outfile=None, projection='mollweide', proper_motion_scale=1):
-            """                                                                                                                                                                                                   
-            method to plot positions (and optionally pms) of QSOs in dataframe                                                                                                                        
-            """
+    def plot(self, outfile, proper_motions=False, projection='mollweide', proper_motion_scale=1):
+        """
+        method to plot positions (and optionally pms) of QSOs in dataframe                                                                                                                        
+        """
 
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection=projection)
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection=projection)
 
-            ra = self.positions[:,0]
-            ra = np.array([ x-360 if x>180 else x for x in ra]) * (np.pi/180.)
-            dec = self.positions[:,1] * (np.pi/180.)
+        ra = numpy.array([ x-2*numpy.pi if x>numpy.pi else x for x in self.positions[:,0]])
+        dec = self.positions[:,1]
 
-            # plot the positions                                                                                                                                                                                  
-            ax.plot(ra, dec, 'o', color='r', markersize=1, alpha=0.8)
+        # plot the positions 
+        ax.plot(ra, dec, 'o', color='r', markersize=1, alpha=0.8)
 
-            # plot the proper motions                                                                                                                                                                             
-            if proper_motions:
-                Nstars = len(self.positions)
-                for i in range(Nstars):
-                    Ra = [ ra[i] - proper_motion_scale*self.proper_motions[i,0],
-                           ra[i] + proper_motion_scale*self.proper_motions[i,0] ]
-                    Dec = [ dec[i] - proper_motion_scale*self.proper_motions[i,1],
-                            dec[i] + proper_motion_scale*self.proper_motions[i,1] ]
-                    ax.plot(Ra, Dec, '-', color='r', alpha=0.6)
+        # plot the proper motions
+        if proper_motions:
+            Nstars = len(self.positions)
+            for i in range(Nstars):
+                Ra = [ ra[i] - proper_motion_scale*self.proper_motions[i,0],
+                       ra[i] + proper_motion_scale*self.proper_motions[i,0] ]
+                Dec = [ dec[i] - proper_motion_scale*self.proper_motions[i,1],
+                        dec[i] + proper_motion_scale*self.proper_motions[i,1] ]
+                ax.plot(Ra, Dec, '-', color='r', alpha=0.6)
                     
-            # plot grid lines 
-            plt.grid(True)
-            
-            if outfile is not None:
-                plt.savefig(outfile)
+        # plot grid lines 
+        plt.grid(True)
+    
+        plt.savefig(outfile)
       
       
      

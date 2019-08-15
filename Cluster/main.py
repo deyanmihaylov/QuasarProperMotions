@@ -9,7 +9,9 @@ import cpnest.model
 
 from data_load import *
 from utils import *
-benchmarking = False
+
+benchmarking = True
+plotting = True
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--Lmax',    help='the maximum VSH index [default 4]', type=int, default=4)
@@ -37,19 +39,24 @@ if dataset==1:
     data.positions = deg_to_rad(data.positions)
     VSH_bank = generate_VSH_bank (data , Lmax)
     generate_scalar_bg (data , Lmax , VSH_bank)
+    if plotting: data.plot(proper_motions=True, outfile="fig_dataset{}.png".format(dataset), proper_motion_scale=1)
 elif dataset==2:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)
     data = generate_gr_bg (data)
+    if plotting: data.plot(proper_motions=False, outfile="fig_dataset{}.png".format(dataset), proper_motion_scale=1)
 elif dataset==3:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)
+    if plotting: data.plot(proper_motions=False, outfile="fig_dataset{}.png".format(dataset), proper_motion_scale=1)
 elif dataset==4:
     data = import_Gaia_data("../data/type3.csv")
     data.positions = deg_to_rad(data.positions)
+    if plotting: data.plot(proper_motions=False, outfile="fig_dataset{}.png".format(dataset), proper_motion_scale=1)
 elif dataset==5:
     data = import_Gaia_data("../data/type2and3.csv")
     data.positions = deg_to_rad(data.positions)
+    if plotting: data.plot(proper_motions=False, outfile="fig_dataset{}.png".format(dataset), proper_motion_scale=1)
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
 
