@@ -41,7 +41,7 @@ elif dataset==2:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)
     VSH_bank = generate_VSH_bank (data , Lmax)
-    data = generate_gr_bg (data)
+    data = generate_gr_bg (data , Lmax , VSH_bank)
 elif dataset==3:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)

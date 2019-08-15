@@ -209,13 +209,13 @@ def generate_gr_bg ( data , Lmax , VSH_bank ):
     for l in range(1,Lmax+1):
         for m in range(0, l+1):
             if m==0:
-                par['Re_a^E_'+str(l)+'0'] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
-                par['Re_a^B_'+str(l)+'0'] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
+                par['Re_a^E_'+str(l)+'0'] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])))
+                par['Re_a^B_'+str(l)+'0'] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])))
             else:
-                par['Re_a^E_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
-                par['Im_a^E_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
-                par['Re_a^B_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
-                par['Im_a^B_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
+                par['Re_a^E_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])))
+                par['Im_a^E_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])))
+                par['Re_a^B_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])))
+                par['Im_a^B_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])))
 
     model_pm = generate_model ( par , VSH_bank , Lmax)
     
