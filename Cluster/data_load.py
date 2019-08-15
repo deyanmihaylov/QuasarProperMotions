@@ -23,6 +23,41 @@ class AstrometricDataframe:
         self.covariance_inv = numpy.array ([])
         
         self.positions_Cartesian = numpy.array ([])
+        
+        
+        def plot(self, proper_motions=False, outfile=None, projection='mollweide', proper_motion_scale=1):
+            """                                                                                                                                                                                                   
+            method to plot positions (and optionally pms) of QSOs in dataframe                                                                                                                        
+            """
+
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection=projection)
+
+            ra = self.positions[:,0]
+            ra = np.array([ x-360 if x>180 else x for x in ra]) * (np.pi/180.)
+            dec = self.positions[:,1] * (np.pi/180.)
+
+            # plot the positions                                                                                                                                                                                  
+            ax.plot(ra, dec, 'o', color='r', markersize=1, alpha=0.8)
+
+            # plot the proper motions                                                                                                                                                                             
+            if proper_motions:
+                Nstars = len(self.positions)
+                for i in range(Nstars):
+                    Ra = [ ra[i] - proper_motion_scale*self.proper_motions[i,0],
+                           ra[i] + proper_motion_scale*self.proper_motions[i,0] ]
+                    Dec = [ dec[i] - proper_motion_scale*self.proper_motions[i,1],
+                            dec[i] + proper_motion_scale*self.proper_motions[i,1] ]
+                    ax.plot(Ra, Dec, '-', color='r', alpha=0.6)
+                    
+            # plot grid lines 
+            plt.grid(True)
+            
+            if outfile is not None:
+                plt.savefig(outfile)
+      
+      
+     
     
 
 def import_Gaia_data (path_to_Gaia_data):
