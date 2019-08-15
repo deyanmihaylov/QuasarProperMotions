@@ -9,9 +9,7 @@ import cpnest.model
 
 from data_load import *
 from utils import *
-
-benchmarking = False
-plotting = True
+benchmarking = True
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--Lmax',    help='the maximum VSH index [default 4]', type=int, default=4)
@@ -39,24 +37,20 @@ if dataset==1:
     data.positions = deg_to_rad(data.positions)
     VSH_bank = generate_VSH_bank (data , Lmax)
     generate_scalar_bg (data , Lmax , VSH_bank)
-    if plotting: data.plot(proper_motions=True, outfile="fig_dataset{}.png".format(dataset), proper_motion_scale=1)
 elif dataset==2:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)
+    VSH_bank = generate_VSH_bank (data , Lmax)
     data = generate_gr_bg (data)
-    if plotting: data.plot(proper_motions=False, outfile="fig_dataset{}.png".format(dataset), proper_motion_scale=1)
 elif dataset==3:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)
-    if plotting: data.plot(proper_motions=False, outfile="fig_dataset{}.png".format(dataset), proper_motion_scale=1)
 elif dataset==4:
     data = import_Gaia_data("../data/type3.csv")
     data.positions = deg_to_rad(data.positions)
-    if plotting: data.plot(proper_motions=False, outfile="fig_dataset{}.png".format(dataset), proper_motion_scale=1)
 elif dataset==5:
     data = import_Gaia_data("../data/type2and3.csv")
     data.positions = deg_to_rad(data.positions)
-    if plotting: data.plot(proper_motions=False, outfile="fig_dataset{}.png".format(dataset), proper_motion_scale=1)
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
 
@@ -75,7 +69,13 @@ print("Analysing dataset {0} with Lmax={1}".format(dataset, Lmax))
     
     
     
-
+    
+if Lmax==1:
+    from MappingTo_aQlm import CoefficientsFromParams_Lmax1 as mapping
+elif Lmax==4:
+    from MappingTo_aQlm import CoefficientsFromParams_Lmax4 as mapping
+else:
+    from MappingTo_aQlm import CoefficientsFromParams_General as mapping
     
 
     
@@ -111,16 +111,23 @@ class VSHmodel(cpnest.model.Model):
 
 
     def log_likelihood(self, params):       
-
         model_pm = generate_model(params, VSH_bank , Lmax)
         Rvals = R_values(data.proper_motions, data.covariance_inv , model_pm)
         Rvals = np.maximum(Rvals, tol)
         log_likelihood = np.sum( logLfunc( Rvals ) )
+
+        #step1: 1.5020370483398438e-05s
+        #step2: 10.571332931518555s
+        #step3: 0.02649402618408203s
+        #step4: 0.002557992935180664s
+        #step5: 0.009118080139160156s
         
         return log_likelihood
     
-
-
+    
+        # Desired code - precomputed cov and invcov matrices
+        # Rvals = R_values(data.proper_motions, data.inv_covs, model_pm)
+        
 
 
 # set up model and log-likelihood
@@ -157,8 +164,7 @@ outdir = "CPNestOutput/Lmax_"+str(Lmax)+"_dataset_"+str(dataset)+"/"
 if not os.path.isdir(outdir): os.system('mkdir '+outdir)
 
 nest = cpnest.CPNest(model, output=outdir, nlive=int(args.nlive), 
-                     maxmcmc=int(args.maxmcmc), nthreads=int(args.nthreads), 
-                     resume=True, verbose=3) #, n_periodic_checkpoint=1000)
+                     maxmcmc=int(args.maxmcmc), nthreads=int(args.nthreads), resume=True, verbose=3)
 nest.run()
 
 

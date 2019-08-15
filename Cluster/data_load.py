@@ -4,6 +4,8 @@ import numpy
 from CoordinateTransformations import *
 from utils import *
 
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 class AstrometricDataframe:
@@ -165,7 +167,7 @@ def generate_VSH_bank (data , Lmax):
             
     return VSH_bank
 
-def generate_scalar_bg ( data , Lmax , VSH_bank):
+def generate_scalar_bg ( data , Lmax , VSH_bank ):
     scale = 1.0
     err_scale = 1.0
     
@@ -186,46 +188,46 @@ def generate_scalar_bg ( data , Lmax , VSH_bank):
                 par['Re_a^B_'+str(l)+str(m)] = 0.
                 par['Im_a^B_'+str(l)+str(m)] = 0.
     
+    model_pm = generate_model ( par , VSH_bank , Lmax )
+    
+    data.proper_motions = model_pm
+
+    data.proper_motions_err[:,0] = err_scale * numpy.reciprocal(numpy.cos(data.positions[:,1]))
+    data.proper_motions_err[:,1] = err_scale * numpy.ones ( len(data.proper_motions_err) , dtype=None, order='C' )
+    data.proper_motions_err_corr = numpy.zeros(data.proper_motions_err_corr.shape, dtype=None, order='C')
+    data.covariance = covariant_matrix ( data.proper_motions_err , data.proper_motions_err_corr )
+    data.covariance_inv = numpy.linalg.inv ( data.covariance )
+    
+    return data
+
+def generate_gr_bg ( data , Lmax , VSH_bank ):
+    scale = 1.0
+    err_scale = 1.0
+    
+    variance = numpy.array([ 0.0 , 0.3490658503988659 , 0.03490658503988659 , 0.006981317007977318 , 0.0019946620022792336 ])
+    
+    par = {}
+    
+    for l in range(1,Lmax+1):
+        for m in range(0, l+1):
+            if m==0:
+                par['Re_a^E_'+str(l)+'0'] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
+                par['Re_a^B_'+str(l)+'0'] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
+            else:
+                par['Re_a^E_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
+                par['Im_a^E_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
+                par['Re_a^B_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
+                par['Im_a^B_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))
+
     model_pm = generate_model ( par , VSH_bank , Lmax)
     
     data.proper_motions = model_pm
 
-    data.proper_motions_err = err_scale * numpy.ones(data.proper_motions_err.shape, dtype=None, order='C')
+    data.proper_motions_err[:,0] = err_scale * numpy.reciprocal(numpy.cos(data.positions[:,1]))
+    data.proper_motions_err[:,1] = err_scale * numpy.ones ( len(data.proper_motions_err) , dtype=None, order='C' )
     data.proper_motions_err_corr = numpy.zeros(data.proper_motions_err_corr.shape, dtype=None, order='C')
-    
-    return data
-
-def generate_gr_bg (data):
-    scale = 1.0
-
-    variance = numpy.array([ 0.0 , 0.3490658503988659 , 0.03490658503988659 , 0.006981317007977318 , 0.0019946620022792336 ])
-
-    vsh_E_coeffs = [ [ scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])) + (1j) * numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))) for m in range (-l,l+1)] for l in range (1,len(variance)+1)]
-
-    for l , l_coeffs in enumerate(vsh_E_coeffs):
-        L = l+1
-        for m in range (-L, L+1):
-            if m < 0:
-                l_coeffs[m+L] = ((-1)**(-m)) * numpy.conj (l_coeffs[-m+L])
-            elif m == 0:
-                l_coeffs[L] = numpy.real(l_coeffs[L]) + (1j) * 0.0
-                
-    vsh_B_coeffs = [ [ scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])) + (1j) * numpy.random.normal(0.0 , numpy.sqrt(variance[l-1]))) for m in range (-l,l+1)] for l in range (1,len(variance)+1)]
-
-    for l , l_coeffs in enumerate(vsh_B_coeffs):
-        L = l+1
-        for m in range (-L,L+1):
-            if m < 0:
-                l_coeffs[m+L] = ((-1)**(-m)) * numpy.conj (l_coeffs[-m+L])
-            elif m == 0:
-                l_coeffs[L] = numpy.real(l_coeffs[L]) + (1j) * 0.0
-
-    model_pm = generate_model ( vsh_E_coeffs , vsh_B_coeffs , data.positions )
-    
-    data.proper_motions = model_pm
-
-    data.proper_motions_err = scale * numpy.ones(data.proper_motions_err.shape, dtype=None, order='C')
-    data.proper_motions_err_corr = numpy.zeros(data.proper_motions_err_corr.shape, dtype=None, order='C')
+    data.covariance = covariant_matrix ( data.proper_motions_err , data.proper_motions_err_corr )
+    data.covariance_inv = numpy.linalg.inv ( data.covariance )
     
     return data
     
