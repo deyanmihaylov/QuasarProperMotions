@@ -174,25 +174,23 @@ def generate_scalar_bg ( data , Lmax , VSH_bank , scale=1., err_scale=1.0):
     for l in range(1,Lmax+1):
         for m in range(0, l+1):
             if m==0:
-                if l==1:
-                    par['Re_a^E_'+str(l)+'0'] = 1.
-                else:
-                    par['Re_a^E_'+str(l)+'0'] = 0.
-                
+                par['Re_a^E_'+str(l)+'0'] = 0.
                 par['Re_a^B_'+str(l)+'0'] = 0.
             else:
                 par['Re_a^E_'+str(l)+str(m)] = 0.
                 par['Im_a^E_'+str(l)+str(m)] = 0.
                 par['Re_a^B_'+str(l)+str(m)] = 0.
                 par['Im_a^B_'+str(l)+str(m)] = 0.
+                
+    par['Re_a^E_10'] = 1.
     
     model_pm = generate_model ( par , VSH_bank , Lmax )
     
     data.proper_motions = model_pm
 
     data.proper_motions_err[:,0] = err_scale * numpy.reciprocal(numpy.cos(data.positions[:,1]))
-    data.proper_motions_err[:,1] = err_scale * numpy.ones ( len(data.proper_motions_err) , dtype=None, order='C' )
-    data.proper_motions_err_corr = numpy.zeros(data.proper_motions_err_corr.shape, dtype=None, order='C')
+    data.proper_motions_err[:,1] = err_scale * numpy.ones ( len(data.proper_motions_err) , dtype=None )
+    data.proper_motions_err_corr = numpy.zeros(data.proper_motions_err_corr.shape, dtype=None )
     data.covariance = covariant_matrix ( data.proper_motions_err , data.proper_motions_err_corr )
     data.covariance_inv = numpy.linalg.inv ( data.covariance )
     
@@ -222,8 +220,8 @@ def generate_gr_bg ( data , Lmax , VSH_bank ):
     data.proper_motions = model_pm
 
     data.proper_motions_err[:,0] = err_scale * numpy.reciprocal(numpy.cos(data.positions[:,1]))
-    data.proper_motions_err[:,1] = err_scale * numpy.ones ( len(data.proper_motions_err) , dtype=None, order='C' )
-    data.proper_motions_err_corr = numpy.zeros(data.proper_motions_err_corr.shape, dtype=None, order='C')
+    data.proper_motions_err[:,1] = err_scale * numpy.ones ( len(data.proper_motions_err) , dtype=None )
+    data.proper_motions_err_corr = numpy.zeros(data.proper_motions_err_corr.shape, dtype=None)
     data.covariance = covariant_matrix ( data.proper_motions_err , data.proper_motions_err_corr )
     data.covariance_inv = numpy.linalg.inv ( data.covariance )
     
