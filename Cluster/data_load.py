@@ -167,10 +167,8 @@ def generate_VSH_bank (data , Lmax):
             
     return VSH_bank
 
-def generate_scalar_bg ( data , Lmax , VSH_bank ):
-    scale = 1.0
-    err_scale = 1.0
-    
+def generate_scalar_bg ( data , Lmax , VSH_bank , scale=1., err_scale=1.0):
+
     par = {}
     
     for l in range(1,Lmax+1):

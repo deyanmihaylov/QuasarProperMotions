@@ -36,7 +36,7 @@ if dataset==1:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)
     VSH_bank = generate_VSH_bank (data , Lmax)
-    generate_scalar_bg (data , Lmax , VSH_bank)
+    generate_scalar_bg (data , Lmax , VSH_bank, err_scale=5)
 elif dataset==2:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)
@@ -115,19 +115,8 @@ class VSHmodel(cpnest.model.Model):
         Rvals = R_values(data.proper_motions, data.covariance_inv , model_pm)
         Rvals = np.maximum(Rvals, tol)
         log_likelihood = np.sum( logLfunc( Rvals ) )
-
-        #step1: 1.5020370483398438e-05s
-        #step2: 10.571332931518555s
-        #step3: 0.02649402618408203s
-        #step4: 0.002557992935180664s
-        #step5: 0.009118080139160156s
-        
         return log_likelihood
     
-    
-        # Desired code - precomputed cov and invcov matrices
-        # Rvals = R_values(data.proper_motions, data.inv_covs, model_pm)
-        
 
 
 # set up model and log-likelihood
