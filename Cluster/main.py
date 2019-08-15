@@ -36,7 +36,7 @@ dataset = int(args.dataset)
 if dataset==1:
     data = import_Gaia_data("../data/type2.csv")
     VSH_bank = generate_VSH_bank (data , Lmax)
-    generate_scalar_bg (data , Lmax , VSH_bank, err_scale=5) # Seperate inject from import
+    generate_scalar_bg (data , Lmax , VSH_bank, err_scale=10) # Seperate inject from import
 elif dataset==2:
     data = import_Gaia_data("../data/type2.csv")
     VSH_bank = generate_VSH_bank (data , Lmax)
@@ -68,7 +68,7 @@ class VSHmodel(cpnest.model.Model):
 
     def __init__(self):
 
-        self.prior_bound_aQlm = 4
+        self.prior_bound_aQlm = 3
         self.names = []
         self.bounds = []
         
