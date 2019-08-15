@@ -1,5 +1,6 @@
 import pandas
 import numpy
+import csv
 
 from CoordinateTransformations import *
 from utils import *
@@ -184,6 +185,11 @@ def generate_scalar_bg ( data , Lmax , VSH_bank , scale=1., err_scale=1.0):
                 
     par['Re_a^E_10'] = 1.
     
+    w = csv.writer(open("CPNestOutput/Lmax_" + str(Lmax) + "_dataset_1/injectedC.csv", "w"))
+    
+    for key, val in par.items():
+        w.writerow([key, val])
+    
     model_pm = generate_model ( par , VSH_bank , Lmax )
     
     data.proper_motions = model_pm
@@ -214,6 +220,11 @@ def generate_gr_bg ( data , Lmax , VSH_bank ):
                 par['Im_a^E_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])))
                 par['Re_a^B_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])))
                 par['Im_a^B_'+str(l)+str(m)] = scale * (numpy.random.normal(0.0 , numpy.sqrt(variance[l-1])))
+                
+    w = csv.writer(open("CPNestOutput/Lmax_" + str(Lmax) + "_dataset_2/injectedC.csv", "w"))
+    
+    for key, val in par.items():
+        w.writerow([key, val])
 
     model_pm = generate_model ( par , VSH_bank , Lmax)
     
