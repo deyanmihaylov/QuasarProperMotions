@@ -151,10 +151,20 @@ if os.path.isfile(outdir+'injectedC.csv'):
     with open(header_file,'r') as f:
         names = f.readline.split()[0:-1]
         
+    truths = {}
+        
     truths_file = outdir+'injectedC.csv'
-    with csv.reader(truths_file)
+    
+    with open(truths_file , mode='r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+
+        for row in csv_reader:
+            truths [row[0]] = row[1]
+            
+    truths_arr = np.array([truths[name] for name in names])
     
     data_to_plot = np.loadtxt(outdir+'posterior.dat')[:,0:-2]
     
-    corner.corner(data_to_plot, truths=truths, labels=names)
+    corner.corner(data_to_plot, truths=truths_arr, labels=names)
     
+    plt.savefig(outdir+'corner_truths.png')
