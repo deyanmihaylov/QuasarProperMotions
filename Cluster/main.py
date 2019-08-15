@@ -47,12 +47,15 @@ elif dataset==2:
 elif dataset==3:
     data = import_Gaia_data("../data/type2.csv")
     data.positions = deg_to_rad(data.positions)
+    VSH_bank = generate_VSH_bank (data , Lmax)
 elif dataset==4:
     data = import_Gaia_data("../data/type3.csv")
     data.positions = deg_to_rad(data.positions)
+    VSH_bank = generate_VSH_bank (data , Lmax)
 elif dataset==5:
     data = import_Gaia_data("../data/type2and3.csv")
-    data.positions = deg_to_rad(data.positions)\
+    data.positions = deg_to_rad(data.positions)
+    VSH_bank = generate_VSH_bank (data , Lmax)
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
 
@@ -72,18 +75,7 @@ print("Analysing dataset {0} with Lmax={1}".format(dataset, Lmax))
 #data.proper_motions = data.proper_motions * 1.5362818500441604e-16
 #data.proper_motions_err = data.proper_motions_err * 1.5362818500441604e-16
         
-    
-    
-    
-    
-if Lmax==1:
-    from MappingTo_aQlm import CoefficientsFromParams_Lmax1 as mapping
-elif Lmax==4:
-    from MappingTo_aQlm import CoefficientsFromParams_Lmax4 as mapping
-else:
-    from MappingTo_aQlm import CoefficientsFromParams_General as mapping
-    
-
+   
     
     
 
