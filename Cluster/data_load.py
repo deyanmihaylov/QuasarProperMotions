@@ -132,6 +132,7 @@ def import_Gaia_data (path_to_Gaia_data):
     new_dataframe = AstrometricDataframe()
     
     new_dataframe.positions = dataset.as_matrix ( columns = [ 'ra' , 'dec' ] )
+    new_dataframe.positions = deg_to_rad(new_dataframe.positions)
     
     new_dataframe.positions_err = dataset.as_matrix ( columns = [ 'ra_error' , 'dec_error' ] )
     
