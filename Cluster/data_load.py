@@ -58,12 +58,12 @@ class AstrometricDataframe:
         plt.grid(True)
     
         plt.savefig(outfile)
-      
-      
-     
-    
-
+        
+        
 def import_Gaia_data (path_to_Gaia_data):
+    def deg_to_rad ( degree_vals ):
+        return numpy.deg2rad ( degree_vals )
+    
     dataset = pandas.read_csv(path_to_Gaia_data,
                               sep=',',
                               delimiter=None,
@@ -132,7 +132,7 @@ def import_Gaia_data (path_to_Gaia_data):
     new_dataframe = AstrometricDataframe()
     
     new_dataframe.positions = dataset.as_matrix ( columns = [ 'ra' , 'dec' ] )
-    new_dataframe.positions = deg_to_rad(new_dataframe.positions)
+    new_dataframe.positions = deg_to_rad ( new_dataframe.positions )
     
     new_dataframe.positions_err = dataset.as_matrix ( columns = [ 'ra_error' , 'dec_error' ] )
     
