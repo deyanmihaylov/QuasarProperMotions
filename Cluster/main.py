@@ -26,7 +26,7 @@ args = parser.parse_args()
 
 
 log1over2 = np.log(0.5)
-tol = 1.0e-3 # This is the minimum residual considered by the log_likelihood
+tol = 1.0e-5 # This is the minimum residual considered by the log_likelihood
 Lmax = int(args.Lmax)
 
 
@@ -40,7 +40,7 @@ dataset = int(args.dataset)
 if dataset==1:
     data = import_Gaia_data("../data/type2.csv")
     VSH_bank = generate_VSH_bank (data , Lmax)
-    generate_scalar_bg (data , Lmax , VSH_bank, err_scale=10) # Seperate inject from import
+    data = generate_scalar_bg (data , Lmax , VSH_bank, err_scale=10) # Seperate inject from import
 elif dataset==2:
     data = import_Gaia_data("../data/type2.csv")
     VSH_bank = generate_VSH_bank (data , Lmax)
@@ -53,7 +53,6 @@ elif dataset==4:
     VSH_bank = generate_VSH_bank (data , Lmax)
 elif dataset==5:
     data = import_Gaia_data("../data/type2and3.csv")
-    data.positions = deg_to_rad(data.positions)
     VSH_bank = generate_VSH_bank (data , Lmax)
 else:
     raise ValueError('Unknown dataset {}'.format(dataset))
@@ -61,7 +60,7 @@ else:
 if plotting: 
     data.plot(self, "fig_dataset{}.png".format(dataset), proper_motions=True, proper_motion_scale=1)
     
-print("Analysing dataset {0} with Lmax={1}".format(dataset, Lmax))
+print("Analysing dataset {0} with Lmax={1} using nthreads={2}".format(dataset, Lmax, args.nthreads))
 
     
 
@@ -72,7 +71,7 @@ class VSHmodel(cpnest.model.Model):
 
     def __init__(self):
 
-        self.prior_bound_aQlm = 3
+        self.prior_bound_aQlm = 0.06
         self.names = []
         self.bounds = []
         
@@ -132,11 +131,12 @@ if benchmarking:
 
 
 # run nested sampling 
-outdir = "CPNestOutput/Lmax_"+str(Lmax)+"_dataset_"+str(dataset)+"/"
+outdir = "CPNestOutput_NarrowPrior/Lmax_"+str(Lmax)+"_dataset_"+str(dataset)+"/"
 if not os.path.isdir(outdir): os.system('mkdir '+outdir)
 
 nest = cpnest.CPNest(model, output=outdir, nlive=int(args.nlive), 
-                     maxmcmc=int(args.maxmcmc), nthreads=int(args.nthreads), resume=True, verbose=3)
+                     maxmcmc=int(args.maxmcmc), nthreads=int(args.nthreads), 
+                     resume=True, verbose=3, n_periodic_checkpoint=1000)
 nest.run()
 
 
