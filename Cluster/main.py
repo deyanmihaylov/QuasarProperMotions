@@ -1,11 +1,10 @@
 import argparse
+import csv
 import time
 import datetime
 import os
-
 import corner
-
-import csv
+import pandas
 
 import numpy as np
 
@@ -42,29 +41,53 @@ injection = int ( args.injection )
 nthreads = int ( args.nthreads )
 nlive = int ( args.nlive )
 maxmcmc = int ( args.maxmcmc )
-        
+
+# Create folder Results if it doesn't exist
+
+if not os.path.isdir ( "Results" ):
+    os.system ( "mkdir Results" )
+
+
+# Create catalogue CSV file if it doesn't exist
+
+if not os.path.isfile ( "Results/catalogue.csv" ):
+    catalogue_header = [ "directory" , "submitted" , "start_time" , "end_time" , "duration" , "Lmax" , "dataset" , "injection" , "nthreads" , "nlive" , "maxmcmc" ]
+
+    with open ( "Results/catalogue.csv" , 'w' , newline='') as catalogue_csv:
+        catalogue_csv_writer = csv.writer ( catalogue_csv )
+        catalogue_csv_writer.writerow ( catalogue_header )
+
+    catalogue_csv.close()
+
+
 # Create a directory for the results
 
-current_datetime = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+with open ( "Results/catalogue.csv", "r+" ) as catalogue_csv:
+    catalogue_csv_reader = csv.reader ( catalogue_csv )
 
-dir_name = "Run_" + str(c.Lmax) + "_" + str(dataset) + "_" + str(injection) + "_" + current_datetime
+    n_records = len ( list ( catalogue_csv_reader ) )
+
+catalogue_csv.close()
+
+dir_name = "Run_" + str(n_records) + "_" + str(c.Lmax) + str(dataset) + str(injection)
 dir_path = "Results/" + dir_name + "/"
 
 if not os.path.isdir(dir_path):
     os.system('mkdir ' + dir_path)
 
+
 # Record the run
+
+start_time = time.time()
     
-with open("Results/catalogue.txt", "a") as catalogue:
-    catalogue.write ( dir_name + '\n' )
-    catalogue.write ( "time = " + str ( time.time() ) + '\n' )
-    catalogue.write ( "Lmax = " + str ( c.Lmax ) + '\n' )
-    catalogue.write ( "dataset = " + str ( dataset ) + '\n' )
-    catalogue.write ( "injection = " + str ( injection ) + '\n' )
-    catalogue.write ( "nthreads = " + str ( nthreads ) + '\n' )
-    catalogue.write ( "nlive = " + str ( nlive ) + '\n' )
-    catalogue.write ( "maxmcmc = " + str ( maxmcmc ) + '\n' )
-    catalogue.write ( '\n\n\n' )
+with open ( "Results/catalogue.csv", "a" , newline='' ) as catalogue_csv:
+    run_record = [ dir_name , datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') , start_time , 0 , 0 , c.Lmax , dataset , injection , nthreads , nlive , maxmcmc ]
+
+    catalogue_csv_writer = csv.writer ( catalogue_csv )
+    catalogue_csv_writer.writerow ( run_record )
+
+catalogue_csv.close()
+
 
 # Select a dataset to analyze:
 #  (1) - type2 (2843 stars)
@@ -79,6 +102,7 @@ elif dataset == 3:
     data = import_Gaia_data ( "../data/type2and3.csv" )
 else:
     raise ValueError ( 'Unknown dataset ' + str ( dataset ) )
+
 
 # PM data to analyze:
 #  (0) - no injection (use PM from data)
@@ -95,39 +119,19 @@ else:
     raise ValueError ( 'Unknown injection ' + str ( dataset ) )
 
 if injection == 1 or injection == 2:
-    par_file = csv.writer ( open( dir_path + "/injected_par.txt" , "w"))
+    par_file_open = open( dir_path + "/injected_par.txt" , "w" )
+    par_file = csv.writer ( par_file_open )
     
     for key, val in injected_par.items():
         par_file.writerow ( [ key , val ] )
 
-# pm data to analyse:
-#  (1) - mock dipole (2843 stars)
-#  (2) - mock GW quad patter (2843 stars)
-#  (3) - real type2 (2843 stars)
-#  (4) - real type3 (489163 stars)
-#  (5) - real type2+type3 (492006 stars)
-# if dataset==1:
-#     data = import_Gaia_data("../data/type2.csv")
-#     VSH_bank = generate_VSH_bank (data , Lmax)
-#     data = generate_scalar_bg (data , Lmax , VSH_bank, err_scale=10) # Seperate inject from import
-# elif dataset==2:
-#     data = import_Gaia_data("../data/type2.csv")
-#     VSH_bank = generate_VSH_bank (data , Lmax)
-#     data = generate_gr_bg (data , Lmax , VSH_bank)
-# elif dataset==3:
-#     data = import_Gaia_data("../data/type2.csv")
-#     VSH_bank = generate_VSH_bank (data , Lmax)
-# elif dataset==4:
-#     data = import_Gaia_data("../data/type3.csv")
-#     VSH_bank = generate_VSH_bank (data , Lmax)
-# elif dataset==5:
-#     data = import_Gaia_data("../data/type2and3.csv")
-#     VSH_bank = generate_VSH_bank (data , Lmax)
-# else:
-#     raise ValueError('Unknown dataset {}'.format(dataset))
+    par_file_open.close()
 
 if plotting: 
     data.plot(self, "fig_dataset{}.png".format(dataset), proper_motions=True, proper_motion_scale=1)
+
+
+# Analyze the dataset
     
 print ("Analysing dataset " + str(dataset) + " and injection " + str(injection) + " with Lmax = " + str(c.Lmax) + " using nthreads = " + str(nthreads))
 
@@ -138,19 +142,21 @@ class VSHmodel(cpnest.model.Model):
 
     def __init__(self):
 
-        self.prior_bound_aQlm = 1.
+        self.prior_bound_aQlm = 1.0
         self.names = []
         self.bounds = []
         
-        for Q in ['E', 'B']:
+        for Q in [ 'E' , 'B' ]:
             for l in np.arange(1, c.Lmax+1):
                 for m in np.arange(0, l+1):
-                
-                    if m==0:
-                        
+                    if m == 0:
                         self.names += [ 'Re[a^' + Q + '_' + str(l) + str(m) + ']' ]
+
+                        # if l == 1 and Q == 'E':
+                        #     self.bounds += [[ 0.5 , 1.5 ]]
+                        # else:
+                        #     self.bounds += [[ -self.prior_bound_aQlm , self.prior_bound_aQlm ]]
                         self.bounds += [[ -self.prior_bound_aQlm , self.prior_bound_aQlm ]]
-                        
                     else:
                     
                         self.names += [ 'Re[a^' + Q + '_' + str(l) + str(m) + ']' ]
@@ -174,27 +180,6 @@ class VSHmodel(cpnest.model.Model):
 model = VSHmodel()
 
 
-# This can be removed
-# if benchmarking:
-#     import time
-#     par = {}
-#     for l in np.arange(1,Lmax+1):
-#         for m in np.arange(0, l+1):
-#             if m==0:
-#                 par['Re_a^E_'+str(l)+'0'] = 0
-#                 par['Re_a^B_'+str(l)+'0'] = 0
-#             else:
-#                 par['Re_a^E_'+str(l)+str(m)] = 0
-#                 par['Im_a^E_'+str(l)+str(m)] = 0
-#                 par['Re_a^B_'+str(l)+str(m)] = 0
-#                 par['Im_a^B_'+str(l)+str(m)] = 0
-#     t_start = time.time()
-#     ll = model.log_likelihood(par)
-#     t_end = time.time()
-#     print(t_end-t_start, ll)
-#     exit(-1)
-
-
 # run nested sampling 
 
 nest = cpnest.CPNest ( model ,
@@ -211,15 +196,14 @@ nest.get_nested_samples()
 nest.get_posterior_samples()
 
 # custom corner plot
-if os.path.isfile(dir_path+'injectedC.csv'):
-    
-    header_file = dir_path+'header.txt'
+if os.path.isfile ( dir_path + 'injected_par.txt' ):
+    header_file = dir_path + 'header.txt'
     with open(header_file,'r') as f:
         names = f.readline().split()[0:-1]
         
     truths = {}
         
-    truths_file = dir_path+'injectedC.csv'
+    truths_file = dir_path + 'injected_par.txt'
     
     with open(truths_file , mode='r') as csv_file:
         csv_reader = csv.reader(csv_file)
@@ -227,10 +211,22 @@ if os.path.isfile(dir_path+'injectedC.csv'):
         for row in csv_reader:
             truths [row[0]] = row[1]
             
-    truths_arr = np.array([truths[name] for name in names])
+    truths_arr = np.array ( [ float( truths[name] ) for name in names] )
     
     data_to_plot = np.loadtxt(dir_path+'posterior.dat')[:,0:-2]
     
     corner.corner(data_to_plot, truths=truths_arr, labels=names)
     
     plt.savefig(dir_path+'corner_truths.png')
+
+
+# Record end time
+
+end_time = time.time()
+
+catalogue = pandas.read_csv ( "Results/catalogue.csv" )
+
+catalogue.loc [ catalogue [ "directory" ] == dir_name , "end_time" ] = end_time
+catalogue.loc [ catalogue [ "directory" ] == dir_name , "duration" ] = end_time - start_time
+
+catalogue.to_csv ( "Results/catalogue.csv" , index=False )
