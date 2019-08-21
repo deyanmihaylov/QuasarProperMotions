@@ -1,4 +1,6 @@
 import numpy
+
+import config as c
 from VectorSphericalHarmonicsVectorized import VectorSphericalHarmonicE, VectorSphericalHarmonicB
 
 from CoordinateTransformations import Cartesian_to_geographic_vector, geographic_to_Cartesian_point
@@ -59,19 +61,6 @@ def plot_coeffs(coeffs, outfile, Lmax, projection='mollweide', proper_motion_sca
     
     plt.savefig(outfile)
 
-
-
-
-
-
-
-
-
-
-
-
-def deg_to_rad(degree_vals):
-    return numpy.deg2rad (degree_vals)
     
     
     
@@ -137,53 +126,36 @@ def tangent_Cartesian_to_geographic (points , dpoints):
     
     return tangent_vector
 
-def generate_model ( coeffs , VSH_bank , Lmax):
+def generate_model ( coeffs , VSH_bank ):
+    # Generate model of PMs from a^Q_lm coefficients and VSH
+    
     v_Q = numpy.sum ( [ numpy.sum ( [ 
-                        coeffs['Re_a^' + Q + '_' + str(l) + '0'] * VSH_bank['Re[Y^' + Q + '_' + str(l) + '0]'] 
+                        coeffs['Re[a^' + Q + '_' + str(l) + '0]'] * VSH_bank['Re[Y^' + Q + '_' + str(l) + '0]'] 
                         + 2 * numpy.sum ( [ 
-                        coeffs['Re_a^' + Q + '_'+str(l)+str(m)] * VSH_bank['Re[Y^' + Q + '_' + str(l) + str(m) + ']'] 
-                        - coeffs['Im_a^'+ Q + '_'+str(l)+str(m)] * VSH_bank['Im[Y^' + Q + '_' + str(l) + str(m) + ']'] 
+                        coeffs['Re[a^' + Q + '_'+str(l)+str(m) + ']'] * VSH_bank['Re[Y^' + Q + '_' + str(l) + str(m) + ']'] 
+                        - coeffs['Im[a^'+ Q + '_'+str(l)+str(m) + ']'] * VSH_bank['Im[Y^' + Q + '_' + str(l) + str(m) + ']'] 
                         for m in range ( 1 , l + 1 ) ] , axis=0 )
-                    for l in range ( 1 , Lmax + 1 ) ] , axis=0 )
+                    for l in range ( 1 , c.Lmax + 1 ) ] , axis=0 )
                 for Q in [ 'E' , 'B' ] ] , axis=0 )
     
-    # proposed structure
-    # v_Q = numpy.sum ( [ factor[name]*coeffs[name]*VSH_bank[name] for name in coeffs.keys() ] , axis=0 )
-        
     return v_Q
 
-
-
-
-# Faster model
-def generate_model_fast(par, positions_Cartesian, VSHs_geographic):
-    
-    lmax = len( vsh_E_coeffs )
-    
-    # Use precomputed Cartesian positions - Line (A) becomes unecessary
-    # Use precomputed VSHs in geo coords - No call to VectorSphericalHarmonicQ() or tangent_Cartesian_to_geographic()
-    # use par dict instead of full a^Qlm and deal with re im parts explicitly - Lines (B) and (C) become unecessary
-    
-    return 1
-    
-    
-    
-    
-    
-    
 def covariant_matrix ( errors , corr ):
+    # Compute the covariant matrix from errors and correlation
+
     covariant_matrix = numpy.einsum ( '...i,...j->...ij' , errors , errors )
     
     covariant_matrix[...,0,1] = covariant_matrix[...,1,0] = numpy.multiply ( covariant_matrix[...,1,0] , corr.flatten() )
     return covariant_matrix
 
 def R_values ( pm , invcovs , model ):
-    
+    # Compute R values from data, model, and the inverse of the covariant matrix
+
     M = pm - model
     
-    Rsq_values = numpy.einsum ( '...i,...ij,...j->...' , M , invcovs , M ) 
+    R_values = numpy.sqrt ( numpy.einsum ( '...i,...ij,...j->...' , M , invcovs , M ) )
         
-    return numpy.sqrt(Rsq_values)
+    return R_values
 
 def compute_log_likelihood ( R_values ):
 
