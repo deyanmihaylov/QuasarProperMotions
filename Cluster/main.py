@@ -17,7 +17,9 @@ matplotlib.use('Agg')
 from data_load import *
 from injection import *
 from utils import *
+
 plotting = False
+pm_histogram = True
 benchmarking = False
 
 parser = argparse.ArgumentParser()
@@ -128,8 +130,12 @@ if injection == 1 or injection == 2:
     par_file_open.close()
 
 if plotting: 
-    data.plot(self, "fig_dataset{}.png".format(dataset), proper_motions=True, proper_motion_scale=1)
+    data.plot ( self , "fig_dataset{}.png".format(dataset), proper_motions=True, proper_motion_scale=1)
 
+if pm_histogram:
+    data.pm_hist ( dir_path + "pm_histogram.png" )
+
+exit()
 
 # Analyze the dataset
     
@@ -153,7 +159,7 @@ class VSHmodel(cpnest.model.Model):
                         self.names += [ 'Re[a^' + Q + '_' + str(l) + str(m) + ']' ]
 
                         # if l == 1 and Q == 'E':
-                        #     self.bounds += [[ 0.5 , 1.5 ]]
+                        #     self.bounds += [[ 0.75 , 1.25 ]]
                         # else:
                         #     self.bounds += [[ -self.prior_bound_aQlm , self.prior_bound_aQlm ]]
                         self.bounds += [[ -self.prior_bound_aQlm , self.prior_bound_aQlm ]]

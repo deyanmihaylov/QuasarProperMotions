@@ -60,6 +60,62 @@ class AstrometricDataframe:
         plt.grid(True)
     
         plt.savefig(outfile)
+
+    def pm_hist(self, outfile):
+        # Plot a histogram of the proper motions of the quasars
+
+        proper_motions_Cartesian = numpy.linalg.norm ( geographic_to_Cartesian_vector ( self.positions , self.proper_motions ) , axis = 1 )
+
+        n_bins = int ( numpy.ceil ( proper_motions_Cartesian.max() ) )
+
+        fig = plt.figure()
+        plt.hist ( proper_motions_Cartesian ,
+                   bins=n_bins ,
+                   range=( 0.0 , float(n_bins) ) ,
+                   density=None ,
+                   weights=None ,
+                   cumulative=False ,
+                   bottom=None ,
+                   histtype='bar' ,
+                   align='mid' ,
+                   orientation='vertical' ,
+                   rwidth=0.85 ,
+                   log=False ,
+                   color=None ,
+                   label=None ,
+                   stacked=False ,
+                   normed=None ,
+                   data=None )
+
+        plt.xlabel ( 'Proper motion [mas/yr]' )
+        plt.ylabel ( 'Number of quasars' )
+        plt.xticks ( ticks = range ( 0 , n_bins+1 ) , labels=None )
+        plt.title ( 'Histogram of quasar proper motion' )
+        plt.yscale ( 'log' )
+        plt.grid ( False )
+        plt.savefig ( outfile )
+        # ax = fig.add_subplot(111, projection=projection)
+
+        # ra = numpy.array([ x-2*numpy.pi if x>numpy.pi else x for x in self.positions[:,0]])
+        # dec = self.positions[:,1]
+
+        # # plot the positions 
+        # ax.plot(ra, dec, 'o', color='r', markersize=1, alpha=0.8)
+
+        # # plot the proper motions
+        # if proper_motions:
+        #     Nstars = len(self.positions)
+        #     for i in range(Nstars):
+        #         Ra = [ ra[i] - proper_motion_scale*self.proper_motions[i,0],
+        #                ra[i] + proper_motion_scale*self.proper_motions[i,0] ]
+        #         Dec = [ dec[i] - proper_motion_scale*self.proper_motions[i,1],
+        #                 dec[i] + proper_motion_scale*self.proper_motions[i,1] ]
+        #         ax.plot(Ra, Dec, '-', color='r', alpha=0.6)
+                    
+        # # plot grid lines 
+        # plt.grid(True)
+    
+        # plt.savefig(outfile)
         
         
 def import_Gaia_data (path_to_Gaia_data):

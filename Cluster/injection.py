@@ -3,7 +3,7 @@ import numpy
 import config as c
 from utils import *
 
-def generate_scalar_bg ( data , scale=1. , err_scale=1. ):
+def generate_scalar_bg ( data , scale=1.0 , err_scale=1.0 ):
 
     par = {}
     
@@ -18,7 +18,7 @@ def generate_scalar_bg ( data , scale=1. , err_scale=1. ):
                 par[ 'Re[a^B_' + str(l) + str(m) + ']' ] = 0.
                 par[ 'Im[a^B_' + str(l) + str(m) + ']' ] = 0.
                 
-    par[ 'Re[a^E_10]' ] = 1.
+    par[ 'Re[a^E_10]' ] = scale * 1.0
     
     model_pm = generate_model ( par , data.VSH )
     
