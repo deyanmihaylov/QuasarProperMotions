@@ -19,7 +19,7 @@ from injection import *
 from utils import *
 
 plotting = False
-pm_histogram = True
+pm_histogram = False
 benchmarking = False
 
 parser = argparse.ArgumentParser()
@@ -134,8 +134,6 @@ if plotting:
 
 if pm_histogram:
     data.pm_hist ( dir_path + "pm_histogram.png" )
-
-exit()
 
 # Analyze the dataset
     
