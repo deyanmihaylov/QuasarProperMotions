@@ -87,48 +87,48 @@ def random_vsh_coeffs ( lmax , lower_bound , upper_bound):
     
     
     
-def geographic_to_Cartesian (points):
-    if len ( points.shape ) == 1:
-        nrows = 1
-    else:
-        nrows = points.shape[0]
+# def geographic_to_Cartesian (points):
+#     if len ( points.shape ) == 1:
+#         nrows = 1
+#     else:
+#         nrows = points.shape[0]
         
-    new_points = numpy.zeros ( ( len(points) , 3 ))
+#     new_points = numpy.zeros ( ( len(points) , 3 ))
     
-    theta = numpy.pi / 2 - points[... , 1]
-    phi = points[... , 0]
+#     theta = numpy.pi / 2 - points[... , 1]
+#     phi = points[... , 0]
     
-    new_points[...,0] = numpy.sin ( theta ) * numpy.cos ( phi )
-    new_points[...,1] = numpy.sin ( theta ) * numpy.sin ( phi )
-    new_points[...,2] = numpy.cos ( theta )
+#     new_points[...,0] = numpy.sin ( theta ) * numpy.cos ( phi )
+#     new_points[...,1] = numpy.sin ( theta ) * numpy.sin ( phi )
+#     new_points[...,2] = numpy.cos ( theta )
     
-    if len ( points.shape ) == 1:
-        return new_points[0]
-    else:
-        return new_points
+#     if len ( points.shape ) == 1:
+#         return new_points[0]
+#     else:
+#         return new_points
 
-def tangent_Cartesian_to_geographic (points , dpoints):
-    if points.ndim == 1:
-        tangent_vector = numpy.zeros ( ( 2 ) , dtype = float)
-    else:
-        tangent_vector = numpy.zeros ( ( len(points) , 2 ) , dtype = float)
+# def tangent_Cartesian_to_geographic (points , dpoints):
+#     if points.ndim == 1:
+#         tangent_vector = numpy.zeros ( ( 2 ) , dtype = float)
+#     else:
+#         tangent_vector = numpy.zeros ( ( len(points) , 2 ) , dtype = float)
     
-    x = points[... , 0]
-    y = points[... , 1]
-    z = points[... , 2]
+#     x = points[... , 0]
+#     y = points[... , 1]
+#     z = points[... , 2]
     
-    dx = dpoints[... , 0]
-    dy = dpoints[... , 1]
-    dz = dpoints[... , 2]
+#     dx = dpoints[... , 0]
+#     dy = dpoints[... , 1]
+#     dz = dpoints[... , 2]
     
-    tangent_vector[... , 1] = dz / ( numpy.sqrt ( 1 - z ** 2 ) )
-    tangent_vector[... , 0] = ( x * dy - y * dx ) / ( x ** 2 + y ** 2 )
+#     tangent_vector[... , 1] = dz / ( numpy.sqrt ( 1 - z ** 2 ) )
+#     tangent_vector[... , 0] = ( x * dy - y * dx ) / ( x ** 2 + y ** 2 )
     
-    return tangent_vector
+#     return tangent_vector
 
 def generate_model ( coeffs , VSH_bank ):
     # Generate model of PMs from a^Q_lm coefficients and VSH
-    
+
     v_Q = numpy.sum ( [ numpy.sum ( [ 
                         coeffs['Re[a^' + Q + '_' + str(l) + '0]'] * VSH_bank['Re[Y^' + Q + '_' + str(l) + '0]'] 
                         + 2 * numpy.sum ( [ 
@@ -157,7 +157,7 @@ def R_values ( pm , invcovs , model ):
         
     return R_values
 
-def compute_log_likelihood ( R_values ):
+def permissive_log_likelihood ( R_values ):
 
     condition = R_values > 1.0e-3
     print(R_values)
@@ -169,6 +169,10 @@ def compute_log_likelihood ( R_values ):
     
     return log_likelihood
     
+def quadratic_likelihood ( R_values ):
+    quadratic_likelihood = ( 0.5 * R_values ** 2 ).sum()
+    
+    return quadratic_likelihood
 
 
 def logLfunc(R):

@@ -57,11 +57,11 @@ class AstrometricDataframe:
                 ax.plot(Ra, Dec, '-', color='r', alpha=0.6)
                     
         # plot grid lines 
-        plt.grid(True)
+        plt.grid ( True )
     
-        plt.savefig(outfile)
+        plt.savefig ( outfile )
 
-    def pm_hist(self, outfile):
+    def pm_hist ( self , outfile ):
         # Plot a histogram of the proper motions of the quasars
 
         proper_motions_Cartesian = numpy.linalg.norm ( geographic_to_Cartesian_vector ( self.positions , self.proper_motions ) , axis = 1 )
@@ -94,28 +94,6 @@ class AstrometricDataframe:
         plt.yscale ( 'log' )
         plt.grid ( False )
         plt.savefig ( outfile )
-        # ax = fig.add_subplot(111, projection=projection)
-
-        # ra = numpy.array([ x-2*numpy.pi if x>numpy.pi else x for x in self.positions[:,0]])
-        # dec = self.positions[:,1]
-
-        # # plot the positions 
-        # ax.plot(ra, dec, 'o', color='r', markersize=1, alpha=0.8)
-
-        # # plot the proper motions
-        # if proper_motions:
-        #     Nstars = len(self.positions)
-        #     for i in range(Nstars):
-        #         Ra = [ ra[i] - proper_motion_scale*self.proper_motions[i,0],
-        #                ra[i] + proper_motion_scale*self.proper_motions[i,0] ]
-        #         Dec = [ dec[i] - proper_motion_scale*self.proper_motions[i,1],
-        #                 dec[i] + proper_motion_scale*self.proper_motions[i,1] ]
-        #         ax.plot(Ra, Dec, '-', color='r', alpha=0.6)
-                    
-        # # plot grid lines 
-        # plt.grid(True)
-    
-        # plt.savefig(outfile)
         
         
 def import_Gaia_data (path_to_Gaia_data):
@@ -191,20 +169,20 @@ def import_Gaia_data (path_to_Gaia_data):
                               float_precision=None)
     
     dropna_columns = ['ra',
-                     'dec',
-                     'ra_error',
-                     'dec_error',
-                     'pmra',
-                     'pmdec',
-                     'pmra_error',
-                     'pmdec_error',
-                     'pmra_pmdec_corr']
+                      'dec',
+                      'ra_error',
+                      'dec_error',
+                      'pmra',
+                      'pmdec',
+                      'pmra_error',
+                      'pmdec_error',
+                      'pmra_pmdec_corr']
 
-    dataset.dropna(axis=0,
-                   how='any',
-                   thresh=None,
-                   subset=dropna_columns,
-                   inplace=True)
+    dataset.dropna ( axis=0,
+                    how='any',
+                    thresh=None,
+                    subset=dropna_columns,
+                    inplace=True)
     
     new_dataframe = AstrometricDataframe()
     
@@ -212,6 +190,7 @@ def import_Gaia_data (path_to_Gaia_data):
     new_dataframe.positions = deg_to_rad ( new_dataframe.positions )
     
     new_dataframe.positions_err = dataset[[ 'ra_error' , 'dec_error' ]].values
+    new_dataframe.positions_err[:,0] = new_dataframe.positions_err[:,0] / numpy.cos ( new_dataframe.positions[:,1] )
     
     new_dataframe.proper_motions = dataset[[ 'pmra' , 'pmdec' ]].values
     
@@ -223,7 +202,7 @@ def import_Gaia_data (path_to_Gaia_data):
     
     new_dataframe.covariance_inv = numpy.linalg.inv ( new_dataframe.covariance )
     
-    new_dataframe.positions_Cartesian = geographic_to_Cartesian ( new_dataframe.positions )
+    new_dataframe.positions_Cartesian = geographic_to_Cartesian_point ( new_dataframe.positions )
     
     new_dataframe.VSH = generate_VSH_bank ( new_dataframe )
     
