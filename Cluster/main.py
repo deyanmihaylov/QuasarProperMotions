@@ -136,6 +136,18 @@ if pm_histogram:
     data.pm_hist ( dir_path + "pm_histogram.png" )
 
 # Analyze the dataset
+
+def R_values ( pm , invcovs , model ):
+    # Compute R values from data, model, and the inverse of the covariant matrix
+
+    M = pm - model
+    
+    R_values = numpy.sqrt ( numpy.einsum ( '...i,...ij,...j->...' , M , invcovs , M ) )
+        
+    return R_values
+
+def logLfunc(R):
+    return numpy.log ( ( 1 - numpy.exp ( -0.5 * ( R ** 2 ) ) ) / ( 0.5 * ( R ** 2 ) ) )
     
 print ("Analysing dataset " + str(dataset) + " and injection " + str(injection) + " with Lmax = " + str(c.Lmax) + " using nthreads = " + str(nthreads))
 

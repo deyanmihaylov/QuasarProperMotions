@@ -1,5 +1,7 @@
 import numpy
 
+from data_load import covariant_matrix
+
 import config as c
 from utils import *
 

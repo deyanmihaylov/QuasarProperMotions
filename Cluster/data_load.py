@@ -207,3 +207,11 @@ def import_Gaia_data (path_to_Gaia_data):
     new_dataframe.VSH = generate_VSH_bank ( new_dataframe )
     
     return new_dataframe
+
+def covariant_matrix ( errors , corr ):
+    # Compute the covariant matrix from errors and correlation
+
+    covariant_matrix = numpy.einsum ( '...i,...j->...ij' , errors , errors )
+    
+    covariant_matrix[...,0,1] = covariant_matrix[...,1,0] = numpy.multiply ( covariant_matrix[...,1,0] , corr.flatten() )
+    return covariant_matrix
