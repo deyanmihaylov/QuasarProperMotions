@@ -138,31 +138,41 @@ class AstrometricDataframe:
 
 		matrix = numpy.zeros( (len(names), len(names)) )
 
-		for i, n_x in enumerate(names):
-			part_x = n_x.split('^')[0][0]
-			Q_x = n_x.split('^')[1][0]
-			l_x = int(n_x.split('^')[1][2])
-			m_x = int(n_x.split('^')[1][3])
-		    
-			for j, n_y in enumerate(names):
-				part_y = n_y.split('^')[0][0]
-				Q_y = n_y.split('^')[1][0]
-				l_y = int(n_y.split('^')[1][2])
-				m_y = int(n_y.split('^')[1][3])
-		        
-				X = VectorSphericalHarmonicE ( l_x , m_x , self.positions_Cartesian ) if Q_x=='E' else VectorSphericalHarmonicB ( l_x , m_x , self.positions_Cartesian )
-				X = numpy.real(X) if part_x=='R' else numpy.imag(X)
-		        
-				Y = VectorSphericalHarmonicE ( l_y , m_y , self.positions_Cartesian ) if Q_y=='E' else VectorSphericalHarmonicB ( l_y , m_y , self.positions_Cartesian )
-				Y = numpy.real(Y) if part_y=='R' else numpy.imag(Y)
-		        
-				matrix[i,j] = prefactor * numpy.einsum ( "...j,...j->..." , X , Y ).sum()
+		max_corr = []
+
+		for i in range ( 1 , c.Lmax + 1 ):
+			Lnames = [name for name in names if name[7] == str (c.Lmax)]
+
+			for i, n_x in enumerate(Lnames):
+				part_x = n_x.split('^')[0][0]
+				Q_x = n_x.split('^')[1][0]
+				l_x = int(n_x.split('^')[1][2])
+				m_x = int(n_x.split('^')[1][3])
+			    
+				for j, n_y in enumerate(Lnames):
+					part_y = n_y.split('^')[0][0]
+					Q_y = n_y.split('^')[1][0]
+					l_y = int(n_y.split('^')[1][2])
+					m_y = int(n_y.split('^')[1][3])
+			        
+					X = VectorSphericalHarmonicE ( l_x , m_x , self.positions_Cartesian ) if Q_x=='E' else VectorSphericalHarmonicB ( l_x , m_x , self.positions_Cartesian )
+					X = numpy.real(X) if part_x=='R' else numpy.imag(X)
+			        
+					Y = VectorSphericalHarmonicE ( l_y , m_y , self.positions_Cartesian ) if Q_y=='E' else VectorSphericalHarmonicB ( l_y , m_y , self.positions_Cartesian )
+					Y = numpy.real(Y) if part_y=='R' else numpy.imag(Y)
+			        
+					matrix[i,j] = prefactor * numpy.einsum ( "...j,...j->..." , X , Y ).sum()
+
+			corr = []
+			for k in range(len(matrix)):
+				for j in range(k):
+					x = matrix[k,j] / numpy.sqrt(matrix[k,k]*matrix[j,j])
+					corr.append(x)
+
+			max_corr.append (numpy.array(corr).max())
 		        
 		plt.clf ()
-		plt.imshow ( matrix )
-		plt.xticks ( numpy.arange(len(names)) , names , rotation=90)
-		plt.yticks ( numpy.arange(len(names)) , names)
-		plt.colorbar ()
+		plt.scatter ( numpy.arange(1,c.Lmax+1) , numpy.array(max_corr) )
 		plt.savefig ( outfile )
 		plt.clf()
 

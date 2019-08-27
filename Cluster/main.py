@@ -21,6 +21,7 @@ from utils import *
 plotting = False
 pm_histogram = False
 VSH_matrix = True
+VSH_corr = True
 benchmarking = False
 
 parser = argparse.ArgumentParser()
@@ -138,6 +139,9 @@ if pm_histogram:
 
 if VSH_matrix:
     data.vsh_matrix_plot ( dir_path + "vsh_matrix.png" )
+
+if VSH_corr:
+    data.vsh_corr_plot ( dir_path + "vsh_corr.png" )
 
 exit()
 
