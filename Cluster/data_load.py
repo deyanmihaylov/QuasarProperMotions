@@ -3,6 +3,7 @@ import numpy
 import csv
 
 from CoordinateTransformations import *
+from VectorSphericalHarmonicsVectorized import VectorSphericalHarmonicE, VectorSphericalHarmonicB
 from utils import *
 
 import matplotlib
@@ -12,65 +13,65 @@ import matplotlib.pyplot as plt
 import config as c
 
 class AstrometricDataframe:
-    def __init__(self): 
-        self.positions = numpy.array ([])
+	def __init__(self):
+		self.positions = numpy.array ([])
 
-        self.positions_Cartesian = numpy.array ([])
-        
-        self.positions_err = numpy.array ([])
+		self.positions_Cartesian = numpy.array ([])
 
-        self.proper_motions = numpy.array ([])
+		self.n_objects = 0
+        
+		self.positions_err = numpy.array ([])
 
-        self.proper_motions_err = numpy.array ([])
-        
-        self.proper_motions_err_corr = numpy.array ([])
-        
-        self.covariance = numpy.array ([])
-        
-        self.covariance_inv = numpy.array ([])
-        
-        self.positions_Cartesian = numpy.array ([])
-        
-        
-    def plot(self, outfile, proper_motions=False, projection='mollweide', proper_motion_scale=1):
-        """
-        method to plot positions (and optionally pms) of QSOs in dataframe                                                                                                                        
-        """
+		self.proper_motions = numpy.array ([])
 
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection=projection)
+		self.proper_motions_err = numpy.array ([])
+        
+		self.proper_motions_err_corr = numpy.array ([])
+        
+		self.covariance = numpy.array ([])
+        
+		self.covariance_inv = numpy.array ([])
+        
+		self.positions_Cartesian = numpy.array ([])
+        
+        
+	def plot(self, outfile, proper_motions=False, projection='mollweide', proper_motion_scale=1):
+		"""
+		method to plot positions (and optionally pms) of QSOs in dataframe                                                                                                                        
+		"""
 
-        ra = numpy.array([ x-2*numpy.pi if x>numpy.pi else x for x in self.positions[:,0]])
-        dec = self.positions[:,1]
+		fig = plt.figure()
+		ax = fig.add_subplot(111, projection=projection)
+
+		ra = numpy.array([ x-2*numpy.pi if x>numpy.pi else x for x in self.positions[:,0]])
+		dec = self.positions[:,1]
 
         # plot the positions 
-        ax.plot(ra, dec, 'o', color='r', markersize=1, alpha=0.8)
+		ax.plot(ra, dec, 'o', color='r', markersize=1, alpha=0.8)
 
         # plot the proper motions
-        if proper_motions:
-            Nstars = len(self.positions)
-            for i in range(Nstars):
-                Ra = [ ra[i] - proper_motion_scale*self.proper_motions[i,0],
-                       ra[i] + proper_motion_scale*self.proper_motions[i,0] ]
-                Dec = [ dec[i] - proper_motion_scale*self.proper_motions[i,1],
-                        dec[i] + proper_motion_scale*self.proper_motions[i,1] ]
-                ax.plot(Ra, Dec, '-', color='r', alpha=0.6)
+		if proper_motions:
+			Nstars = len(self.positions)
+			for i in range(Nstars):
+				Ra = [ ra[i] - proper_motion_scale*self.proper_motions[i,0], ra[i] + proper_motion_scale*self.proper_motions[i,0] ]
+				Dec = [ dec[i] - proper_motion_scale*self.proper_motions[i,1], dec[i] + proper_motion_scale*self.proper_motions[i,1] ]
+				ax.plot(Ra, Dec, '-', color='r', alpha=0.6)
                     
         # plot grid lines 
-        plt.grid ( True )
+		plt.grid ( True )
     
-        plt.savefig ( outfile )
+		plt.savefig ( outfile )
 
-    def pm_hist ( self , outfile ):
+	def pm_hist ( self , outfile ):
         # Plot a histogram of the proper motions of the quasars
 
-        proper_motions_Cartesian = numpy.linalg.norm ( geographic_to_Cartesian_vector ( self.positions , self.proper_motions ) , axis = 1 )
+		proper_motions_Cartesian = numpy.linalg.norm ( geographic_to_Cartesian_vector ( self.positions , self.proper_motions ) , axis = 1 )
 
-        n_bins = int ( numpy.ceil ( proper_motions_Cartesian.max() ) )
+		n_bins = int ( numpy.ceil ( proper_motions_Cartesian.max() ) )
 
-        fig = plt.figure()
-        plt.hist ( proper_motions_Cartesian ,
-                   bins=n_bins ,
+		fig = plt.figure()
+		plt.hist ( proper_motions_Cartesian ,
+				   bins=n_bins ,
                    range=( 0.0 , float(n_bins) ) ,
                    density=None ,
                    weights=None ,
@@ -87,15 +88,84 @@ class AstrometricDataframe:
                    normed=None ,
                    data=None )
 
-        plt.xlabel ( 'Proper motion [mas/yr]' )
-        plt.ylabel ( 'Number of quasars' )
-        plt.xticks ( ticks = range ( 0 , n_bins+1 ) , labels=None )
-        plt.title ( 'Histogram of quasar proper motion' )
-        plt.yscale ( 'log' )
-        plt.grid ( False )
-        plt.savefig ( outfile )
-        
-        
+		plt.xlabel ( 'Proper motion [mas/yr]' )
+		plt.ylabel ( 'Number of quasars' )
+		plt.xticks ( ticks = range ( 0 , n_bins+1 ) , labels=None )
+		plt.title ( 'Histogram of quasar proper motion' )
+		plt.yscale ( 'log' )
+		plt.grid ( False )
+		plt.savefig ( outfile )
+
+	def vsh_matrix_plot ( self , outfile ):
+		prefactor = 4 * numpy.pi / self.n_objects
+
+		names = list ( self.VSH.keys() )
+
+		matrix = numpy.zeros( (len(names), len(names)) )
+
+		for i, n_x in enumerate(names):
+			part_x = n_x.split('^')[0][0]
+			Q_x = n_x.split('^')[1][0]
+			l_x = int(n_x.split('^')[1][2])
+			m_x = int(n_x.split('^')[1][3])
+		    
+			for j, n_y in enumerate(names):
+				part_y = n_y.split('^')[0][0]
+				Q_y = n_y.split('^')[1][0]
+				l_y = int(n_y.split('^')[1][2])
+				m_y = int(n_y.split('^')[1][3])
+		        
+				X = VectorSphericalHarmonicE ( l_x , m_x , self.positions_Cartesian ) if Q_x=='E' else VectorSphericalHarmonicB ( l_x , m_x , self.positions_Cartesian )
+				X = numpy.real(X) if part_x=='R' else numpy.imag(X)
+		        
+				Y = VectorSphericalHarmonicE ( l_y , m_y , self.positions_Cartesian ) if Q_y=='E' else VectorSphericalHarmonicB ( l_y , m_y , self.positions_Cartesian )
+				Y = numpy.real(Y) if part_y=='R' else numpy.imag(Y)
+		        
+				matrix[i,j] = prefactor * numpy.einsum ( "...j,...j->..." , X , Y ).sum()
+		        
+		plt.clf ()
+		plt.imshow ( matrix )
+		plt.xticks ( numpy.arange(len(names)) , names , rotation=90)
+		plt.yticks ( numpy.arange(len(names)) , names)
+		plt.colorbar ()
+		plt.savefig ( outfile )
+		plt.clf()
+
+	def vsh_corr_plot ( self , outfile ):
+		prefactor = 4 * numpy.pi / self.n_objects
+
+		names = list ( self.VSH.keys() )
+
+		matrix = numpy.zeros( (len(names), len(names)) )
+
+		for i, n_x in enumerate(names):
+			part_x = n_x.split('^')[0][0]
+			Q_x = n_x.split('^')[1][0]
+			l_x = int(n_x.split('^')[1][2])
+			m_x = int(n_x.split('^')[1][3])
+		    
+			for j, n_y in enumerate(names):
+				part_y = n_y.split('^')[0][0]
+				Q_y = n_y.split('^')[1][0]
+				l_y = int(n_y.split('^')[1][2])
+				m_y = int(n_y.split('^')[1][3])
+		        
+				X = VectorSphericalHarmonicE ( l_x , m_x , self.positions_Cartesian ) if Q_x=='E' else VectorSphericalHarmonicB ( l_x , m_x , self.positions_Cartesian )
+				X = numpy.real(X) if part_x=='R' else numpy.imag(X)
+		        
+				Y = VectorSphericalHarmonicE ( l_y , m_y , self.positions_Cartesian ) if Q_y=='E' else VectorSphericalHarmonicB ( l_y , m_y , self.positions_Cartesian )
+				Y = numpy.real(Y) if part_y=='R' else numpy.imag(Y)
+		        
+				matrix[i,j] = prefactor * numpy.einsum ( "...j,...j->..." , X , Y ).sum()
+		        
+		plt.clf ()
+		plt.imshow ( matrix )
+		plt.xticks ( numpy.arange(len(names)) , names , rotation=90)
+		plt.yticks ( numpy.arange(len(names)) , names)
+		plt.colorbar ()
+		plt.savefig ( outfile )
+		plt.clf()
+
 def import_Gaia_data (path_to_Gaia_data):
     def deg_to_rad ( degree_vals ):
         return numpy.deg2rad ( degree_vals )
@@ -188,13 +258,15 @@ def import_Gaia_data (path_to_Gaia_data):
     
     new_dataframe.positions = dataset[[ 'ra' , 'dec' ]].values
     new_dataframe.positions = deg_to_rad ( new_dataframe.positions )
+
+    new_dataframe.n_objects = new_dataframe.positions.shape[0]
     
     new_dataframe.positions_err = dataset[[ 'ra_error' , 'dec_error' ]].values
-    new_dataframe.positions_err[:,0] = new_dataframe.positions_err[:,0] / numpy.cos ( new_dataframe.positions[:,1] )
     
     new_dataframe.proper_motions = dataset[[ 'pmra' , 'pmdec' ]].values
     
     new_dataframe.proper_motions_err = dataset[[ 'pmra_error' , 'pmdec_error' ]].values
+    new_dataframe.proper_motions_err[:,0] = new_dataframe.proper_motions_err[:,0] / numpy.cos ( new_dataframe.positions[:,1] )
     
     new_dataframe.proper_motions_err_corr = dataset[[ 'pmra_pmdec_corr' ]].values
     

@@ -66,11 +66,73 @@ import matplotlib.pyplot as plt
     
     
     
+def random_aQlm_coeffs ( lmax , lower_bound , upper_bound ):
+    negative_coeffs = [ [ random.uniform ( lower_bound , upper_bound ) + 1j * random.uniform ( lower_bound , upper_bound ) for m in range ( -l , 0 ) ] for l in range ( 1 , lmax + 1 ) ]
+    
+    coeffs = [ [ negative_coeffs[ l-1 ][ m+l ] if m < 0
+                 else random.uniform ( lower_bound , upper_bound ) + 1j * 0.0 if m == 0
+                 else (-1) ** m * numpy.conj ( negative_coeffs[ l-1 ][ m-l ] )
+                 for m in range ( -l , l+1 ) ] for l in range ( 1 , lmax + 1 ) ]
+    
+    return coeffs
+
+def random_vsh_coeffs ( lmax , lower_bound , upper_bound ):
+    vsh_E_coeffs = random_aQlm_coeffs ( lmax , lower_bound , upper_bound )
+    vsh_B_coeffs = random_aQlm_coeffs ( lmax , lower_bound , upper_bound )
+        
+    return vsh_E_coeffs , vsh_B_coeffs
+
+def generate_model ( coeffs , VSH_bank ):
+    # Generate model of PMs from a^Q_lm coefficients and VSH
+
+    v_Q = numpy.sum ( [ numpy.sum ( [ 
+                        coeffs['Re[a^' + Q + '_' + str(l) + '0]'] * VSH_bank['Re[Y^' + Q + '_' + str(l) + '0]'] 
+                        + 2 * numpy.sum ( [ 
+                        coeffs['Re[a^' + Q + '_'+str(l)+str(m) + ']'] * VSH_bank['Re[Y^' + Q + '_' + str(l) + str(m) + ']'] 
+                        - coeffs['Im[a^'+ Q + '_'+str(l)+str(m) + ']'] * VSH_bank['Im[Y^' + Q + '_' + str(l) + str(m) + ']'] 
+                        for m in range ( 1 , l + 1 ) ] , axis=0 )
+                    for l in range ( 1 , c.Lmax + 1 ) ] , axis=0 )
+                for Q in [ 'E' , 'B' ] ] , axis=0 )
+    
+    return v_Q
+
+def covariant_matrix ( errors , corr ):
+    # Compute the covariant matrix from errors and correlation
+
+    covariant_matrix = numpy.einsum ( '...i,...j->...ij' , errors , errors )
+    
+    covariant_matrix[...,0,1] = covariant_matrix[...,1,0] = numpy.multiply ( covariant_matrix[...,1,0] , corr.flatten() )
+    return covariant_matrix
+
+def R_values ( pm , invcovs , model ):
+    # Compute R values from data, model, and the inverse of the covariant matrix
+
+    M = pm - model
+    
+    R_values = numpy.sqrt ( numpy.einsum ( '...i,...ij,...j->...' , M , invcovs , M ) )
+        
+    return R_values
+
+def permissive_log_likelihood ( R_values ):
+
+    condition = R_values > 1.0e-3
+    print(R_values)
+    
+    modify_R_values = numpy.extract(condition, R_values)
+    print(modify_R_values)
+
+    log_likelihood = numpy.log ( ( 1. - numpy.exp ( - modify_R_values ** 2 / 2.) ) / ( modify_R_values ** 2 ) ).sum()
+    
+    return log_likelihood
+    
+def quadratic_likelihood ( R_values ):
+    quadratic_likelihood = ( 0.5 * R_values ** 2 ).sum()
+    
+    return quadratic_likelihood
 
 
-
-
-
+def logLfunc(R):
+    return numpy.log( ( 1 - numpy.exp(-0.5*R) ) / (0.5*R) )
     
     
     

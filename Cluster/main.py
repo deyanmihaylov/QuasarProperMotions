@@ -20,6 +20,7 @@ from utils import *
 
 plotting = False
 pm_histogram = False
+VSH_matrix = True
 benchmarking = False
 
 parser = argparse.ArgumentParser()
@@ -135,6 +136,11 @@ if plotting:
 if pm_histogram:
     data.pm_hist ( dir_path + "pm_histogram.png" )
 
+if VSH_matrix:
+    data.vsh_matrix_plot ( dir_path + "vsh_matrix.png" )
+
+exit()
+
 # Analyze the dataset
 
 def R_values ( pm , invcovs , model ):
@@ -158,7 +164,7 @@ class VSHmodel(cpnest.model.Model):
 
     def __init__(self):
 
-        self.prior_bound_aQlm = 1.0
+        self.prior_bound_aQlm = 0.1
         self.names = []
         self.bounds = []
         
