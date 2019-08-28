@@ -9,6 +9,7 @@ from utils import *
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 
 import config as c
 
@@ -97,9 +98,23 @@ class AstrometricDataframe:
 		plt.savefig ( outfile )
 
 	def vsh_matrix_plot ( self , outfile ):
+		def vsh_name_sort ( name ):
+			if name[5] == 'E':
+				Q = '1'
+			else:
+				Q = '2'
+
+			return name[7] + name[8] + Q + name[0]
+
 		prefactor = 4 * numpy.pi / self.n_objects
 
-		names = list ( self.VSH.keys() )
+		vsh_names = list ( self.VSH.keys() )
+
+		vsh_names.sort(key=vsh_name_sort)
+
+		print (vsh_names)
+
+		return 0
 
 		matrix = numpy.zeros( (len(names), len(names)) )
 
@@ -122,10 +137,14 @@ class AstrometricDataframe:
 				Y = numpy.real(Y) if part_y=='R' else numpy.imag(Y)
 		        
 				matrix[i,j] = prefactor * numpy.einsum ( "...j,...j->..." , X , Y ).sum()
+
+
+		print (matrix.min())
 		        
+		plt.figure ( figsize=(10,8) )
 		plt.clf ()
-		plt.imshow ( matrix )
-		plt.xticks ( numpy.arange(len(names)) , names , rotation=90)
+		plt.imshow( matrix )
+		plt.xticks ( numpy.arange(len(names)) , names , rotation=45)
 		plt.yticks ( numpy.arange(len(names)) , names)
 		plt.colorbar ()
 		plt.savefig ( outfile )
@@ -136,12 +155,13 @@ class AstrometricDataframe:
 
 		names = list ( self.VSH.keys() )
 
-		matrix = numpy.zeros( (len(names), len(names)) )
-
 		max_corr = []
+		max_corr_names = []
 
-		for i in range ( 1 , c.Lmax + 1 ):
-			Lnames = [name for name in names if name[7] == str (c.Lmax)]
+		for l in range ( 1 , c.Lmax + 1 ):
+			Lnames = [name for name in names if name[7] == str (l)]
+
+			matrix = numpy.zeros( (len(Lnames), len(Lnames)) )
 
 			for i, n_x in enumerate(Lnames):
 				part_x = n_x.split('^')[0][0]
@@ -164,15 +184,27 @@ class AstrometricDataframe:
 					matrix[i,j] = prefactor * numpy.einsum ( "...j,...j->..." , X , Y ).sum()
 
 			corr = []
-			for k in range(len(matrix)):
-				for j in range(k):
-					x = matrix[k,j] / numpy.sqrt(matrix[k,k]*matrix[j,j])
-					corr.append(x)
+			corr_names1 = []
+			corr_names2 = []
 
-			max_corr.append (numpy.array(corr).max())
-		        
+			for k in range(len(matrix)):
+				for m in range(k):
+					x = matrix[k,m] / numpy.sqrt(matrix[k,k]*matrix[m,m])
+					corr.append(x)
+					corr_names1.append(k)
+					corr_names2.append(m)
+
+			max_corr.append (numpy.array(numpy.abs(corr)).max())
+
+			max_name1 = corr_names1[numpy.array(numpy.abs(corr)).argmax()]
+			max_name2 = corr_names2[numpy.array(numpy.abs(corr)).argmax()]
+
+			max_corr_names.append (Lnames[max_name1] + " - " + Lnames[max_name2])
+		
+		plt.figure ( figsize=(10,5) )
 		plt.clf ()
 		plt.scatter ( numpy.arange(1,c.Lmax+1) , numpy.array(max_corr) )
+		plt.xticks ( numpy.arange(1,c.Lmax+1) , max_corr_names )
 		plt.savefig ( outfile )
 		plt.clf()
 
@@ -259,17 +291,17 @@ def import_Gaia_data (path_to_Gaia_data):
                       'pmra_pmdec_corr']
 
     dataset.dropna ( axis=0,
-                    how='any',
-                    thresh=None,
-                    subset=dropna_columns,
-                    inplace=True)
+                     how='any',
+                     thresh=None,
+                     subset=dropna_columns,
+                     inplace=True)
     
     new_dataframe = AstrometricDataframe()
     
     new_dataframe.positions = dataset[[ 'ra' , 'dec' ]].values
     new_dataframe.positions = deg_to_rad ( new_dataframe.positions )
 
-    new_dataframe.n_objects = new_dataframe.positions.shape[0]
+    new_dataframe.n_objects = dataset.shape[0]
     
     new_dataframe.positions_err = dataset[[ 'ra_error' , 'dec_error' ]].values
     

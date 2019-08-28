@@ -21,7 +21,7 @@ from utils import *
 plotting = False
 pm_histogram = False
 VSH_matrix = True
-VSH_corr = True
+VSH_corr = False
 benchmarking = False
 
 parser = argparse.ArgumentParser()
