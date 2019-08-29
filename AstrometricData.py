@@ -10,6 +10,17 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
+
+def covariant_matrix(errors, corr):
+    """
+    Function for computing the covariant matrix from errors and correlations  
+    """
+    covariant_matrix = numpy.einsum('...i,...j->...ij', errors, errors )
+    covariant_matrix[...,0,1] = covariant_matrix[...,1,0] = numpy.multiply(covariant_matrix[...,1,0], corr.flatten())
+    return covariant_matrix
+
+
+
 class AstrometricDataframe:
     def __init__(self):
 
