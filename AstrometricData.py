@@ -42,7 +42,8 @@ class AstrometricDataframe:
 
         self.inv_proper_motion_error_matrix = np.array ([])
 
-        self.VSH_bank = dict()
+        self.basis = dict()
+        self.which_basis = ""
 
 
     def deg_to_rad(self, degree_vals):
@@ -138,7 +139,7 @@ class AstrometricDataframe:
                 
         self.inv_proper_motion_error_matrix = np.linalg.inv ( covariance )
                 
-        self.VSH_bank = self.generate_VSH_bank()
+        self.basis = self.generate_VSH_bank()
 	
 	
     def non_uniform_random_positions(self, eps=0.2):
@@ -180,7 +181,7 @@ class AstrometricDataframe:
         self.non_uniform_random_positions(eps=eps)
 	
         # Compute the VSH bank
-        self.VSH_bank = self.generate_VSH_bank()
+        self.basis = self.generate_VSH_bank()
             
         # Proper Motion Errors
         errors = np.zeros((self.n_objects, 2))
@@ -203,7 +204,7 @@ class AstrometricDataframe:
                 par[ 'a^E_' + str(l) + ',' + str(m) ] = 0.
                 par[ 'a^B_' + str(l) + ',' + str(m) ] = 0.
         par[ 'a^E_1,0' ] = dipole
-        self.proper_motions += generate_model(par, self.VSH_bank)
+        self.proper_motions += generate_model(par, self.basis)
     
 
     def generate_VSH_bank(self):
@@ -217,8 +218,11 @@ class AstrometricDataframe:
             for m in range(-l, l+1):
                 VSH_bank['Y^E_' + str(l) + ',' + str(m)] = CT.Cartesian_to_geographic_vector(self.positions_Cartesian, np.real(VSH.RealVectorSphericalHarmonicE (l, m, self.positions_Cartesian)))
                 VSH_bank['Y^B_' + str(l) + ',' + str(m)] = CT.Cartesian_to_geographic_vector(self.positions_Cartesian, np.real(VSH.RealVectorSphericalHarmonicB (l, m, self.positions_Cartesian)))
-                        
+            
+        self.which_basis = "VSH basis"
+
         return VSH_bank
+
 
 
     def compute_overlap_matrix(self):
@@ -267,11 +271,16 @@ class AstrometricDataframe:
 	
 	new_basis = dict( { name:np.zeros((data.n_objects, 2)) for name in self.names } )
 	
+        invL = np.linalg.inv(self.Cholesky_overlap_matrix)
+
     	for i in range(data.n_objects):
             v = np.array([ data.VSH[name][i] for name in names])
-        u = np.einsum('ij,ik->jk', invL, v)
-        for j, name in enumerate(names):
-            data.VSHnew[name][i] = u[j]
+            u = np.einsum('ij,ik->jk', invL, v)
+            for j, name in enumerate(names):
+                new_basis[name][i] = u[j]
+
+        self.basis = new_basis
+        self.which_basis = "modified orthogonal basis"
 
 
     def plot_overlap_matrix(self, Matrix):
