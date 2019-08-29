@@ -219,6 +219,28 @@ class AstrometricDataframe:
         return VSH_bank
 
 
+    def compute_overlap_matrix(self):
+        """
+        Calculate the overlap matrix between VSH
+        """
+        name = []
+        for Q in ["E", "B"]:
+            for l in range(1, self.Lmax+1):
+                for m in range(-l, l+1):
+                    name.append("Y^"+Q+"_"+str(l)+","+str(m))
+
+        pass
+
+
+    def plot_overlap_matrix(self, output):
+        """
+        plot the block imshow matrix to file
+        """
+        pass
+
+    
+
+    
 
 
 
