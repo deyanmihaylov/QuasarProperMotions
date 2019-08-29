@@ -22,9 +22,11 @@ def covariant_matrix(errors, corr):
 
 
 class AstrometricDataframe:
-    def __init__(self):
+    def __init__(self, Lmax):
 
         self.n_objects = 0
+
+        self.Lmax = Lmax
         
         self.positions = np.array ([])
         self.positions_Cartesian = np.array ([])
@@ -35,14 +37,13 @@ class AstrometricDataframe:
 
         self.VSH_bank = dict()
 
+	def deg_to_rad ( degree_vals ):
+		return np.deg2rad ( degree_vals )
 
     def load_Gaia_data(self , path):
         """
         Load the postions, proper motions and proper motion errors from file
         """
-            
-        def deg_to_rad ( degree_vals ):
-            return np.deg2rad ( degree_vals )
                 
         dataset = pd.read_csv(path,
             	                      sep=',',
@@ -125,7 +126,7 @@ class AstrometricDataframe:
                 
         self.inv_proper_motion_error_matrix = np.linalg.inv ( covariance )
                 
-        self.VSH_bank = generate_VSH_bank ( self )
+        self.VSH_bank = self.generate_VSH_bank()
                 
         return 0
 
@@ -181,28 +182,19 @@ class AstrometricDataframe:
         par[ 'Re[a^E_10]' ] = dipole
         self.proper_motions += Model(par, self.VSH_bank, Lmax)
     
-    def generate_VSH_bank(self):
-        """
-        Precompute VSH functions at QSO locations 
-        """
-           
-            # VSH_bank = {}
+	def generate_VSH_bank(self):
+		"""
+		Precompute VSH functions at QSO locations 
+		"""
 
-            # for l in range ( 1 , c.Lmax + 1 ):
-            #     VSH_bank['Re[Y^E_' + str(l) + '0]'] = Cartesian_to_geographic_vector (data.positions_Cartesian , np.real ( VectorSphericalHarmonicE ( l , 0 , data.positions_Cartesian ) ) )
+		VSH_bank = {}
 
-            #     VSH_bank['Re[Y^B_' + str(l) + '0]'] = Cartesian_to_geographic_vector (data.positions_Cartesian , np.real ( VectorSphericalHarmonicB ( l , 0 , data.positions_Cartesian ) ) )
-
-            #     for m in range ( 1 , l + 1 ):
-            #         VSH_bank['Re[Y^E_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , np.real ( VectorSphericalHarmonicE ( l , m , data.positions_Cartesian ) ) )
-
-            #         VSH_bank['Im[Y^E_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , np.imag ( VectorSphericalHarmonicE ( l , m , data.positions_Cartesian ) ) )
-
-            #         VSH_bank['Re[Y^B_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , np.real ( VectorSphericalHarmonicB ( l , m , data.positions_Cartesian ) ) )
-
-            #         VSH_bank['Im[Y^B_' + str(l) + str(m) + ']'] = Cartesian_to_geographic_vector (data.positions_Cartesian , np.imag ( VectorSphericalHarmonicB ( l , m , data.positions_Cartesian ) ) )
+		for l in range(1, self.Lmax + 1):
+			for m in range(-l, l+1):
+				VSH_bank['Y^E_' + str(l) + ',' + str(m)] = CT.Cartesian_to_geographic_vector(self.positions_Cartesian, np.real(VSH.RealVectorSphericalHarmonicE (l, m, self.positions_Cartesian)))
+				VSH_bank['Y^B_' + str(l) + ',' + str(m)] = CT.Cartesian_to_geographic_vector(self.positions_Cartesian, np.real(VSH.RealVectorSphericalHarmonicB (l, m, self.positions_Cartesian)))
                         
-            # return VSH_bank
+        return VSH_bank
 
 
 
