@@ -240,8 +240,8 @@ class AstrometricDataframe:
         if proper_motions:
             Nstars = len(self.positions)
             for i in range(Nstars):
-                Ra = [ ra[i] - proper_motion_scale*self.proper_motions[i,0], ra[i] + proper_motion_scale*self.proper_motions[i,0] ]
-                Dec = [ dec[i] - proper_motion_scale*self.proper_motions[i,1], dec[i] + proper_motion_scale*self.proper_motions[i,1] ]
+                Ra = [ ra[i] - 0*proper_motion_scale*self.proper_motions[i,0], ra[i] + proper_motion_scale*self.proper_motions[i,0] ]
+                Dec = [ dec[i] - 0*proper_motion_scale*self.proper_motions[i,1], dec[i] + proper_motion_scale*self.proper_motions[i,1] ]
                 ax.plot(Ra, Dec, '-', color='r', alpha=0.6)
 
         # plot grid lines
