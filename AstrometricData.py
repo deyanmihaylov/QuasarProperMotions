@@ -149,8 +149,8 @@ class AstrometricDataframe:
 	eps: float
             controls this distribution; large eps (e.g. 100) is uniform, small eps (e.g. 0.1) is very non-uniform
 	"""
-        theta = np.arccos(truncnorm.rvs(-1./eps, 1./eps, 0., eps, size=data.n_objects))
-        phi = np.random.uniform(0, 2*np.pi, size=data.n_objects)
+        theta = np.arccos(truncnorm.rvs(-1./eps, 1./eps, 0., eps, size=self.n_objects))
+        phi = np.random.uniform(0, 2*np.pi, size=self.n_objects)
         ra, dec = phi, 0.5*np.pi-theta
         self.positions = np.array(list(zip(ra, dec)))
         self.positions_Cartesian = CT.geographic_to_Cartesian_point(self.positions)
