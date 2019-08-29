@@ -199,8 +199,8 @@ class AstrometricDataframe:
         par = {}
         for l in range(1, self.Lmax+1):
             for m in range(0, l+1):
-                par[ 'a^E_' + str(l) + ',' + + str(m) ] = 0.
-                par[ 'a^B_' + str(l) + ',' + + str(m) ] = 0.
+                par[ 'a^E_' + str(l) + ',' + str(m) ] = 0.
+                par[ 'a^B_' + str(l) + ',' + str(m) ] = 0.
         par[ 'a^E_1,0]' ] = dipole
         self.proper_motions += generate_model(par, self.VSH_bank)
     
