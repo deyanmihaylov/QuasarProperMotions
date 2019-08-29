@@ -311,6 +311,27 @@ class AstrometricDataframe:
         plt.tight_layout()
         plt.savefig(output)
         plt.clf()
+
+    def eccentricity(self, axes):
+        return np.sqrt(1. - (np.min(axes, axis=1)/np.max(axes, axis=1))**2)
+
+    def ecc_hist(self, outfile):
+        sq_eigenvalues, eigenvectors = np.linalg.eig(data.inv_proper_motion_error_matrix)
+
+        eigenvalues = np.sqrt(sq_eigenvalues)
+
+        eccentricities = eccentricity(eigenvalues)
+        plt.hist(eccentricities)
+            
+        plt.xlabel('PM errors eccentricity')
+        plt.ylabel('Number of quasars')
+        plt.title('Histogram of PM errors eccentricity')
+        plt.yscale('log')
+
+        plt.tight_layout()
+        plt.savefig(outfile)
+        plt.clf()
+        
         
 
     def plot(self, outfile, proper_motions=False, projection='mollweide', proper_motion_scale=1):
