@@ -140,6 +140,8 @@ class AstrometricDataframe:
         self.inv_proper_motion_error_matrix = np.linalg.inv ( covariance )
                 
         self.generate_VSH_bank()
+
+        self.compute_overlap_matrix()
 	
 	
     def non_uniform_random_positions(self, eps=0.2):
@@ -181,6 +183,7 @@ class AstrometricDataframe:
 	
         # Compute the VSH bank
         self.generate_VSH_bank()
+        self.compute_overlap_matrix()
             
         # Proper Motion Errors
         errors = np.zeros((self.n_objects, 2))
@@ -197,7 +200,7 @@ class AstrometricDataframe:
         self.proper_motions += np.array(list(zip(pmra_noise, pmdec_noise)))
 	
 	
-    def inject_proper_motions(self, dipole=0.0, quadrupole=0.0):
+    def inject_proper_motions(self, dipole=0.0, quadrupole=0.0, dir_path=None):
 	"""
 	Inject some proper motions into the data
 	
@@ -215,6 +218,15 @@ class AstrometricDataframe:
                 par[ 'a^B_' + str(l) + ',' + str(m) ] = 0.
         par[ 'a^E_1,0' ] = dipole
         self.proper_motions += generate_model(par, self.basis)
+
+        if dir_path is not None:
+            par_file_open = open(dir_path + "/injected_par.txt" , "w")
+            par_file = csv.writer(par_file_open)
+        
+            for key, val in par.items():
+                par_file.writerow([key, val])
+
+            par_file_open.close()
 	
 	# TO DO: implement GR quadrupole injection
 	
@@ -277,6 +289,8 @@ class AstrometricDataframe:
 
         self.basis = new_basis
         self.which_basis = "modified orthogonal basis"
+
+        self.compute_overlap_matrix()
 
 
     def plot_overlap_matrix(self, output):
