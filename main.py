@@ -79,7 +79,7 @@ if args.plotting:
     data.pm_hist(dir_path + "/qso_pm_hist.png")
     data.ecc_hist(dir_path + "/qso_err_ecc_hist.png")
     data.plot_overlap_matrix(dir_path + "/qso_vsh_overlaps.png")
-
+exit()
 if args.mod_basis:
     data.change_basis()
     if args.plotting:
