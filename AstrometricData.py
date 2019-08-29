@@ -254,6 +254,11 @@ class AstrometricDataframe:
                 assert np.max(abs(np.imag(Y))) == 0
        
                 self.overlap_matrix[i,j] = prefactor * np.einsum ( "...j,...j->..." , X , Y ).sum()
+	
+
+	
+	
+	
 
     def plot_overlap_matrix(self, Matrix):
         """
