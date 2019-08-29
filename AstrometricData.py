@@ -201,16 +201,16 @@ class AstrometricDataframe:
 	
 	
     def inject_proper_motions(self, dipole=0.0, quadrupole=0.0, dir_path=None):
-	"""
-	Inject some proper motions into the data
+        """
+        Inject some proper motions into the data
 	
-	INPUTS
-	------
-	dipole: float
+        INPUTS
+        ------
+        dipole: float
 		the strength of the a^E_1,0 component
-	quadrupole: float
+        quadrupole: float
 		the strength of the GW background [not implemented]
-	"""
+        """
         par = {}
         for l in range(1, self.Lmax+1):
             for m in range(-l, l+1):

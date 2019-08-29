@@ -60,7 +60,7 @@ class model(cpnest.model.Model):
         self.whichlikelihood = whichlikelihood
         self.prior_bound = prior_bound
         
-        self.names = self.dataset.names
+        self.names = [ name.replace("Y","a") for name in self.dataset.names]
         
         self.bounds = [[ -self.prior_bound , self.prior_bound ] for i in range(len(self.names))]
                         
@@ -71,7 +71,6 @@ class model(cpnest.model.Model):
         """
         The log-likelihood function
         """
-        print(self.dataset.basis.keys())
         model_pm = Model.generate_model(params, self.dataset.basis)
 
         Rvals = R_values(self.dataset.proper_motions, self.dataset.inv_proper_motion_error_matrix, model_pm)
