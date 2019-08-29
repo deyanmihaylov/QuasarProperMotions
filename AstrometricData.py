@@ -195,7 +195,29 @@ class AstrometricDataframe:
         pmra_noise = np.array([ np.random.normal(0, noise/np.cos(self.positions[i][1])) for i in range(self.n_objects)])
         pmdec_noise = np.random.normal(0, noise, size=self.n_objects)
         self.proper_motions += np.array(list(zip(pmra_noise, pmdec_noise)))
-    
+	
+	
+    def inject_proper_motions(self, dipole=0.0, quadrupole=0.0):
+	"""
+	Inject some proper motions into the data
+	
+	INPUTS
+	------
+	dipole: float
+		the strength of the a^E_1,0 component
+	quadrupole: float
+		the strength of the GW background [not implemented]
+	"""
+        par = {}
+        for l in range(1, self.Lmax+1):
+            for m in range(-l, l+1):
+                par[ 'a^E_' + str(l) + ',' + str(m) ] = 0.
+                par[ 'a^B_' + str(l) + ',' + str(m) ] = 0.
+        par[ 'a^E_1,0' ] = dipole
+        self.proper_motions += generate_model(par, self.basis)
+	
+	# TO DO: implement GR quadrupole injection
+	
 
     def generate_VSH_bank(self):
         """
