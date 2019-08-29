@@ -2,6 +2,7 @@ import argparse
 
 import AstrometricData as AD
 import Sampler
+from PostProcessing import post_process_results
 
 import csv
 import time
@@ -99,7 +100,7 @@ nest = cpnest.CPNest ( mymodel ,
 nest.run()
 nest.get_nested_samples()
 nest.get_posterior_samples()
-
+post_process_results(os.path.join(dir_path, "posterior.data"))
 
 
 
