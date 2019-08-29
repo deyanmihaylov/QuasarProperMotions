@@ -156,7 +156,7 @@ def RealVectorSphericalHarmonicE ( l , m , n ):
     if m < 0:
         return np.sqrt(2) * ( (-1) ** np.abs(m) ) * np.imag ( VectorSphericalHarmonicE ( l , np.abs(m) , n ) )
     elif m == 0:
-        return VectorSphericalHarmonicE ( l , 0 , n )
+        return np.real(VectorSphericalHarmonicE ( l , 0 , n ))
     else:
         return np.sqrt(2) * ( (-1) ** np.abs(m) ) * np.real ( VectorSphericalHarmonicE ( l , np.abs(m) , n ) )
 
@@ -164,6 +164,6 @@ def RealVectorSphericalHarmonicB ( l , m , n ):
     if m < 0:
         return np.sqrt(2) * ( (-1) ** np.abs(m) ) * np.imag ( VectorSphericalHarmonicB ( l , np.abs(m) , n ) )
     elif m == 0:
-        return VectorSphericalHarmonicB ( l , 0 , n )
+        return np.real(VectorSphericalHarmonicB ( l , 0 , n ))
     else:
         return np.sqrt(2) * ( (-1) ** np.abs(m) ) * np.real ( VectorSphericalHarmonicB ( l , np.abs(m) , n ) )
