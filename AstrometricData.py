@@ -32,6 +32,8 @@ class AstrometricDataframe:
         """
         self.n_objects = 0
         self.Lmax = Lmax
+	
+	assert Lmax<10, "WARNING, the way the names are currently coded will break for double digit l"
         
         self.positions = np.array ([])
         self.positions_Cartesian = np.array ([])
