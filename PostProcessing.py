@@ -51,4 +51,14 @@ def post_process_results(posterior_file):
     LimitsFile = posterior_file[0:-13] + "Limits.txt"
 
     with open(LimitsFile, 'w') as text_file:
-        text_file.write("Q90: {0}".format(Q90))
+        text_file.write("Q90: {0}\n".format(Q90))
+
+
+    C2 = 4 * np.pi**2 / 9
+
+    chi_90 = 16.
+
+    A90 = np.sqrt(Q90/(C2*chi_90))
+
+    with open(LimitsFile, 'a') as text_file:
+        text_file.write("A90: {0}\n".format(A90))
