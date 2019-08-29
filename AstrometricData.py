@@ -316,16 +316,15 @@ class AstrometricDataframe:
         return np.sqrt(1. - (np.min(axes, axis=1)/np.max(axes, axis=1))**2)
 
     def ecc_hist(self, outfile):
-        self.inv_proper_motion_error_matrix[...,0,0] = self.inv_proper_motion_error_matrix[...,0,0] / (np.cos(self.positions[:,0]) ** 2)
-        self.inv_proper_motion_error_matrix[...,1,0] = self.inv_proper_motion_error_matrix[...,1,0] / np.cos(self.positions[:,0])
-        self.inv_proper_motion_error_matrix[...,0,1] = self.inv_proper_motion_error_matrix[...,0,1] / np.cos(self.positions[:,0])
+        self.inv_proper_motion_error_matrix[...,0,0] = self.inv_proper_motion_error_matrix[...,0,0] / (np.cos(self.positions[:,1]) ** 2)
+        self.inv_proper_motion_error_matrix[...,1,0] = self.inv_proper_motion_error_matrix[...,1,0] / np.cos(self.positions[:,1])
+        self.inv_proper_motion_error_matrix[...,0,1] = self.inv_proper_motion_error_matrix[...,0,1] / np.cos(self.positions[:,1])
 
         sq_eigenvalues, eigenvectors = np.linalg.eig(self.inv_proper_motion_error_matrix)
 
         eigenvalues = np.sqrt(sq_eigenvalues)
 
         eccentricities = self.eccentricity(eigenvalues)
-        print (eccentricities)
 
         plt.hist(eccentricities)
             
