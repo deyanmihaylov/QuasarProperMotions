@@ -223,8 +223,6 @@ class AstrometricDataframe:
 
         self.basis = VSH_bank
 
-
-
     def compute_overlap_matrix(self):
         """
         Calculate the overlap matrix (and its Cholesky decomposition) between VSH basis functions
@@ -237,7 +235,7 @@ class AstrometricDataframe:
                 for Q in ["E", "B"]:
                     self.names.append("Y^"+Q+"_"+str(l)+","+str(m))
 
-        basis_Cart = {name: CT.geographic_to_Cartesian_vector(self.basis[name]) for name in self.names}
+        basis_Cart = {name: CT.geographic_to_Cartesian_vector(self.positions, self.basis[name]) for name in self.names}
 
         self.overlap_matrix = np.zeros((len(self.names), len(self.names)))
 
