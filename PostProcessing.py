@@ -51,4 +51,4 @@ def post_process_results(posterior_file):
     LimitsFile = posterior_file[0:-13] + "Limits.txt"
 
     with open(LimitsFile, 'w') as text_file:
-        text_file.write("Q90: {0}\nA90: {1}".format(Q90, -999))
+        text_file.write("Q90: {0}".format(Q90))
