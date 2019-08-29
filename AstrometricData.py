@@ -176,7 +176,7 @@ class AstrometricDataframe:
         self.n_objects = NumObjects
 
         # Positions
-        self.non_uniform_random_positions()
+        self.non_uniform_random_positions(eps=eps)
 	
         # Compute the VSH bank
         self.VSH_bank = self.generate_VSH_bank()
@@ -201,7 +201,7 @@ class AstrometricDataframe:
             for m in range(-l, l+1):
                 par[ 'a^E_' + str(l) + ',' + str(m) ] = 0.
                 par[ 'a^B_' + str(l) + ',' + str(m) ] = 0.
-        par[ 'a^E_1,0]' ] = dipole
+        par[ 'a^E_1,0' ] = dipole
         self.proper_motions += generate_model(par, self.VSH_bank)
     
 
