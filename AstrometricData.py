@@ -348,7 +348,7 @@ class AstrometricDataframe:
         dec = self.positions[:,1]
 
         # plot the positions
-        ax.plot(ra, dec, 'o', color='r', markersize=1, alpha=0.8)
+        ax.scatter(ra, dec, 'o', color='r', markersize=1, alpha=0.8)
 
         # plot the proper motions 
         if proper_motions:
