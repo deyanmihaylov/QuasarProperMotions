@@ -134,9 +134,25 @@ class AstrometricDataframe:
         self.inv_proper_motion_error_matrix = np.linalg.inv ( covariance )
                 
         self.VSH_bank = self.generate_VSH_bank()
+	
+	
+    def non_uniform_random_positions(self, eps=0.2):
+	"""
+	Generate random positions from a distorted distribution
+	
+	INPUTS
+	------
+	eps: float
+		controls this distribution; large eps (e.g. 100) is uniform, small eps (e.g. 0.1) is very non-uniform
+	"""
+	theta = np.arccos(truncnorm.rvs(-1./eps, 1./eps, 0., eps, size=data.n_objects))
+        phi = np.random.uniform(0, 2*np.pi, size=data.n_objects)
+        ra, dec = phi, 0.5*np.pi-theta
+        self.positions = np.array(list(zip(ra, dec)))
+        self.positions_Cartesian = CT.geographic_to_Cartesian_point(self.positions)
 
 
-    def gen_mock_data(self, NumObjects, eps=0.2, noise=0.1, signal=0.5):
+    def gen_mock_data(self, NumObjects, eps=0.2, noise=0.1, dipole=0.5):
         """
         Simulate the postions, proper motions and proper motion errors
             
@@ -149,45 +165,39 @@ class AstrometricDataframe:
                 eps controls this distribution; large eps (e.g. 100) is uniform, small eps (e.g. 0.1) is very non-uniform
         noise: float
                 The size of the proper motion error [mas/yr]
-        signal: float
+        dipole: float
                 Size of the dipole (a^E_10) to be injected [mas/yr]
         """
             
         # Positions
-        theta = np.arccos(truncnorm.rvs(-1./eps, 1./eps, 0., eps, size=data.n_objects))
-        phi = np.random.uniform(0, 2*np.pi, size=data.n_objects)
-        ra, dec = phi, 0.5*np.pi-theta
-        self.positions = np.array(list(zip(ra, dec)))
-        self.positions_Cartesian = CT.geographic_to_Cartesian_point(self.positions)
+        self.non_uniform_random_positions()
+	
+	# Compute the VSH banlk
+	self.VSH_bank = self.generate_VSH_bank()
             
         # Proper Motion Errors
-        errors = np.zeros((self.n_objects, 2))
+	errors = np.zeros((self.n_objects, 2))
         errors[:,0] = noise * np.reciprocal(np.cos(self.positions[:,1])) # RA error
         errors[:,1] = noise * np.ones(len(self.proper_motions_err))      # DEC error
         cov = np.einsum('...i,...j->...ij', errors, errors)              # Diagonal cov matrix
         self.inv_proper_motion_error_matrix = np.linalg.inv(cov)
             
         # Proper Motions - noise component
-        pmra_noise = np.array([ np.random.normal(0, noise/np.cos(self.positions[i][1])) for i in range(self.n_objects)])
+	self.proper_motions = np.zeros((self.n_objects, 2))
+	pmra_noise = np.array([ np.random.normal(0, noise/np.cos(self.positions[i][1])) for i in range(self.n_objects)])
         pmdec_noise = np.random.normal(0, noise, size=self.n_objects)
         self.proper_motions += np.array(list(zip(pmra_noise, pmdec_noise)))
             
         # Proper Motions - signal component
         par = {}
-        Lmax_temp = 1
-        for l in range(1, Lmax_temp+1):
+        for l in range(1, self.Lmax+1):
             for m in range(0, l+1):
-                if m==0:
-                    par[ 'Re[a^E_' + str(l) +'0]' ] = 0.
-                    par[ 'Re[a^B_' + str(l) +'0]' ] = 0.
-                else:
-                    par[ 'Re[a^E_' + str(l) + str(m) + ']' ] = 0.
-                    par[ 'Im[a^E_' + str(l) + str(m) + ']' ] = 0.
-                    par[ 'Re[a^B_' + str(l) + str(m) + ']' ] = 0.
-                    par[ 'Im[a^B_' + str(l) + str(m) + ']' ] = 0.
-        par[ 'Re[a^E_10]' ] = dipole
+                par[ 'a^E_' + str(l) + ',' + + str(m) ] = 0.
+		par[ 'a^B_' + str(l) + ',' + + str(m) ] = 0.
+        par[ 'a^E_1,0]' ] = dipole
         self.proper_motions += Model(par, self.VSH_bank, Lmax)
     
+
     def generate_VSH_bank(self):
         """
         Precompute VSH functions at QSO locations 
