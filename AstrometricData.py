@@ -33,7 +33,7 @@ class AstrometricDataframe:
         self.n_objects = 0
         self.Lmax = Lmax
 	
-	assert Lmax<10, "WARNING, the way the names are currently coded will break for double digit l"
+        assert Lmax<10, "WARNING, the way the names are currently coded will break for double digit l"
         
         self.positions = np.array ([])
         self.positions_Cartesian = np.array ([])
@@ -236,21 +236,21 @@ class AstrometricDataframe:
 
         prefactor = 4 * np.pi / self.n_objects
 
-		for i, name_x in enumerate(self.names):
-			Q_x = name_x[2]
-			l_x = int(name_x[4])
-			m_x = int(name_x.split(',')[1])
+        for i, name_x in enumerate(self.names):
+            Q_x = name_x[2]
+            l_x = int(name_x[4])
+            m_x = int(name_x.split(',')[1])
 		    
-			for j, name_y in enumerate(self.names):
-				Q_y = name_y[2]
-				l_y = int(name_y[4])
-				m_y = int(name_y.split(',')[1])
+            for j, name_y in enumerate(self.names):
+                Q_y = name_y[2]
+                l_y = int(name_y[4])
+                m_y = int(name_y.split(',')[1])
 		        
-				X = RealVectorSphericalHarmonicE (l_x, m_x, self.positions_Cartesian) if Q_x=='E' else RealVectorSphericalHarmonicB (l_x, m_x, self.positions_Cartesian)
+                X = VSH.RealVectorSphericalHarmonicE (l_x, m_x, self.positions_Cartesian) if Q_x=='E' else VSH.RealVectorSphericalHarmonicB (l_x, m_x, self.positions_Cartesian)
 		        
-				Y = VectorSphericalHarmonicE (l_y, m_y, self.positions_Cartesian) if Q_y=='E' else VectorSphericalHarmonicB (l_y, m_y, self.positions_Cartesian)
+                Y = VSH.RealVectorSphericalHarmonicE (l_y, m_y, self.positions_Cartesian) if Q_y=='E' else VSH.RealVectorSphericalHarmonicB (l_y, m_y, self.positions_Cartesian)
 		        
-				self.overlap_matrix[i,j] = prefactor * np.einsum ( "...j,...j->..." , X , Y ).sum()
+        self.overlap_matrix[i,j] = prefactor * np.einsum ( "...j,...j->..." , X , Y ).sum()
 
     def plot_overlap_matrix(self, output):
         """
