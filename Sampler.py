@@ -71,9 +71,10 @@ class model(cpnest.model.Model):
         """
         The log-likelihood function
         """
+        print(self.dataset.basis.keys())
         model_pm = Model.generate_model(params, self.dataset.basis)
 
-        Rvals = R_values(self.data.proper_motions, self.dataset.inv_proper_motion_error_matrix, model_pm)
+        Rvals = R_values(self.dataset.proper_motions, self.dataset.inv_proper_motion_error_matrix, model_pm)
 
         Rvals = np.maximum(Rvals, self.tol)
 
