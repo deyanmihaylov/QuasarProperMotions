@@ -1,1 +1,1 @@
-directory, submitted, start_time, end_time, duration, Lmax, dataset, injection, nthreads, nlive, maxmcmc, mod_basis, log_likelihoodRun_1_420,2019-08-29 16:04:52,1567091092.771755,0,0,4,2,0,2,1024,128,False,permissive
+directory, submitted, start_time, end_time, duration, Lmax, dataset, injection, nthreads, nlive, maxmcmc, mod_basis, log_likelihood
