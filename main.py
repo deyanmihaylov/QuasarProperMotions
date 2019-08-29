@@ -29,17 +29,6 @@ import AstrometricData as AD
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--Lmax',    help='the maximum VSH index [default 4]', type=int, default=4)
 parser.add_argument('--dataset', help='the dataset to use [default 1]', type=int, default=1)

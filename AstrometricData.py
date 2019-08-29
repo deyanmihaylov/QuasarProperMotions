@@ -223,14 +223,32 @@ class AstrometricDataframe:
         """
         Calculate the overlap matrix between VSH
         """
-        name = []
+        self.names = []
+
         for Q in ["E", "B"]:
             for l in range(1, self.Lmax+1):
                 for m in range(-l, l+1):
-                    name.append("Y^"+Q+"_"+str(l)+","+str(m))
+                    self.names.append("Y^"+Q+"_"+str(l)+","+str(m))
 
-        pass
+        self.overlap_matrix = np.zeros((len(self.names), len(self.names)))
 
+        prefactor = 4 * np.pi / self.n_objects
+
+		for i, name_x in enumerate(self.names):
+			Q_x = name_x[2]
+			l_x = int(name_x[4])
+			m_x = int(name_x.split(',')[1])
+		    
+			for j, name_y in enumerate(self.names):
+				Q_y = name_y[2]
+				l_y = int(name_y[4])
+				m_y = int(name_y.split(',')[1])
+		        
+				X = RealVectorSphericalHarmonicE (l_x, m_x, self.positions_Cartesian) if Q_x=='E' else RealVectorSphericalHarmonicB (l_x, m_x, self.positions_Cartesian)
+		        
+				Y = VectorSphericalHarmonicE (l_y, m_y, self.positions_Cartesian) if Q_y=='E' else VectorSphericalHarmonicB (l_y, m_y, self.positions_Cartesian)
+		        
+				self.overlap_matrix[i,j] = prefactor * np.einsum ( "...j,...j->..." , X , Y ).sum()
 
     def plot_overlap_matrix(self, output):
         """
