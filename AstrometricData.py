@@ -32,6 +32,8 @@ class AstrometricDataframe:
         """
         self.n_objects = 0
         self.Lmax = Lmax
+	
+	assert Lmax<10, "WARNING, the way the names are currently coded will break for double digit l"
         
         self.positions = np.array ([])
         self.positions_Cartesian = np.array ([])
@@ -252,18 +254,19 @@ class AstrometricDataframe:
 
     def plot_overlap_matrix(self, output):
         """
-        plot the block imshow matrix to file
+        Plot the overlap matrix
         """
-        pass
+        plt.imshow(self.overlap_matrix)
 
-    
+        plt.xticks(np.arange(len(self.names)), self.names, rotation=90)
+        plt.yticks(np.arange(len(self.names)), self.names)
 
-    
+        plt.colorbar()
 
-
-
-
-
+        plt.tight_layout()
+        plt.savefig(output)
+        plt.clf()
+        
 
     def plot(self, outfile, proper_motions=False, projection='mollweide', proper_motion_scale=1):
         """
@@ -288,7 +291,8 @@ class AstrometricDataframe:
 
         # plot grid lines
         plt.grid(True)
-            
+        
+        plt.tight_layout()
         plt.savefig(outfile)
         plt.clf()
             
@@ -304,6 +308,8 @@ class AstrometricDataframe:
         plt.ylabel('Number of quasars')
         plt.title('Histogram of quasar proper motions')
         plt.yscale('log')
+
+        plt.tight_layout()
         plt.savefig(outfile)
         plt.clf()
             
