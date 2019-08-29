@@ -1,5 +1,5 @@
-import pandas
-import numpy
+import pandas as pd
+import numpy as np
 import csv
 
 import CoordinateTransformations as CT
