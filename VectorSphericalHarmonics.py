@@ -25,7 +25,7 @@
 
 
 
-import numpy as np
+import numpy
 from scipy.special import lpmv
 from math import factorial
 
@@ -35,8 +35,8 @@ from math import factorial
 def NormalisedAssociatedLegendrePolynomial ( l , m , x ):
 
     legendre = lpmv ( m , l , x )
-    norm = ( np.sqrt ( ( 2 * l + 1) / ( 4. * np.pi ) ) 
-            * np.sqrt ( factorial ( l - m ) / factorial ( l + m ) ) ) 
+    norm = ( numpy.sqrt ( ( 2 * l + 1) / ( 4. * numpy.pi ) ) 
+            * numpy.sqrt ( factorial ( l - m ) / factorial ( l + m ) ) ) 
     
     return norm * legendre
 
@@ -59,127 +59,111 @@ def ScalarSphericalHarmonicY ( l , m , n ):
 # The Gradient Vector Spherical Harmonics, ((Y^l_m)^E(n))_i
 # The Variable n Is A Unit Three-Vector (i.e. a point on the sphere)
 def VectorSphericalHarmonicE ( l , m , n ):
-    
+    if n.ndim == 1:
+        n = numpy.array ( [ n ] )
+
     # The Spherical Polar Angles Of The Position Vector n
-    theta = np.arccos ( n[2] / np.sqrt ( np.dot ( n , n ) ) )
-    phi = np.arctan2 ( n[1] , n[0] )
+    theta = numpy.arccos ( numpy.divide( n[...,2] , numpy.sqrt ( numpy.einsum ( "...i,...i->..." , n , n ) ) ) )
+    phi = numpy.arctan2 ( n[...,1] , n[...,0] )
     
     #  Useful to Define x = cos ( theta )
-    x = np.cos ( theta )
+    x = numpy.cos ( theta )
     
     # The Coordinate Basis Vectors Associated With The Spherical Polar Angles
-    e_theta = np.array ( [ x * np.cos ( phi ) , x * np.sin ( phi ) , -np.sqrt ( 1. - x * x ) ] )
-    e_phi = np.array ( [ -np.sin ( phi ) , np.cos ( phi ) , 0. ] )
+    e_theta = numpy.array ( [ x * numpy.cos ( phi ) , x * numpy.sin ( phi ) , -numpy.sqrt ( 1. - x * x ) ] )
+    e_phi = numpy.array ( [ -numpy.sin ( phi ) , numpy.cos ( phi ) , numpy.zeros ( len ( phi ) ) ] )
     
     # The Derivative Of The Spherical Harmonic Function Y^l_m WRT To Theta
     if m == 0:
-        DY_Dtheta = -( -np.sqrt ( l * ( l + 1 ) ) * NormalisedAssociatedLegendrePolynomial ( l , 1 , x ) 
-                     * np.exp ( (1j) * m * phi ) )
+        DY_Dtheta = -( -numpy.sqrt ( l * ( l + 1 ) ) * NormalisedAssociatedLegendrePolynomial ( l , 1 , x ) 
+                     * numpy.exp ( (1j) * m * phi ) )
     elif m == l:
-        DY_Dtheta = ( -np.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
-                     * np.exp ( (1j) * m * phi ) )
+        DY_Dtheta = ( -numpy.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
+                     * numpy.exp ( (1j) * m * phi ) )
     elif m == -l:
-        DY_Dtheta = np.power ( -1. , m) * ( -np.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
-                     * np.exp ( (1j) * m * phi ) )
+        DY_Dtheta = numpy.power ( -1. , m) * ( -numpy.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
+                     * numpy.exp ( (1j) * m * phi ) )
     else:
-        c1 = 0.5 * np.sqrt ( ( l + m ) * ( l - m + 1 ) )
-        c2 = 0.5 * np.sqrt ( ( l + m + 1 ) * ( l - m ) )
+        c1 = 0.5 * numpy.sqrt ( ( l + m ) * ( l - m + 1 ) )
+        c2 = 0.5 * numpy.sqrt ( ( l + m + 1 ) * ( l - m ) )
         DY_Dtheta = -( c1 * NormalisedAssociatedLegendrePolynomial ( l , m-1 , x ) - 
-                     c2 * NormalisedAssociatedLegendrePolynomial ( l , m+1 , x ) ) * np.exp ( (1j) * m * phi )
+                     c2 * NormalisedAssociatedLegendrePolynomial ( l , m+1 , x ) ) * numpy.exp ( (1j) * m * phi )
     
     # The Derivative Of The Spherical Harmonic Function Y^l_m WRT To Phi Divided By Sin(Theta)
-    c1 = np.sqrt ( ( 2*l+1 ) * ( l-m+1 ) * ( l-m+2 ) / ( 2*l+3 ) )
-    c2 = np.sqrt ( ( 2*l+1 ) * ( l+m+1 ) * ( l+m+2 ) / ( 2*l+3 ) )
+    c1 = numpy.sqrt ( ( 2*l+1 ) * ( l-m+1 ) * ( l-m+2 ) / ( 2*l+3 ) )
+    c2 = numpy.sqrt ( ( 2*l+1 ) * ( l+m+1 ) * ( l+m+2 ) / ( 2*l+3 ) )
     DY_Dphi_OVER_sinTheta = -( ( 1. / 2. ) * ( c1 * NormalisedAssociatedLegendrePolynomial ( l+1 , m-1 , x )
                                                     + c2 * NormalisedAssociatedLegendrePolynomial ( l+1 , m+1 , x ) )
-                                                    * (1j) * np.exp ( (1j) * m * phi ) )
+                                                    * (1j) * numpy.exp ( (1j) * m * phi ) )
     
-    return ( DY_Dtheta * e_theta + DY_Dphi_OVER_sinTheta * e_phi ) / np.sqrt ( l * ( l + 1 ) )
+    v_E = ( numpy.einsum ( "i,ji->ij" , DY_Dtheta , e_theta ) + numpy.einsum ( "i,ji->ij" , DY_Dphi_OVER_sinTheta , e_phi ) ) / numpy.sqrt ( l * ( l + 1 ) )
+    
+    if v_E.shape[0] == 1:
+        v_E = v_E.flatten()
+    
+    return v_E
 
 
 
 # The Curl Vector Spherical Harmonics, ((Y^l_m)^B(n))_i
 # The Variable n Is A Unit Three-Vector (i.e. a point on the sphere)
 def VectorSphericalHarmonicB ( l , m , n ):
+    if n.ndim == 1:
+        n = numpy.array ( [ n ] )
     
     # The Spherical Polar Angles Of The Position Vector n
-    theta = np.arccos ( n[2] / np.sqrt ( np.dot ( n , n ) ) )
-    phi = np.arctan2 ( n[1] , n[0] )
+    theta = numpy.arccos ( numpy.divide( n[...,2] , numpy.sqrt ( numpy.einsum ( "...i,...i->..." , n , n ) ) ) )
+    phi = numpy.arctan2 ( n[...,1] , n[...,0] )
     
     #  Useful to Define x = cos ( theta )
-    x = np.cos ( theta )
+    x = numpy.cos ( theta )
     
     # The Coordinate Basis Vectors Associated With The Spherical Polar Angles
-    e_theta = np.array ( [ x * np.cos ( phi ) , x * np.sin ( phi ) , -np.sqrt ( 1. - x * x ) ] )
-    e_phi = np.array ( [ -np.sin ( phi ) , np.cos ( phi ) , 0. ] )
+    e_theta = numpy.array ( [ x * numpy.cos ( phi ) , x * numpy.sin ( phi ) , -numpy.sqrt ( 1. - x * x ) ] )
+    e_phi = numpy.array ( [ -numpy.sin ( phi ) , numpy.cos ( phi ) , numpy.zeros ( len ( phi ) ) ] )
     
     # The Derivative Of The Spherical Harmonic Function Y^l_m WRT To Theta
     if m == 0:
-        DY_Dtheta = -( -np.sqrt ( l * ( l + 1 ) ) * NormalisedAssociatedLegendrePolynomial ( l , 1 , x ) 
-                     * np.exp ( (1j) * m * phi ) )
+        DY_Dtheta = -( -numpy.sqrt ( l * ( l + 1 ) ) * NormalisedAssociatedLegendrePolynomial ( l , 1 , x ) 
+                     * numpy.exp ( (1j) * m * phi ) )
     elif m == l:
-        DY_Dtheta = ( -np.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
-                     * np.exp ( (1j) * m * phi ) )
+        DY_Dtheta = ( -numpy.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
+                     * numpy.exp ( (1j) * m * phi ) )
     elif m == -l:
-        DY_Dtheta = np.power ( -1. , m) * ( -np.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
-                     * np.exp ( (1j) * m * phi ) )
+        DY_Dtheta = numpy.power ( -1. , m) * ( -numpy.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
+                     * numpy.exp ( (1j) * m * phi ) )
     else:
-        c1 = 0.5 * np.sqrt ( ( l + m ) * ( l - m + 1 ) )
-        c2 = 0.5 * np.sqrt ( ( l + m + 1 ) * ( l - m ) )
+        c1 = 0.5 * numpy.sqrt ( ( l + m ) * ( l - m + 1 ) )
+        c2 = 0.5 * numpy.sqrt ( ( l + m + 1 ) * ( l - m ) )
         DY_Dtheta = -( c1 * NormalisedAssociatedLegendrePolynomial ( l , m-1 , x ) - 
-                     c2 * NormalisedAssociatedLegendrePolynomial ( l , m+1 , x ) ) * np.exp ( (1j) * m * phi )
+                     c2 * NormalisedAssociatedLegendrePolynomial ( l , m+1 , x ) ) * numpy.exp ( (1j) * m * phi )
     
     # The Derivative Of The Spherical Harmonic Function Y^l_m WRT To Phi Divided By Sin(Theta)
-    c1 = np.sqrt ( ( 2*l+1 ) * ( l-m+1 ) * ( l-m+2 ) / ( 2*l+3 ) )
-    c2 = np.sqrt ( ( 2*l+1 ) * ( l+m+1 ) * ( l+m+2 ) / ( 2*l+3 ) )
+    c1 = numpy.sqrt ( ( 2*l+1 ) * ( l-m+1 ) * ( l-m+2 ) / ( 2*l+3 ) )
+    c2 = numpy.sqrt ( ( 2*l+1 ) * ( l+m+1 ) * ( l+m+2 ) / ( 2*l+3 ) )
     DY_Dphi_OVER_sinTheta = -( ( 1. / 2. ) * ( c1 * NormalisedAssociatedLegendrePolynomial ( l+1 , m-1 , x )
                                                     + c2 * NormalisedAssociatedLegendrePolynomial ( l+1 , m+1 , x ) )
-                                                    * (1j) * np.exp ( (1j) * m * phi ) )
+                                                    * (1j) * numpy.exp ( (1j) * m * phi ) )
     
-    return -( DY_Dphi_OVER_sinTheta * e_theta - DY_Dtheta * e_phi ) / np.sqrt ( l * ( l + 1 ) )
-
-
-
-
-
-
-# The Div Vector Spherical Harmonics, ((Y^l_m)^E(n))_i
-# The Variable n Is A Array of Unit Three-Vectors
-def Vectorised_VectorSphericalHarmonicE ( l , m , n ):
+    v_B = -( numpy.einsum ( "i,ji->ij" , DY_Dphi_OVER_sinTheta , e_theta ) - numpy.einsum ( "i,ji->ij" , DY_Dtheta , e_phi ) ) / numpy.sqrt ( l * ( l + 1 ) )
     
-    # The Spherical Polar Angles Of The Position Vector n
-    theta = np.arccos ( n[...,2] )
-    phi = np.arctan2 ( n[...,1] , n[...,0] )
+    if v_B.shape[0] == 1:
+        v_B = v_B.flatten()
     
-    #  Useful to Define x = cos ( theta )
-    x = np.cos ( theta )
-    
-    # The Coordinate Basis Vectors Associated With The Spherical Polar Angles
-    e_theta = np.array ( [ x * np.cos ( phi ) , x * np.sin ( phi ) , -np.sqrt ( 1. - x * x ) ] ).T
-    e_phi = np.array ( [ -np.sin ( phi ) , np.cos ( phi ) , np.zeros(len(phi)) ] ).T
-    
-    # The Derivative Of The Spherical Harmonic Function Y^l_m WRT To Theta
-    if m == 0:
-        DY_Dtheta = -( -np.sqrt ( l * ( l + 1 ) ) * NormalisedAssociatedLegendrePolynomial ( l , 1 , x ) 
-                     * np.exp ( (1j) * m * phi ) )
-    elif m == l:
-        DY_Dtheta = ( -np.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
-                     * np.exp ( (1j) * m * phi ) )
-    elif m == -l:
-        DY_Dtheta = np.power ( -1. , m) * ( -np.sqrt ( l / 2 ) * NormalisedAssociatedLegendrePolynomial ( l , l-1 , x ) 
-                     * np.exp ( (1j) * m * phi ) )
+    return v_B
+
+def RealVectorSphericalHarmonicE ( l , m , n ):
+    if m < 0:
+        return numpy.sqrt(2) * ( (-1) ** numpy.abs(m) ) * numpy.imag ( VectorSphericalHarmonicE ( l , numpy.abs(m) , n ) )
+    elif m == 0:
+        return VectorSphericalHarmonicE ( l , 0 , n )
     else:
-        c1 = 0.5 * np.sqrt ( ( l + m ) * ( l - m + 1 ) )
-        c2 = 0.5 * np.sqrt ( ( l + m + 1 ) * ( l - m ) )
-        DY_Dtheta = -( c1 * NormalisedAssociatedLegendrePolynomial ( l , m-1 , x ) - 
-                     c2 * NormalisedAssociatedLegendrePolynomial ( l , m+1 , x ) ) * np.exp ( (1j) * m * phi )
-    
-    # The Derivative Of The Spherical Harmonic Function Y^l_m WRT To Phi Divided By Sin(Theta)
-    c1 = np.sqrt ( ( 2*l+1 ) * ( l-m+1 ) * ( l-m+2 ) / ( 2*l+3 ) )
-    c2 = np.sqrt ( ( 2*l+1 ) * ( l+m+1 ) * ( l+m+2 ) / ( 2*l+3 ) )
-    DY_Dphi_OVER_sinTheta = -( ( 1. / 2. ) * ( c1 * NormalisedAssociatedLegendrePolynomial ( l+1 , m-1 , x )
-                                                    + c2 * NormalisedAssociatedLegendrePolynomial ( l+1 , m+1 , x ) )
-                                                    * (1j) * np.exp ( (1j) * m * phi ) )
-    
-    return (( np.einsum("i,ik->ik", DY_Dtheta , e_theta ) + np.einsum("i,ik->ik", DY_Dphi_OVER_sinTheta , e_phi ) )
-            / np.sqrt ( l * ( l + 1 ) ) )
+        return numpy.sqrt(2) * ( (-1) ** numpy.abs(m) ) * numpy.real ( VectorSphericalHarmonicE ( l , numpy.abs(m) , n ) )
+
+def RealVectorSphericalHarmonicB ( l , m , n ):
+    if m < 0:
+        return numpy.sqrt(2) * ( (-1) ** numpy.abs(m) ) * numpy.imag ( VectorSphericalHarmonicB ( l , numpy.abs(m) , n ) )
+    elif m == 0:
+        return VectorSphericalHarmonicB ( l , 0 , n )
+    else:
+        return numpy.sqrt(2) * ( (-1) ** numpy.abs(m) ) * numpy.real ( VectorSphericalHarmonicB ( l , numpy.abs(m) , n ) )
