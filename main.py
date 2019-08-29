@@ -3,32 +3,12 @@ import argparse
 import AstrometricData as AD
 import Sampler
 
-# import csv
-# import time
-# import datetime
-# import os
-# import corner
-# import pandas
+import csv
+import time
+import datetime
+import os
 
-# import numpy as np
-
-# import cpnest
-# import cpnest.model
-
-# import matplotlib
-# matplotlib.use('Agg')
-
-# from data_load import *
-# from injection import *
-# from utils import *
-
-# plotting = False
-# pm_histogram = False
-# VSH_matrix = True
-# VSH_corr = False
-# benchmarking = False
-
-
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--Lmax',    help='the maximum VSH index [default 4]', type=int, default=4)
