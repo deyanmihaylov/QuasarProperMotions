@@ -33,8 +33,6 @@ class AstrometricDataframe:
             def deg_to_rad ( degree_vals ):
                 return np.deg2rad ( degree_vals )
                 
-
-                
             dataset = pandas.read_csv(path_to_Gaia_data,
                                       sep=',',
                                       delimiter=None,
@@ -85,12 +83,12 @@ class AstrometricDataframe:
                                       float_precision=None)
                 
 			dropna_columns = ['ra',
-                              'dec',
-                              'pmra',
-                              'pmdec',
-                              'pmra_error',
-                              'pmdec_error',
-                              'pmra_pmdec_corr']
+							  'dec',
+							  'pmra',
+							  'pmdec',
+							  'pmra_error',
+							  'pmdec_error',
+							  'pmra_pmdec_corr']
 
 			dataset.dropna ( axis=0,
                              how='any',
