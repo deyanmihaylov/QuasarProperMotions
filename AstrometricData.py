@@ -316,7 +316,7 @@ class AstrometricDataframe:
         return np.sqrt(1. - (np.min(axes, axis=1)/np.max(axes, axis=1))**2)
 
     def ecc_hist(self, outfile):
-        sq_eigenvalues, eigenvectors = np.linalg.eig(data.inv_proper_motion_error_matrix)
+        sq_eigenvalues, eigenvectors = np.linalg.eig(self.inv_proper_motion_error_matrix)
 
         eigenvalues = np.sqrt(sq_eigenvalues)
 
