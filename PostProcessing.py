@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 def Quad(aQlm, names):
     Quad = 0.0
     for i, name in enumerate(names):
-        if name[5]=='2':
+        if name[4]=='2':
             Quad += aQlm[i]**2
     return Quad
 
@@ -30,8 +30,10 @@ def post_process_results(posterior_file):
     a_posteior_samples = np.loadtxt(posterior_file)
     
     Q = np.array([ Quad(sample, coeff_names) for sample in a_posteior_samples])
-    
-    plt.hist(Q)
+
+    plt.hist(Q, bins=np.linspace(0, np.max(Q), 30))
+
+    plt.xlim(0, np.max(Q))
 
     plt.xlabel("Q [mas^2/yr^2]")
     plt.ylabel("Probability")
