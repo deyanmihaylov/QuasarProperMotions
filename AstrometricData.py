@@ -381,4 +381,10 @@ class AstrometricDataframe:
         plt.tight_layout()
         plt.savefig(outfile)
         plt.clf()
-            
+
+    def plot_astrometric_data(self, dir_path):
+        self.plot(dir_path + "/qso_positions.png")
+        self.pm_hist(dir_path + "/qso_pm_hist.png")
+        self.ecc_hist(dir_path + "/qso_err_ecc_hist.png")
+        self.plot_overlap_matrix(dir_path + "/qso_vsh_overlaps.png")
+        
