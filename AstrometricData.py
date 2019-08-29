@@ -4,6 +4,7 @@ import csv
 
 import CoordinateTransformations as CT
 import VectorSphericalHarmonics as VSH
+from Model import generate_model
 
 import matplotlib
 matplotlib.use('Agg')
@@ -195,7 +196,7 @@ class AstrometricDataframe:
                 par[ 'a^E_' + str(l) + ',' + + str(m) ] = 0.
 		par[ 'a^B_' + str(l) + ',' + + str(m) ] = 0.
         par[ 'a^E_1,0]' ] = dipole
-        self.proper_motions += Model(par, self.VSH_bank, Lmax)
+        self.proper_motions += generate_model(par, self.VSH_bank)
     
 
     def generate_VSH_bank(self):
