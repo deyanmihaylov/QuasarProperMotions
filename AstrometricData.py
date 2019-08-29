@@ -227,9 +227,9 @@ class AstrometricDataframe:
         """
         self.names = []
 
-        for Q in ["E", "B"]:
-            for l in range(1, self.Lmax+1):
-                for m in range(-l, l+1):
+        for l in range(1, self.Lmax+1):
+            for m in range(-l, l+1):
+                for Q in ["E", "B"]:
                     self.names.append("Y^"+Q+"_"+str(l)+","+str(m))
 
         self.overlap_matrix = np.zeros((len(self.names), len(self.names)))
@@ -246,11 +246,14 @@ class AstrometricDataframe:
                 l_y = int(name_y[4])
                 m_y = int(name_y.split(',')[1])
 		        
-                X = VSH.RealVectorSphericalHarmonicE (l_x, m_x, self.positions_Cartesian) if Q_x=='E' else VSH.RealVectorSphericalHarmonicB (l_x, m_x, self.positions_Cartesian)
+                X = VSH.RealVectorSphericalHarmonicE(l_x, m_x, self.positions_Cartesian) if Q_x=='E' else VSH.RealVectorSphericalHarmonicB(l_x, m_x, self.positions_Cartesian)
 		        
-                Y = VSH.RealVectorSphericalHarmonicE (l_y, m_y, self.positions_Cartesian) if Q_y=='E' else VSH.RealVectorSphericalHarmonicB (l_y, m_y, self.positions_Cartesian)
-		        
-        self.overlap_matrix[i,j] = prefactor * np.einsum ( "...j,...j->..." , X , Y ).sum()
+                Y = VSH.RealVectorSphericalHarmonicE(l_y, m_y, self.positions_Cartesian) if Q_y=='E' else VSH.RealVectorSphericalHarmonicB(l_y, m_y, self.positions_Cartesian)
+		 
+                assert np.max(abs(np.imag(X))) == 0
+                assert np.max(abs(np.imag(Y))) == 0
+       
+                self.overlap_matrix[i,j] = prefactor * np.einsum ( "...j,...j->..." , X , Y ).sum()
 
     def plot_overlap_matrix(self, output):
         """
