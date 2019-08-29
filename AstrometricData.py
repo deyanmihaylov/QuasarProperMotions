@@ -22,7 +22,9 @@ def covariant_matrix(errors, corr):
 
 
 class AstrometricDataframe:
-    def __init__(self, Lmax):
+    def __init__(self, Lmax=2):
+        """
+        """
 
         self.n_objects = 0
 
@@ -37,8 +39,13 @@ class AstrometricDataframe:
 
         self.VSH_bank = dict()
 
-	def deg_to_rad ( degree_vals ):
-		return np.deg2rad ( degree_vals )
+
+    def deg_to_rad(self, degree_vals):
+        """
+        Does what it says on the tin
+        """
+        return np.deg2rad(degree_vals)
+
 
     def load_Gaia_data(self , path):
         """
@@ -109,7 +116,7 @@ class AstrometricDataframe:
                              inplace=True)
                                 
         self.positions = dataset[[ 'ra' , 'dec' ]].values
-        self.positions = deg_to_rad ( self.positions )
+        self.positions = self.deg_to_rad ( self.positions )
 
         self.positions_Cartesian = CT.geographic_to_Cartesian_point ( self.positions )
 
@@ -127,8 +134,7 @@ class AstrometricDataframe:
         self.inv_proper_motion_error_matrix = np.linalg.inv ( covariance )
                 
         self.VSH_bank = self.generate_VSH_bank()
-                
-        return 0
+
 
     def gen_mock_data(self, NumObjects, eps=0.2, noise=0.1, signal=0.5):
         """
@@ -182,17 +188,17 @@ class AstrometricDataframe:
         par[ 'Re[a^E_10]' ] = dipole
         self.proper_motions += Model(par, self.VSH_bank, Lmax)
     
-	def generate_VSH_bank(self):
-		"""
-		Precompute VSH functions at QSO locations 
-		"""
+    def generate_VSH_bank(self):
+        """
+        Precompute VSH functions at QSO locations 
+        """
 
-		VSH_bank = {}
+        VSH_bank = {}
 
-		for l in range(1, self.Lmax + 1):
-			for m in range(-l, l+1):
-				VSH_bank['Y^E_' + str(l) + ',' + str(m)] = CT.Cartesian_to_geographic_vector(self.positions_Cartesian, np.real(VSH.RealVectorSphericalHarmonicE (l, m, self.positions_Cartesian)))
-				VSH_bank['Y^B_' + str(l) + ',' + str(m)] = CT.Cartesian_to_geographic_vector(self.positions_Cartesian, np.real(VSH.RealVectorSphericalHarmonicB (l, m, self.positions_Cartesian)))
+        for l in range(1, self.Lmax + 1):
+            for m in range(-l, l+1):
+                VSH_bank['Y^E_' + str(l) + ',' + str(m)] = CT.Cartesian_to_geographic_vector(self.positions_Cartesian, np.real(VSH.RealVectorSphericalHarmonicE (l, m, self.positions_Cartesian)))
+                VSH_bank['Y^B_' + str(l) + ',' + str(m)] = CT.Cartesian_to_geographic_vector(self.positions_Cartesian, np.real(VSH.RealVectorSphericalHarmonicB (l, m, self.positions_Cartesian)))
                         
         return VSH_bank
 
@@ -207,7 +213,7 @@ class AstrometricDataframe:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection=projection)
 
-        ra = numpy.array([ x-2*numpy.pi if x>numpy.pi else x for x in self.positions[:,0]])
+        ra = np.array([ x-2*np.pi if x>np.pi else x for x in self.positions[:,0]])
         dec = self.positions[:,1]
 
         # plot the positions
@@ -225,13 +231,14 @@ class AstrometricDataframe:
         plt.grid(True)
             
         plt.savefig(outfile)
+        plt.clf()
             
 
     def pm_hist(self, outfile):
         """
         Plot a histogram of the proper motions of the quasars 
         """
-        proper_motions_Cartesian = numpy.linalg.norm(geographic_to_Cartesian_vector(self.positions, self.proper_motions), axis = 1)
+        proper_motions_Cartesian = np.linalg.norm(CT.geographic_to_Cartesian_vector(self.positions, self.proper_motions), axis = 1)
         plt.hist(proper_motions_Cartesian)
             
         plt.xlabel('Proper motion [mas/yr]')
@@ -239,4 +246,5 @@ class AstrometricDataframe:
         plt.title('Histogram of quasar proper motions')
         plt.yscale('log')
         plt.savefig(outfile)
+        plt.clf()
             
