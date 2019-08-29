@@ -77,7 +77,7 @@ class AstrometricDataframe:
             Plot a histogram of the proper motions of the quasars 
             """
             proper_motions_Cartesian = numpy.linalg.norm(geographic_to_Cartesian_vector(self.positions, self.proper_motions), axis = 1)
-		plt.hist(proper_motions_Cartesian)
+            plt.hist(proper_motions_Cartesian)
             
             plt.xlabel('Proper motion [mas/yr]')
             plt.ylabel('Number of quasars')
