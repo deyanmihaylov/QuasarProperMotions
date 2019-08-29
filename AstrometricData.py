@@ -255,11 +255,11 @@ class AstrometricDataframe:
        
                 self.overlap_matrix[i,j] = prefactor * np.einsum ( "...j,...j->..." , X , Y ).sum()
 
-    def plot_overlap_matrix(self, output):
+    def plot_overlap_matrix(self, Matrix):
         """
-        Plot the overlap matrix
+        Plot an overlap matrix
         """
-        plt.imshow(self.overlap_matrix)
+        plt.imshow(Matrix)
 
         plt.xticks(np.arange(len(self.names)), self.names, rotation=90)
         plt.yticks(np.arange(len(self.names)), self.names)
