@@ -158,9 +158,10 @@ class AstrometricDataframe:
         self.positions_Cartesian = CT.geographic_to_Cartesian_point(self.positions)
 
 
-    def gen_mock_data(self, NumObjects, eps=0.2, noise=0.1, dipole=0.5):
+    def gen_mock_data(self, NumObjects, eps=0.2, noise=0.1):
         """
-        Simulate the postions, proper motions and proper motion errors
+        Generate mock postions, and proper motion errors for the QSO
+	The proper motions are just noise at this stage (the injection is handled elsewhere)
             
         INPUTS
         ------
@@ -171,8 +172,6 @@ class AstrometricDataframe:
                 eps controls this distribution; large eps (e.g. 100) is uniform, small eps (e.g. 0.1) is very non-uniform
         noise: float
                 The size of the proper motion error [mas/yr]
-        dipole: float
-                Size of the dipole (a^E_10) to be injected [mas/yr]
         """
             
         self.n_objects = NumObjects
@@ -196,15 +195,6 @@ class AstrometricDataframe:
         pmra_noise = np.array([ np.random.normal(0, noise/np.cos(self.positions[i][1])) for i in range(self.n_objects)])
         pmdec_noise = np.random.normal(0, noise, size=self.n_objects)
         self.proper_motions += np.array(list(zip(pmra_noise, pmdec_noise)))
-            
-        # Proper Motions - signal component
-        par = {}
-        for l in range(1, self.Lmax+1):
-            for m in range(-l, l+1):
-                par[ 'a^E_' + str(l) + ',' + str(m) ] = 0.
-                par[ 'a^B_' + str(l) + ',' + str(m) ] = 0.
-        par[ 'a^E_1,0' ] = dipole
-        self.proper_motions += generate_model(par, self.basis)
     
 
     def generate_VSH_bank(self):
