@@ -30,18 +30,12 @@ parser.add_argument('--plotting', help="Plot data", action='store_true', default
 parser.add_argument('--mod_basis', help="Use modified basis", action='store_true', default=False)
 args = parser.parse_args()
 
-print(args)
-exit()
-
-
 # Create a directory for the results
 n_records = len(open("Results/catalogue.csv").readlines())
 dir_name = "Run_" + str(n_records) + "_" + str(args.Lmax) + str(args.dataset) + str(args.injection)
 dir_path = "Results/" + dir_name + "/"
 if not os.path.isdir(dir_path):
     os.system('mkdir ' + dir_path)
-
-
 
 # Record the run
 start_time = time.time()    
