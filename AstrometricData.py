@@ -33,7 +33,7 @@ class AstrometricDataframe:
             def deg_to_rad ( degree_vals ):
                 return np.deg2rad ( degree_vals )
                 
-            dataset = pandas.read_csv(path_to_Gaia_data
+            dataset = pandas.read_csv(path_to_Gaia_data,
             	                      sep=',',
                                       delimiter=None,
                                       header='infer',
