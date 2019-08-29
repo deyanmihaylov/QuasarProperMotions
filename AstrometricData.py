@@ -173,6 +173,8 @@ class AstrometricDataframe:
                 Size of the dipole (a^E_10) to be injected [mas/yr]
         """
             
+        self.n_objects = NumObjects
+
         # Positions
         self.non_uniform_random_positions()
 	
@@ -182,8 +184,9 @@ class AstrometricDataframe:
         # Proper Motion Errors
         errors = np.zeros((self.n_objects, 2))
         errors[:,0] = noise * np.reciprocal(np.cos(self.positions[:,1])) # RA error
-        errors[:,1] = noise * np.ones(len(self.proper_motions_err))      # DEC error
-        cov = np.einsum('...i,...j->...ij', errors, errors)              # Diagonal cov matrix
+        errors[:,1] = noise * np.ones(self.n_objects)                    # DEC error
+        corr = np.zeros(self.n_objects)
+        cov = covariant_matrix(errors, corr)
         self.inv_proper_motion_error_matrix = np.linalg.inv(cov)
             
         # Proper Motions - noise component
