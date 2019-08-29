@@ -22,6 +22,7 @@ def post_process_results(posterior_file):
     ------
     post_process_results: str
         the path to the posterior.dat file produced by CPNest
+
     """
 
     with open(posterior_file) as f: 
@@ -40,8 +41,14 @@ def post_process_results(posterior_file):
 
     plt.tight_layout()
 
-    output = posterior_file[0:-12] + "Q_histogram.png"
+    output = posterior_file[0:-13] + "Q_histogram.png"
     plt.savefig(output)
 
     plt.clf()
 
+    Q90 = np.sort(Q)[int(0.9*len(Q))]
+
+    LimitsFile = posterior_file[0:-13] + "Limits.txt"
+
+    with open(LimitsFile) as text_file:
+        text_file.write("Q90: {0}\nA90: {1}".format(Q90, -999))
