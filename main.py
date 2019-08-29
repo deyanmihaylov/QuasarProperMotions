@@ -74,13 +74,11 @@ elif args.injection == 2:
 else:
     raise ValueError("Unknown injection " + str(dataset))
 
-if args.plotting:
-    data.plot_astrometric_data(dir_path)
+if args.plotting: data.plot_astrometric_data(dir_path)
 
 if args.mod_basis:
     data.change_basis()
-    if args.plotting:
-        data.plot_overlap_matrix(dir_path + "/qso_mod_overlaps.png")
+    if args.plotting: data.plot_overlap_matrix(dir_path + "/qso_mod_overlaps.png")
 
 
 
