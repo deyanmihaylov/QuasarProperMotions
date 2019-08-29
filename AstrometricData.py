@@ -33,7 +33,7 @@ class AstrometricDataframe:
         def deg_to_rad ( degree_vals ):
             return np.deg2rad ( degree_vals )
                 
-        dataset = pandas.read_csv(path_to_Gaia_data,
+        dataset = pd.read_csv(path,
             	                      sep=',',
                                       delimiter=None,
                                       header='infer',
@@ -97,7 +97,7 @@ class AstrometricDataframe:
                              inplace=True)
                                 
         self.positions = dataset[[ 'ra' , 'dec' ]].values
-        self.positions = deg_to_rad ( new_dataframe.positions )
+        self.positions = deg_to_rad ( self.positions )
 
         self.positions_Cartesian = CT.geographic_to_Cartesian_point ( self.positions )
 
