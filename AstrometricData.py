@@ -269,25 +269,25 @@ class AstrometricDataframe:
         Method to change from VSH basis to orthogonal basis
         """
 	
-	new_basis = dict( { name:np.zeros((data.n_objects, 2)) for name in self.names } )
-	
+        new_basis = dict( { name:np.zeros((self.n_objects, 2)) for name in self.names } )
+    
         invL = np.linalg.inv(self.Cholesky_overlap_matrix)
 
-    	for i in range(data.n_objects):
-            v = np.array([ data.VSH[name][i] for name in names])
+        for i in range(self.n_objects):
+            v = np.array([ self.basis[name][i] for name in self.names])
             u = np.einsum('ij,ik->jk', invL, v)
-            for j, name in enumerate(names):
+            for j, name in enumerate(self.names):
                 new_basis[name][i] = u[j]
 
         self.basis = new_basis
         self.which_basis = "modified orthogonal basis"
 
 
-    def plot_overlap_matrix(self, Matrix):
+    def plot_overlap_matrix(self, output):
         """
         Plot an overlap matrix
         """
-        plt.imshow(Matrix)
+        plt.imshow(self.overlap_matrix)
 
         plt.xticks(np.arange(len(self.names)), self.names, rotation=90)
         plt.yticks(np.arange(len(self.names)), self.names)
