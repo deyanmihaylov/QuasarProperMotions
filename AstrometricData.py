@@ -139,7 +139,7 @@ class AstrometricDataframe:
                 
         self.inv_proper_motion_error_matrix = np.linalg.inv ( covariance )
                 
-        self.basis = self.generate_VSH_bank()
+        self.generate_VSH_bank()
 	
 	
     def non_uniform_random_positions(self, eps=0.2):
@@ -181,7 +181,7 @@ class AstrometricDataframe:
         self.non_uniform_random_positions(eps=eps)
 	
         # Compute the VSH bank
-        self.basis = self.generate_VSH_bank()
+        self.generate_VSH_bank()
             
         # Proper Motion Errors
         errors = np.zeros((self.n_objects, 2))
@@ -221,7 +221,7 @@ class AstrometricDataframe:
             
         self.which_basis = "VSH basis"
 
-        return VSH_bank
+        self.basis = VSH_bank
 
 
 
@@ -229,6 +229,7 @@ class AstrometricDataframe:
         """
         Calculate the overlap matrix (and its Cholesky decomposition) between VSH basis functions
         """
+
         self.names = []
 
         for l in range(1, self.Lmax+1):
@@ -236,34 +237,19 @@ class AstrometricDataframe:
                 for Q in ["E", "B"]:
                     self.names.append("Y^"+Q+"_"+str(l)+","+str(m))
 
+        basis_Cart = {name: CT.geographic_to_Cartesian_vector(self.basis[name]) for name in self.names}
+
         self.overlap_matrix = np.zeros((len(self.names), len(self.names)))
 
         prefactor = 4 * np.pi / self.n_objects
 
         for i, name_x in enumerate(self.names):
-            Q_x = name_x[2]
-            l_x = int(name_x[4])
-            m_x = int(name_x.split(',')[1])
-		    
             for j, name_y in enumerate(self.names):
-                Q_y = name_y[2]
-                l_y = int(name_y[4])
-                m_y = int(name_y.split(',')[1])
-		        
-                X = VSH.RealVectorSphericalHarmonicE(l_x, m_x, self.positions_Cartesian) if Q_x=='E' else VSH.RealVectorSphericalHarmonicB(l_x, m_x, self.positions_Cartesian)
-		        
-                Y = VSH.RealVectorSphericalHarmonicE(l_y, m_y, self.positions_Cartesian) if Q_y=='E' else VSH.RealVectorSphericalHarmonicB(l_y, m_y, self.positions_Cartesian)
-		 
-                assert np.max(abs(np.imag(X))) == 0
-                assert np.max(abs(np.imag(Y))) == 0
-       
-                self.overlap_matrix[i,j] = prefactor * np.einsum ( "...j,...j->..." , X , Y ).sum()
+                self.overlap_matrix[i,j] = prefactor * np.einsum ( "...j,...j->...", basis_Cart[name_x], basis_Cart[name_y]).sum()
 
         # compute Cholesky decompo of overlap matrix
         self.Cholesky_overlap_matrix = cholesky(self.overlap_matrix)
 
-
-	
     def change_basis(self):
         """
         Method to change from VSH basis to orthogonal basis
