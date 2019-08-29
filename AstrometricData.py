@@ -273,8 +273,12 @@ class AstrometricDataframe:
         """
         plt.imshow(self.overlap_matrix)
 
-        plt.xticks(np.arange(len(self.names)), self.names, rotation=90)
-        plt.yticks(np.arange(len(self.names)), self.names)
+        names = self.names
+        if self.which_basis == "modified orthogonal basis":
+            names = [ name.replace("Y","T") for name in names]
+
+        plt.xticks(np.arange(len(names)), names, rotation=90)
+        plt.yticks(np.arange(len(names)), names)
 
         plt.colorbar()
 
