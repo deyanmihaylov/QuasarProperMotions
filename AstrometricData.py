@@ -33,82 +33,36 @@ class AstrometricDataframe:
             def deg_to_rad ( degree_vals ):
                 return np.deg2rad ( degree_vals )
                 
-            dataset = pandas.read_csv(path_to_Gaia_data,
-                                      sep=',',
-                                      delimiter=None,
-                                      header='infer',
-                                      names=None,
-                                      index_col=None,
-                                      usecols=None,
-                                      squeeze=False,
-                                      prefix=None,
-                                      mangle_dupe_cols=True,
-                                      dtype=None,
-                                      engine='python',
-                                      converters=None,
-                                      true_values=None,
-                                      false_values=None,
-                                      skipinitialspace=False,
-                                      skiprows=None,
-                                      skipfooter=0,
-                                      nrows=None,
-                                      na_values=None,
-                                      keep_default_na=True,
-                                      na_filter=True,
-                                      verbose=False,
-                                      skip_blank_lines=True,
-                                      parse_dates=False,
-                                      infer_datetime_format=False,
-                                      keep_date_col=False,
-                                      date_parser=None,
-                                      dayfirst=False,
-                                      iterator=False,
-                                      chunksize=None,
-                                      compression=None,
-                                      thousands=None,
-                                      decimal=b'.',
-                                      lineterminator=None,
-                                      quotechar='"',
-                                      quoting=0,
-                                      doublequote=True,
-                                      escapechar=None,
-                                      comment=None,
-                                      encoding=None,
-                                      dialect=None,
-                                      error_bad_lines=True,
-                                      warn_bad_lines=True,
-                                      delim_whitespace=False,
-                                      low_memory=True,
-                                      memory_map=False,
-                                      float_precision=None)
-                
-			dropna_columns = ['ra',
-							  'dec',
-							  'pmra',
-							  'pmdec',
-							  'pmra_error',
-							  'pmdec_error',
-							  'pmra_pmdec_corr']
+            dataset = pandas.read_csv(path_to_Gaia_data)
+	
 
-			dataset.dropna ( axis=0,
+            dropna_columns = ['ra',
+			      'dec',
+			      'pmra',
+			      'pmdec',
+			      'pmra_error',
+			      'pmdec_error',
+			      'pmra_pmdec_corr']
+
+            dataset.dropna ( axis=0,
                              how='any',
                              thresh=None,
                              subset=dropna_columns,
                              inplace=True)
                                 
-			self.positions = dataset[[ 'ra' , 'dec' ]].values
-			self.positions = deg_to_rad ( new_dataframe.positions )
+            self.positions = dataset[[ 'ra' , 'dec' ]].values
+            self.positions = deg_to_rad ( new_dataframe.positions )
 
-			self.positions_Cartesian = CT.geographic_to_Cartesian_point ( self.positions )
+            self.positions_Cartesian = CT.geographic_to_Cartesian_point ( self.positions )
 
-			self.n_objects = dataset.shape[0]
+            self.n_objects = dataset.shape[0]
                                 
-			proper_motions = dataset[[ 'pmra' , 'pmdec' ]].values
+            self.proper_motions = dataset[[ 'pmra' , 'pmdec' ]].values
                 
-			proper_motions_err = dataset[[ 'pmra_error' , 'pmdec_error' ]].values
-			proper_motions_err[:,0] = proper_motions_err[:,0] / np.cos ( self.positions[:,1] )
+            proper_motions_err = dataset[[ 'pmra_error' , 'pmdec_error' ]].values
+            proper_motions_err[:,0] = proper_motions_err[:,0] / np.cos ( self.positions[:,1] )
 
-			proper_motions_err_corr = dataset[[ 'pmra_pmdec_corr' ]].values
+            proper_motions_err_corr = dataset[[ 'pmra_pmdec_corr' ]].values
                 
             covariance = covariant_matrix ( proper_motions_err , proper_motions_err_corr )
                 
