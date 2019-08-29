@@ -10,6 +10,9 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+from scipy.stats import truncnorm
+from scipy.linalg import cholesky
+
 
 
 def covariant_matrix(errors, corr):
