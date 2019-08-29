@@ -7,6 +7,7 @@ import csv
 import time
 import datetime
 import os
+import pandas as pd
 
 import numpy as np
 
@@ -103,7 +104,7 @@ nest.get_posterior_samples()
 
 # Record end time
 end_time = time.time()
-catalogue = pandas.read_csv ( "Results/catalogue.csv" )
+catalogue = pd.read_csv ( "Results/catalogue.csv" )
 catalogue.loc[ catalogue [ "directory" ] == dir_name, "end_time" ] = end_time
 catalogue.loc[ catalogue [ "directory" ] == dir_name, "duration" ] = end_time - start_time
 catalogue.to_csv("Results/catalogue.csv", index=False)
