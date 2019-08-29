@@ -320,7 +320,7 @@ class AstrometricDataframe:
 
         eigenvalues = np.sqrt(sq_eigenvalues)
 
-        eccentricities = eccentricity(eigenvalues)
+        eccentricities = self.eccentricity(eigenvalues)
         plt.hist(eccentricities)
             
         plt.xlabel('PM errors eccentricity')
