@@ -223,7 +223,7 @@ class AstrometricDataframe:
 
     def compute_overlap_matrix(self):
         """
-        Calculate the overlap matrix between VSH
+        Calculate the overlap matrix (and its Cholesky decomposition) between VSH basis functions
         """
         self.names = []
 
@@ -254,11 +254,18 @@ class AstrometricDataframe:
                 assert np.max(abs(np.imag(Y))) == 0
        
                 self.overlap_matrix[i,j] = prefactor * np.einsum ( "...j,...j->..." , X , Y ).sum()
-	
+
+        # compute Cholesky decompo of overlap matrix
+        self.Cholesky_overlap_matrix = cholesky(self.overlap_matrix)
+
 
 	
-	
-	
+    def change_basis(self):
+        """
+        Method to change from VSH basis to orthogonal basis
+        """
+	pass
+
 
     def plot_overlap_matrix(self, Matrix):
         """
