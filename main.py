@@ -99,8 +99,7 @@ nest = cpnest.CPNest ( mymodel ,
 nest.run()
 nest.get_nested_samples()
 nest.get_posterior_samples()
-
-# post_process_results()
+post_process_results(os.path.join(dir_path, "posterior.data"))
 
 
 
