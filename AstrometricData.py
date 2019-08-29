@@ -28,10 +28,9 @@ def covariant_matrix(errors, corr):
 class AstrometricDataframe:
     def __init__(self, Lmax=2):
         """
+	Initialise Class: use VSH harmonics up to and including Lmax
         """
-
         self.n_objects = 0
-
         self.Lmax = Lmax
         
         self.positions = np.array ([])
@@ -218,6 +217,9 @@ class AstrometricDataframe:
                 VSH_bank['Y^B_' + str(l) + ',' + str(m)] = CT.Cartesian_to_geographic_vector(self.positions_Cartesian, np.real(VSH.RealVectorSphericalHarmonicB (l, m, self.positions_Cartesian)))
                         
         return VSH_bank
+
+
+
 
 
 
