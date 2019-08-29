@@ -26,9 +26,12 @@ parser.add_argument('--nthreads', help='The number of CPU threads to use [defaul
 parser.add_argument('--nlive', help='The number cpnest live points [default 1024]', type=int, default=1024)
 parser.add_argument('--maxmcmc', help='The mcmc length in cpnest [default 128]', type=int, default=128)
 parser.add_argument('--llmethod', help='The log likelihood method to use [default permissive]', type=str, default="permissive")
-parser.add_argument('--plotting', help="Plot data", type=bool, default=True)
-parser.add_argument('--mod_basis', help="Use modified basis", type=bool, default=False)
+parser.add_argument('--plotting', help="Plot data", action='store_true', default=False)
+parser.add_argument('--mod_basis', help="Use modified basis", action='store_true', default=False)
 args = parser.parse_args()
+
+print(args)
+exit()
 
 
 # Create a directory for the results
