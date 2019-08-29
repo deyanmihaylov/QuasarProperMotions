@@ -61,7 +61,7 @@ elif args.dataset == 3:
 elif args.dataset == 4:
     data.load_Gaia_data( "data/type2and3.csv" )
 else:
-    raise ValueError("Unknown dataset " + str(dataset))
+    raise ValueError("Unknown dataset " + str(args.dataset))
 
 if args.injection == 0:
     pass
