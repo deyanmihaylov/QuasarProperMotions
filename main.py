@@ -26,6 +26,7 @@ parser.add_argument('--nthreads', help='The number of CPU threads to use [defaul
 parser.add_argument('--nlive', help='The number cpnest live points [default 1024]', type=int, default=1024)
 parser.add_argument('--maxmcmc', help='The mcmc length in cpnest [default 128]', type=int, default=128)
 parser.add_argument('--llmethod', help='The log likelihood method to use [default permissive]', type=str, default="permissive")
+parser.add_argument('--prior_bounds', help='The prior bounds on the a^Q_lm coefficients [default 1.0]', type=float, default=1.0)
 parser.add_argument('--plotting', help="Plot data", action='store_true', default=False)
 parser.add_argument('--mod_basis', help="Use modified basis", action='store_true', default=False)
 args = parser.parse_args()
@@ -81,7 +82,7 @@ if args.mod_basis:
 
 
 # Nested sampling
-mymodel = Sampler.model(data, whichlikelihood=args.llmethod, prior_bound=0.1)
+mymodel = Sampler.model(data, whichlikelihood=args.llmethod, prior_bound=args.prior_bounds)
 nest = cpnest.CPNest ( mymodel ,
                        output=dir_path ,
                        nlive=args.nlive , 
