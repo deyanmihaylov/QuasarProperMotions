@@ -23,7 +23,10 @@ def logL_permissive(R):
     """
     The permissive log-likelihood (Darling et al. inspired)
     """
-    return np.log((1. - np.exp(-0.5 * (R**2))) / (0.5 * (R**2)))
+    return np.log( 
+                    ( 1. - np.exp(-0.5 * (R**2)) ) 
+                    / ( 0.5 * (R**2) )
+                )
   
   
   
@@ -31,7 +34,7 @@ def logL_quadratic(R):
     """
     The normal log-likelihood 
     """
-    return np.sum(-0.5 * R**2)
+    return -0.5 * (R**2)
   
   
   
