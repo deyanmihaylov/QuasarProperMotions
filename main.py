@@ -81,7 +81,7 @@ if args.mod_basis:
 
 
 # Nested sampling
-mymodel = Sampler.model(data, whichlikelihood=args.llmethod)
+mymodel = Sampler.model(data, whichlikelihood=args.llmethod, prior_bound=0.1)
 nest = cpnest.CPNest ( mymodel ,
                        output=dir_path ,
                        nlive=args.nlive , 
