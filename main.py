@@ -20,12 +20,13 @@ parser.add_argument('--Lmax',    help='the maximum VSH index [default 4]', type=
 
 parser.add_argument('--dataset', help="Select a dataset to analyze:\n(1) - mock dataset\n(2) - type2 (2843 stars)\n(3) - type3 (489163 stars)\n(4) - type2+3 (492006 stars) [default 2]", type=int, default=2)
 
-parser.add_argument('--injection', help="PM data to inject:\n(0) - no injection (use PM from data)\n(2) - mock dipole\n(3) - mock GR pattern (not implemented yet [default 0]", type=int, default=0)
+parser.add_argument('--injection', help="PM data to inject:\n(0) - no injection (use PM from data)\n(1) - mock dipole\n(2) - mock GR pattern (not implemented yet [default 0]", type=int, default=0)
 
 parser.add_argument('--nthreads', help='The number of CPU threads to use [default 2]', type=int, default=2)
 parser.add_argument('--nlive', help='The number cpnest live points [default 1024]', type=int, default=1024)
 parser.add_argument('--maxmcmc', help='The mcmc length in cpnest [default 128]', type=int, default=128)
 parser.add_argument('--llmethod', help='The log likelihood method to use [default permissive]', type=str, default="permissive")
+parser.add_argument('--prior_bounds', help='The prior bounds on the a^Q_lm coefficients [default 1.0]', type=float, default=1.0)
 parser.add_argument('--plotting', help="Plot data", action='store_true', default=False)
 parser.add_argument('--mod_basis', help="Use modified basis", action='store_true', default=False)
 args = parser.parse_args()
@@ -52,7 +53,7 @@ catalogue_csv.close()
 data = AD.AstrometricDataframe(Lmax=args.Lmax)
 
 if args.dataset == 1:
-    data.gen_mock_data(500, eps=0.15, noise=0.1)
+    data.gen_mock_data(500, eps=100, noise=0.1)
 elif args.dataset == 2:
     data.load_Gaia_data("data/type2.csv")
 elif args.dataset == 3:
@@ -82,7 +83,7 @@ if args.mod_basis:
 
 
 # Nested sampling
-mymodel = Sampler.model(data, whichlikelihood=args.llmethod)
+mymodel = Sampler.model(data, whichlikelihood=args.llmethod, prior_bound=args.prior_bounds)
 nest = cpnest.CPNest ( mymodel ,
                        output=dir_path ,
                        nlive=args.nlive , 
