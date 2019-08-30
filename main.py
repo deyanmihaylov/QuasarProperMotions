@@ -49,7 +49,7 @@ catalogue_csv.close()
 
 
 # Load/Setup the astrometric data
-data = AD.AstrometricDataframe()
+data = AD.AstrometricDataframe(Lmax=args.Lmax)
 
 if args.dataset == 1:
     data.gen_mock_data(500, eps=0.15, noise=0.1)
