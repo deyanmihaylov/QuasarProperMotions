@@ -316,7 +316,7 @@ class AstrometricDataframe:
         return np.sqrt(1. - (np.min(axes, axis=1)/np.max(axes, axis=1))**2)
 
     def ecc_hist(self, outfile):
-        inv_matrix = np.zeros(self.inv_proper_motion_error_matrix.shape())
+        inv_matrix = self.inv_proper_motion_error_matrix.copy()
         
         inv_matrix[...,0,0] = self.inv_proper_motion_error_matrix[...,0,0] / (np.cos(self.positions[:,1]) ** 2)
         inv_matrix[...,1,0] = self.inv_proper_motion_error_matrix[...,1,0] / np.cos(self.positions[:,1])
