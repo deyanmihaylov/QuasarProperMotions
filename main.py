@@ -20,7 +20,7 @@ parser.add_argument('--Lmax',    help='the maximum VSH index [default 4]', type=
 
 parser.add_argument('--dataset', help="Select a dataset to analyze:\n(1) - mock dataset\n(2) - type2 (2843 stars)\n(3) - type3 (489163 stars)\n(4) - type2+3 (492006 stars) [default 2]", type=int, default=2)
 
-parser.add_argument('--injection', help="PM data to inject:\n(0) - no injection (use PM from data)\n(2) - mock dipole\n(3) - mock GR pattern (not implemented yet [default 0]", type=int, default=0)
+parser.add_argument('--injection', help="PM data to inject:\n(0) - no injection (use PM from data)\n(1) - mock dipole\n(2) - mock GR pattern (not implemented yet [default 0]", type=int, default=0)
 
 parser.add_argument('--nthreads', help='The number of CPU threads to use [default 2]', type=int, default=2)
 parser.add_argument('--nlive', help='The number cpnest live points [default 1024]', type=int, default=1024)
@@ -81,7 +81,7 @@ if args.mod_basis:
 
 
 # Nested sampling
-mymodel = Sampler.model(data, whichlikelihood=args.llmethod)
+mymodel = Sampler.model(data, whichlikelihood=args.llmethod, prior_bound=0.1)
 nest = cpnest.CPNest ( mymodel ,
                        output=dir_path ,
                        nlive=args.nlive , 
