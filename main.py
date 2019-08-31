@@ -53,7 +53,7 @@ catalogue_csv.close()
 data = AD.AstrometricDataframe(Lmax=args.Lmax)
 
 if args.dataset == 1:
-    data.gen_mock_data(500, eps=100, noise=0.1)
+    data.gen_mock_data(1000, eps=0.1, noise=0.1)
 elif args.dataset == 2:
     data.load_Gaia_data("data/type2.csv")
 elif args.dataset == 3:
