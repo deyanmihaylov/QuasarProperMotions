@@ -138,7 +138,7 @@ class AstrometricDataframe:
         covariance = covariant_matrix ( proper_motions_err , proper_motions_err_corr )
                 
         self.inv_proper_motion_error_matrix = np.linalg.inv ( covariance )
-                
+
         self.generate_VSH_bank()
 
         self.compute_overlap_matrix()
@@ -247,12 +247,17 @@ class AstrometricDataframe:
 
         self.basis = VSH_bank
 
-    def compute_overlap_matrix(self):
+    def compute_overlap_matrix(self, weighted_overlaps=True):
         """
         Calculate the overlap matrix (and its Cholesky decomposition) between VSH basis functions
+
+        weighted_overlaps: bool
+            whether or not to use the error weighted overlap sums
         """
 
         self.names = []
+
+        prefactor = 4 * np.pi / self.n_objects
 
         for l in range(1, self.Lmax+1):
             for m in range(-l, l+1):
@@ -263,12 +268,17 @@ class AstrometricDataframe:
 
         self.overlap_matrix = np.zeros((len(self.names), len(self.names)))
 
-        prefactor = 4 * np.pi / self.n_objects
+        metric = np.zeros((self.n_objects,2,2))
+        metric[:,0,0] = np.cos(self.positions[:,1].copy())**2.
+        metric[:,1,1] = 1.
 
         for i, name_x in enumerate(self.names):
             for j, name_y in enumerate(self.names):
-                self.overlap_matrix[i,j] = prefactor * np.einsum ( "...j,...j->...", basis_Cart[name_x], basis_Cart[name_y]).sum()
-
+                if weighted_overlaps is True:
+                    self.overlap_matrix[i,j] = prefactor * np.einsum ( "...i,...ij,...j->...", self.basis[name_x], self.inv_proper_motion_error_matrix, self.basis[name_y]).sum()
+                else:
+                    self.overlap_matrix[i,j] = prefactor * np.einsum ( "...i,...ij,...j->...", self.basis[name_x], metric, self.basis[name_y]).sum()
+        
         # compute Cholesky decompo of overlap matrix
         self.Cholesky_overlap_matrix = cholesky(self.overlap_matrix)
 
