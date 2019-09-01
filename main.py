@@ -70,7 +70,7 @@ elif args.injection == 1:
 elif args.injection == 2:
     ValueError("Not implemented yet.")
 else:
-    raise ValueError("Unknown injection " + str(dataset))
+    raise ValueError("Unknown injection " + str(args.injection))
 
 if args.plotting:
 	data.plot_astrometric_data(dir_path)
