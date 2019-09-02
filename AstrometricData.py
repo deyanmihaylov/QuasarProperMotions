@@ -44,6 +44,12 @@ class AstrometricDataframe:
 
         self.basis = dict()
         self.which_basis = ""
+	
+	self.names = []
+        for l in range(1, self.Lmax+1):
+            for Q in ["E", "B"]:
+		for m in range(-l, l+1):
+                    self.names.append("Y^"+Q+"_"+str(l)+","+str(m))
 
 
     def deg_to_rad(self, degree_vals):
@@ -254,15 +260,7 @@ class AstrometricDataframe:
         weighted_overlaps: bool
             whether or not to use the error weighted overlap sums
         """
-
-        self.names = []
-
         prefactor = 4 * np.pi / self.n_objects
-
-        for l in range(1, self.Lmax+1):
-            for m in range(-l, l+1):
-                for Q in ["E", "B"]:
-                    self.names.append("Y^"+Q+"_"+str(l)+","+str(m))
 
         basis_Cart = {name: CT.geographic_to_Cartesian_vector(self.positions, self.basis[name]) for name in self.names}
 
