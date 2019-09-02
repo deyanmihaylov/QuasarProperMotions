@@ -45,10 +45,11 @@ class AstrometricDataframe:
         self.basis = dict()
         self.which_basis = ""
 	
-	self.names = []
+        self.names = []
+
         for l in range(1, self.Lmax+1):
             for Q in ["E", "B"]:
-		for m in range(-l, l+1):
+                for m in range(-l, l+1):
                     self.names.append("Y^"+Q+"_"+str(l)+","+str(m))
 
 
@@ -253,6 +254,15 @@ class AstrometricDataframe:
 
         self.basis = VSH_bank
 
+    def normalize_matrix(self, matrix):
+        """
+        Normalize the overlap matrix so that the diagonals are of order 1e0.
+
+        matrix: numpy.ndarray
+            the matrix to be normalized
+        """
+        return matrix / ( np.linalg.det(matrix) ** (1./(2*self.Lmax*(self.Lmax+2))) )
+
     def compute_overlap_matrix(self, weighted_overlaps=True):
         """
         Calculate the overlap matrix (and its Cholesky decomposition) between VSH basis functions
@@ -261,8 +271,6 @@ class AstrometricDataframe:
             whether or not to use the error weighted overlap sums
         """
         prefactor = 4 * np.pi / self.n_objects
-
-        basis_Cart = {name: CT.geographic_to_Cartesian_vector(self.positions, self.basis[name]) for name in self.names}
 
         self.overlap_matrix = np.zeros((len(self.names), len(self.names)))
 
@@ -276,6 +284,8 @@ class AstrometricDataframe:
                     self.overlap_matrix[i,j] = prefactor * np.einsum ( "...i,...ij,...j->...", self.basis[name_x], self.inv_proper_motion_error_matrix, self.basis[name_y]).sum()
                 else:
                     self.overlap_matrix[i,j] = prefactor * np.einsum ( "...i,...ij,...j->...", self.basis[name_x], metric, self.basis[name_y]).sum()
+
+        self.overlap_matrix = self.normalize_matrix(self.overlap_matrix)
         
         # compute Cholesky decompo of overlap matrix
         self.Cholesky_overlap_matrix = cholesky(self.overlap_matrix)
