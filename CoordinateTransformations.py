@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 
 def geographic_to_Cartesian_point ( points ):
     if len ( points.shape ) == 1:
@@ -6,14 +6,14 @@ def geographic_to_Cartesian_point ( points ):
     else:
         nrows = points.shape[0]
         
-    new_points = numpy.zeros ( ( len ( points ) , 3 ))
+    new_points = np.zeros ( ( len ( points ) , 3 ))
     
-    theta = numpy.pi / 2 - points[... , 1]
+    theta = np.pi / 2 - points[... , 1]
     phi = points[... , 0]
     
-    new_points[...,0] = numpy.sin ( theta ) * numpy.cos ( phi )
-    new_points[...,1] = numpy.sin ( theta ) * numpy.sin ( phi )
-    new_points[...,2] = numpy.cos ( theta )
+    new_points[...,0] = np.sin ( theta ) * np.cos ( phi )
+    new_points[...,1] = np.sin ( theta ) * np.sin ( phi )
+    new_points[...,2] = np.cos ( theta )
     
     if len ( points.shape ) == 1:
         return new_points[0]
@@ -47,9 +47,9 @@ def Cartesian_to_geographic_point ( points ):
     
 def Cartesian_to_geographic_vector ( points , dpoints ):
     if points.ndim == 1:
-        tangent_vector = numpy.zeros ( ( 2 ) , dtype = float)
+        tangent_vector = np.zeros ( ( 2 ) , dtype = float)
     else:
-        tangent_vector = numpy.zeros ( ( len(points) , 2 ) , dtype = float)
+        tangent_vector = np.zeros ( ( len(points) , 2 ) , dtype = float)
     
     x = points[... , 0]
     y = points[... , 1]
@@ -60,21 +60,21 @@ def Cartesian_to_geographic_vector ( points , dpoints ):
     dz = dpoints[... , 2]
     
     tangent_vector[... , 0] = ( x * dy - y * dx ) / ( x ** 2 + y ** 2 )
-    tangent_vector[... , 1] = dz / ( numpy.sqrt ( 1 - z ** 2 ) )
+    tangent_vector[... , 1] = dz / ( np.sqrt ( 1 - z ** 2 ) )
     
     return tangent_vector
 
 def geographic_to_Cartesian_vector ( points , dpoints ):
-    tangent_vector = numpy.zeros ( ( len(points) , 3 ) , dtype = float)
+    tangent_vector = np.zeros ( ( len(points) , 3 ) , dtype = float)
     
-    theta = numpy.pi / 2 - points[... , 1]
+    theta = np.pi / 2 - points[... , 1]
     phi = points[... , 0]
     
     dtheta = - dpoints[... , 1]
     dphi = dpoints[... , 0]
     
-    tangent_vector[...,0] = numpy.cos (theta) * numpy.cos (phi) * dtheta - numpy.sin (theta) * numpy.sin (phi) * dphi
-    tangent_vector[...,1] = numpy.cos (theta) * numpy.sin (phi) * dtheta + numpy.sin (theta) * numpy.cos (phi) * dphi
-    tangent_vector[...,2] = - numpy.sin (theta) * dtheta
+    tangent_vector[...,0] = np.cos (theta) * np.cos (phi) * dtheta - np.sin (theta) * np.sin (phi) * dphi
+    tangent_vector[...,1] = np.cos (theta) * np.sin (phi) * dtheta + np.sin (theta) * np.cos (phi) * dphi
+    tangent_vector[...,2] = - np.sin (theta) * dtheta
     
     return tangent_vector
