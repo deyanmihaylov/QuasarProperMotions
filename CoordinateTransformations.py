@@ -1,21 +1,41 @@
 import numpy as np
 
-def geographic_to_Cartesian_point ( points ):
-    if len ( points.shape ) == 1:
-        nrows = 1
-    else:
-        nrows = points.shape[0]
-        
-    new_points = np.zeros ( ( len ( points ) , 3 ))
+def geographic_to_Cartesian_point(points):
+    """
+    Transform points on the unit sphere from geographic 
+    coords (ra, dec) to Cartesian coords (x,y,z)
     
-    theta = np.pi / 2 - points[... , 1]
+    INPUTS
+    ------
+    points: numpy array
+        The coords ra and dec in radians.
+        Either a single point [shape=(2,)], or
+        a list of points [shape=(2,Npoints)].
+    
+    RETURNS
+    -------
+    new_points: numpy array
+        The coord (x,y,z) with x^2+y^2+z^=1
+        Either a single point [shape=(3,)], or
+        a list of points [shape=(3,Npoints)].
+    """
+    
+    # I don't think any of these lines are needed anymore?
+    #if len ( points.shape ) == 1:
+    #    nrows = 1
+    #else:
+    #    nrows = points.shape[0]
+        
+    new_points = np.zeros((len(points), 3))
+    
+    theta = np.pi/2 - points[... , 1]
     phi = points[... , 0]
     
-    new_points[...,0] = np.sin ( theta ) * np.cos ( phi )
-    new_points[...,1] = np.sin ( theta ) * np.sin ( phi )
-    new_points[...,2] = np.cos ( theta )
+    new_points[...,0] = np.sin(theta) * np.cos(phi)
+    new_points[...,1] = np.sin(theta) * np.sin(phi)
+    new_points[...,2] = np.cos(theta)
     
-    if len ( points.shape ) == 1:
+    if len(points.shape) == 1:
         return new_points[0]
     else:
         return new_points
