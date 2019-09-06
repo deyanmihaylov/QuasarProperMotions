@@ -15,7 +15,7 @@ def geographic_to_Cartesian_point(points):
     RETURNS
     -------
     new_points: numpy array
-        The coord (x,y,z) with x^2+y^2+z^=1
+        The coord (x,y,z) with x^2+y^2+z^=1.
         Either a single point [shape=(3,)], or
         a list of points [shape=(Npoints,3)].
     """
