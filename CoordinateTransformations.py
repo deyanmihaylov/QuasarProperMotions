@@ -20,6 +20,31 @@ def geographic_to_Cartesian_point ( points ):
     else:
         return new_points
     
+def Cartesian_to_geographic_point ( points ):
+    if len ( points.shape ) == 1:
+        nrows = 1
+    else:
+        nrows = points.shape[0]
+        
+    new_points = np.zeros ( ( len ( points ) , 2 ))
+    
+    theta = np.arccos( points[..., 2] / np.linalg.norm(points, axis=1) )
+    phi = np.arctan2( points[..., 1], points[..., 0] )
+    
+    new_points[...,0] = phi
+    new_points[...,1] = np.pi / 2 - theta
+    
+    if len ( points.shape ) == 1:
+        return new_points[0]
+    else:
+        return new_points    
+    
+    
+    
+    
+    
+    
+    
 def Cartesian_to_geographic_vector ( points , dpoints ):
     if points.ndim == 1:
         tangent_vector = numpy.zeros ( ( 2 ) , dtype = float)
