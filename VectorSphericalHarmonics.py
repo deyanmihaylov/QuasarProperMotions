@@ -31,42 +31,83 @@ from math import factorial
 
 
 
-# The Normalised Associated Legendre Polynomials, P^m_l(x), where x = cos(theta)
-def NormalisedAssociatedLegendrePolynomial ( l , m , x ):
-
-    legendre = lpmv ( m , l , x )
-    norm = ( np.sqrt ( ( 2 * l + 1) / ( 4. * np.pi ) ) 
-            * np.sqrt ( factorial ( l - m ) / factorial ( l + m ) ) ) 
+def NormalisedAssociatedLegendrePolynomial(l, m, x):
+    """
+    The Normalised Associated Legendre Polynomials
+    P^m_l(x), where x = cos(theta).
     
+    INPUTS
+    ------
+    l: int
+        Harmonic polar index.
+    m: int
+        Harmonic azimuthal index.
+    x: float
+        cos(theta)
+        
+    RETURNS
+    -------
+    ans: float
+        P^m_l(x)
+    """
+    legendre = lpmv(m, l, x)
+    norm = ( np.sqrt( (2*l+1) / (4.*np.pi) ) 
+            * np.sqrt( factorial(l-m)/factorial(l+m) ) ) 
     return norm * legendre
 
 
 
-# The Scalar Spherical Harmonics, Y^l_m(n)
-# The Variable n Is A Unit Three-Vector (i.e. a point on the sphere)
-def ScalarSphericalHarmonicY ( l , m , n ):
+def ScalarSphericalHarmonicY(l, m, n):
+    """
+    The Scalar Spherical Harmonics, Y^l_m(n)
     
-    # The Spherical Polar Angles Of The Position Vector n
-    theta = np.arccos ( n[2] / np.sqrt ( np.dot ( n , n ) ) )
-    phi = np.arctan2 ( n[1] , n[0] )
+    INPUTS
+    ------
+    l: int
+        Harmonic polar index.
+    m: int
+        Harmonic azimuthal index.
+    n: numpy array shape (3,)
+        The Cartesian coordinates of a point on the unit sphere.
+        
+    RETURNS
+    -------
+    ans: float
+    """
+    theta = np.arccos( n[2] / np.sqrt(np.dot(n, n)) )
+    phi = np.arctan2(n[1], n[0])
     
-    #  Useful to Define x = cos ( theta )
-    x = np.cos ( theta )
+    x = np.cos(theta)
     
-    return NormalisedAssociatedLegendrePolynomial ( l , m , x ) * np.exp ( (1j) * m * phi )
+    return NormalisedAssociatedLegendrePolynomial(l, m, x) * np.exp((1j)*m*phi)
 
 
-# The Gradient Vector Spherical Harmonics, ((Y^l_m)^E(n))_i
-# The Variable n Is A Unit Three-Vector (i.e. a point on the sphere)
-def VectorSphericalHarmonicE ( l , m , n ):
+
+
+def VectorSphericalHarmonicE(l, m, n):
+    """
+    The Gradient Vector Spherical Harmonics, (YE)^l_m(n).
+    
+    INPUTS
+    ------
+    l: int
+        Harmonic polar index.
+    m: int
+        Harmonic azimuthal index.
+    n: numpy array 
+        The Cartesian coordinates of a point on the unit sphere.
+        Either a single point [shape=(3,)] or several [shape=(3,Npoints)].
+        
+    RETURNS
+    -------
+    ans: numpy array shape (3,) or (3,Npoints)
+    """
     if n.ndim == 1:
         n = np.array ( [ n ] )
 
-    # The Spherical Polar Angles Of The Position Vector n
     theta = np.arccos ( np.divide( n[...,2] , np.sqrt ( np.einsum ( "...i,...i->..." , n , n ) ) ) )
     phi = np.arctan2 ( n[...,1] , n[...,0] )
     
-    #  Useful to Define x = cos ( theta )
     x = np.cos ( theta )
     
     # The Coordinate Basis Vectors Associated With The Spherical Polar Angles
@@ -105,17 +146,30 @@ def VectorSphericalHarmonicE ( l , m , n ):
 
 
 
-# The Curl Vector Spherical Harmonics, ((Y^l_m)^B(n))_i
-# The Variable n Is A Unit Three-Vector (i.e. a point on the sphere)
-def VectorSphericalHarmonicB ( l , m , n ):
+def VectorSphericalHarmonicB(l, m, n):
+    """
+    The Curl Vector Spherical Harmonics, (YB)^l_m(n).
+    
+    INPUTS
+    ------
+    l: int
+        Harmonic polar index.
+    m: int
+        Harmonic azimuthal index.
+    n: numpy array 
+        The Cartesian coordinates of a point on the unit sphere.
+        Either a single point [shape=(3,)] or several [shape=(3,Npoints)].
+        
+    RETURNS
+    -------
+    ans: numpy array shape (3,) or (3,Npoints)
+    """
     if n.ndim == 1:
         n = np.array ( [ n ] )
     
-    # The Spherical Polar Angles Of The Position Vector n
     theta = np.arccos ( np.divide( n[...,2] , np.sqrt ( np.einsum ( "...i,...i->..." , n , n ) ) ) )
     phi = np.arctan2 ( n[...,1] , n[...,0] )
     
-    #  Useful to Define x = cos ( theta )
     x = np.cos ( theta )
     
     # The Coordinate Basis Vectors Associated With The Spherical Polar Angles
@@ -152,18 +206,59 @@ def VectorSphericalHarmonicB ( l , m , n ):
     
     return v_B
 
-def RealVectorSphericalHarmonicE ( l , m , n ):
-    if m < 0:
-        return np.sqrt(2) * ( (-1) ** np.abs(m) ) * np.imag ( VectorSphericalHarmonicE ( l , np.abs(m) , n ) )
-    elif m == 0:
-        return np.real(VectorSphericalHarmonicE ( l , 0 , n ))
-    else:
-        return np.sqrt(2) * ( (-1) ** np.abs(m) ) * np.real ( VectorSphericalHarmonicE ( l , np.abs(m) , n ) )
 
-def RealVectorSphericalHarmonicB ( l , m , n ):
+
+
+
+
+def RealVectorSphericalHarmonicE(l, m, n):
+    """
+    The Real Gradient Vector Spherical Harmonics, (YE)^l_m(n).
+    
+    INPUTS
+    ------
+    l: int
+        Harmonic polar index.
+    m: int
+        Harmonic azimuthal index.
+    n: numpy array 
+        The Cartesian coordinates of a point on the unit sphere.
+        Either a single point [shape=(3,)] or several [shape=(3,Npoints)].
+        
+    RETURNS
+    -------
+    ans: numpy array shape (3,) or (3,Npoints)
+    """
     if m < 0:
-        return np.sqrt(2) * ( (-1) ** np.abs(m) ) * np.imag ( VectorSphericalHarmonicB ( l , np.abs(m) , n ) )
+        return np.sqrt(2) * ( (-1)**m ) * np.imag( VectorSphericalHarmonicE(l, np.abs(m), n ) )
+    elif m == 0:
+        return np.real(VectorSphericalHarmonicE(l, 0, n))
+    else:
+        return np.sqrt(2) * ( (-1)**m ) * np.real( VectorSphericalHarmonicE(l, m, n ) )
+
+    
+    
+def RealVectorSphericalHarmonicB(l, m, n):
+    """
+    The Real Curl Vector Spherical Harmonics, (YB)^l_m(n).
+    
+    INPUTS
+    ------
+    l: int
+        Harmonic polar index.
+    m: int
+        Harmonic azimuthal index.
+    n: numpy array 
+        The Cartesian coordinates of a point on the unit sphere.
+        Either a single point [shape=(3,)] or several [shape=(3,Npoints)].
+        
+    RETURNS
+    -------
+    ans: numpy array shape (3,) or (3,Npoints)
+    """
+    if m < 0:
+        return np.sqrt(2) * ( (-1)**m ) * np.imag( VectorSphericalHarmonicB(l, np.abs(m), n) )
     elif m == 0:
         return np.real(VectorSphericalHarmonicB ( l , 0 , n ))
     else:
-        return np.sqrt(2) * ( (-1) ** np.abs(m) ) * np.real ( VectorSphericalHarmonicB ( l , np.abs(m) , n ) )
+        return np.sqrt(2) * ( (-1)**m ) * np.real( VectorSphericalHarmonicB(l, m, n) )
