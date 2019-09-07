@@ -73,7 +73,7 @@ def Cartesian_to_geographic_point(points):
     phi = np.arctan2( points[..., 1], points[..., 0] )
     
     new_points[...,0] = phi
-    new_points[...,1] = np.pi / 2 - theta
+    new_points[...,1] = np.pi/2 - theta
     
     if len(points.shape) == 1:
         return new_points[0]
