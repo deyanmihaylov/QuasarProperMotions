@@ -2,6 +2,7 @@ import argparse
 
 import AstrometricData as AD
 import Sampler
+import Optimiser
 from PostProcessing import post_process_results
 
 import csv
@@ -13,6 +14,7 @@ import pandas as pd
 import numpy as np
 
 import cpnest
+import PySO
 
 
 parser = argparse.ArgumentParser()
@@ -29,6 +31,7 @@ parser.add_argument('--llmethod', help='The log likelihood method to use [defaul
 parser.add_argument('--prior_bounds', help='The prior bounds on the a^Q_lm coefficients [default 1.0]', type=float, default=1.0)
 parser.add_argument('--plotting', help="Plot data", action='store_true', default=False)
 parser.add_argument('--mod_basis', help="Use modified basis", action='store_true', default=False)
+parser.add_argument('--optimise', help="Run PSO optimisation instead of cpnest sampling", action='store_true', default=False)
 args = parser.parse_args()
 
 # Create a directory for the results
@@ -82,19 +85,31 @@ if args.mod_basis:
 
 
 
-# Nested sampling
-mymodel = Sampler.model(data, whichlikelihood=args.llmethod, prior_bound=args.prior_bounds)
-nest = cpnest.CPNest ( mymodel ,
-                       output=dir_path ,
-                       nlive=args.nlive , 
-                       maxmcmc=args.maxmcmc ,
-                       nthreads=args.nthreads , 
-                       resume=True ,
-                       verbose=3)
-nest.run()
-nest.get_nested_samples()
-nest.get_posterior_samples()
-post_process_results(os.path.join(dir_path, "posterior.dat"), args.mod_basis, data.Cholesky_overlap_matrix)
+# Nested sampling / Optimisation
+if not args.optimise:
+    mymodel = Sampler.model(data, whichlikelihood=args.llmethod, prior_bound=args.prior_bounds)
+    nest = cpnest.CPNest ( mymodel ,
+                           output=dir_path ,
+                           nlive=args.nlive , 
+                           maxmcmc=args.maxmcmc ,
+                           nthreads=args.nthreads , 
+                           resume=True ,
+                           verbose=3)
+    nest.run()
+    nest.get_nested_samples()
+    nest.get_posterior_samples()
+else:
+    mymodel = Optimiser.model(data, whichlikelihood=args.llmethod, prior_bound=args.prior_bounds)
+    swarm = PySO.Swarm ( mymodel, 
+                         args.nlive,
+                         Tol = 1.0e-3,
+                         MaxIter = 1.0e8,
+                         Nthreads = args.nthreads,
+                         nPeriodicCheckpoint = 11,
+                         Output = dir_path,
+                         Resume = False,
+                         Verbose = True)
+    swarm.Run()
 
 
 
