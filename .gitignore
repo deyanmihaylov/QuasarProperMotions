@@ -1,0 +1,6 @@
+.DS_Store
+Results/.DS_Store
+__pycache__
+data/type2and3.csv
+data/type3.csv
+*~
