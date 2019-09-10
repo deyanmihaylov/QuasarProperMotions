@@ -60,6 +60,68 @@ class AstrometricDataframe:
         return np.deg2rad(degree_vals)
 
 
+    def load_Truebenbach_Darling_data(self, path):
+        """
+        Load the postions, proper motions and proper motion errors from file  
+        """
+
+        hours = 360. / 24.
+        mins = hours / 60.
+        secs = mins / 60.
+
+        deg = 1.
+        arcmin = deg / 60. 
+        arcsec = arcmin / 60.
+
+        ra = []
+        dec = []
+        pm_ra = []
+        pm_dec = []
+        pm_ra_err = []
+        pm_dec_err = []
+
+        with open(path) as fp:
+            content = fp.readlines()
+
+        for line in content:
+            if line[0] is "#":
+                pass
+            else:
+                name, RAh, RAm, RAs, e_RAs, DEd, DEm, DEs, e_DEs, pmRA, e_pmRA, o_pmRA, chi2a, pmDE, e_pmDE, o_pmDE, chi2d = line.split()[0:17]
+                
+                ra.append(int(RAh)*hours+int(RAm)*mins+float(RAs)*secs)
+                dec.append(int(DEd)*deg+int(DEm)*arcmin+float(DEs)*arcsec)
+
+                pm_ra.append(float(pmRA))
+                pm_dec.append(float(pmDE))
+
+                pm_ra_err.append(float(e_pmRA))
+                pm_dec_err.append(float(e_pmDE))
+
+
+        self.n_objects = len(ra)
+
+        self.positions = np.array([ [ra[i], dec[i]] for i in range(self.n_objects)])
+        self.positions = self.deg_to_rad ( self.positions )
+
+        self.positions_Cartesian = CT.geographic_to_Cartesian_point ( self.positions )
+
+        self.proper_motions = np.array([ [pm_ra[i], pm_dec[i]] for i in range(self.n_objects)])
+
+        proper_motions_err = np.array([ [pm_ra_err[i], pm_dec_err[i]] for i in range(self.n_objects)])
+        proper_motions_err[:,0] = proper_motions_err[:,0] / np.cos ( self.positions[:,1] )
+
+        proper_motions_err_corr = np.zeros(self.n_objects)
+
+        covariance = covariant_matrix ( proper_motions_err , proper_motions_err_corr )
+
+        self.inv_proper_motion_error_matrix = np.linalg.inv ( covariance )
+
+        self.generate_VSH_bank()
+
+        self.compute_overlap_matrix()
+
+
     def load_Gaia_data(self , path):
         """
         Load the postions, proper motions and proper motion errors from file

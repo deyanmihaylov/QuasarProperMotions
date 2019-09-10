@@ -20,7 +20,7 @@ import PySO
 parser = argparse.ArgumentParser()
 parser.add_argument('--Lmax',    help='the maximum VSH index [default 4]', type=int, default=4)
 
-parser.add_argument('--dataset', help="Select a dataset to analyze:\n(1) - mock dataset\n(2) - type2 (2843 stars)\n(3) - type3 (489163 stars)\n(4) - type2+3 (492006 stars) [default 2]", type=int, default=2)
+parser.add_argument('--dataset', help="Select a dataset to analyze:\n(1) - mock dataset\n(2) - type2 (2843 stars)\n(3) - type3 (489163 stars)\n(4) - type2+3 (492006 stars)\n(5) - Truebenbach & Darling data (713) [default 2]", type=int, default=2)
 
 parser.add_argument('--injection', help="PM data to inject:\n(0) - no injection (use PM from data)\n(1) - mock dipole\n(2) - mock GR pattern (not implemented yet [default 0]", type=int, default=0)
 
@@ -63,6 +63,9 @@ elif args.dataset == 3:
     data.load_Gaia_data( "data/type3.csv" )
 elif args.dataset == 4:
     data.load_Gaia_data( "data/type2and3.csv" )
+elif args.dataset == 5:
+    data.load_Truebenbach_Darling_data( "data/Truebenbach_Darling_table6.dat" )
+    print("Warning: not yet tested the data loading from this file format")
 else:
     raise ValueError("Unknown dataset " + str(args.dataset))
 
