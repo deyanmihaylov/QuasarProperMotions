@@ -88,27 +88,33 @@ if args.mod_basis:
 # Nested sampling / Optimisation
 if not args.optimise:
     mymodel = Sampler.model(data, whichlikelihood=args.llmethod, prior_bound=args.prior_bounds)
-    nest = cpnest.CPNest ( mymodel ,
-                           output=dir_path ,
-                           nlive=args.nlive , 
-                           maxmcmc=args.maxmcmc ,
-                           nthreads=args.nthreads , 
-                           resume=True ,
+    nest = cpnest.CPNest ( mymodel,
+                           output=dir_path,
+                           nlive=args.nlive, 
+                           maxmcmc=args.maxmcmc,
+                           nthreads=args.nthreads, 
+                           resume=True,
                            verbose=3)
     nest.run()
     nest.get_nested_samples()
     nest.get_posterior_samples()
+
 else:
     mymodel = Optimiser.model(data, whichlikelihood=args.llmethod, prior_bound=args.prior_bounds)
     swarm = PySO.Swarm ( mymodel, 
                          args.nlive,
+                         Omega = 0.3,
+                         PhiP = 0.1,
+                         PhiG = 0.1,
                          Tol = 1.0e-3,
-                         MaxIter = 1.0e8,
+                         MaxIter = 1.0e4,
+                         InitialGuess = None,
                          Nthreads = args.nthreads,
                          nPeriodicCheckpoint = 1,
                          Output = dir_path,
                          Resume = False,
-                         Verbose = True)
+                         Verbose = True,
+                         SaveEvolution = False )
     swarm.Run()
 
 
