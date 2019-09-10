@@ -105,7 +105,7 @@ else:
                          Tol = 1.0e-3,
                          MaxIter = 1.0e8,
                          Nthreads = args.nthreads,
-                         nPeriodicCheckpoint = 11,
+                         nPeriodicCheckpoint = 1,
                          Output = dir_path,
                          Resume = False,
                          Verbose = True)
