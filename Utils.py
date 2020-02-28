@@ -74,8 +74,12 @@ def assert_config_params(params):
 
     assert params['Analysis']['bunch_size'] >= 0., sys.exit("bunch_size takes non-negative values")
 
+    assert isinstance(params['Analysis']['dipole'], float) or isinstance(params['Analysis']['dipole'], int), sys.exit("dipole takes numerical values")
+
+    assert params['Analysis']['dipole'] >= 0., sys.exit("dipole takes non-negative values")
+
     assert isinstance(params['Analysis']['pm_noise'], float) or isinstance(params['Analysis']['pm_noise'], int), sys.exit("pm_noise takes numerical values")
-    
+
     assert params['Analysis']['pm_noise'] >= 0., sys.exit("pm_noise takes non-negative values")
 
     assert params['Analysis']['vsh_basis'] == "vsh" or params['Analysis']['vsh_basis'] == "mod", sys.exit("vsh_basis takes values \"normal\" or \"mod\"")
