@@ -191,7 +191,9 @@ class AstrometricDataframe:
         self.basis = dict()
         self.which_basis = None
 	
-        self.names = []
+        self.names = dict()
+
+        self.overlap_matrix = np.array([])
 
     def generate_names(self):
         names = {}
@@ -380,67 +382,92 @@ class AstrometricDataframe:
                 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
-    def load_Truebenbach_Darling_data(self, path):
-        """
-        Load the postions, proper motions and proper motion errors from file  
-        """
+    # def load_Truebenbach_Darling_data(self, path):
+    #     """
+    #     Load the postions, proper motions and proper motion errors from file  
+    #     """
 
-        hours = 360. / 24.
-        mins = hours / 60.
-        secs = mins / 60.
+    #     hours = 360. / 24.
+    #     mins = hours / 60.
+    #     secs = mins / 60.
 
-        deg = 1.
-        arcmin = deg / 60. 
-        arcsec = arcmin / 60.
+    #     deg = 1.
+    #     arcmin = deg / 60. 
+    #     arcsec = arcmin / 60.
 
-        ra = []
-        dec = []
-        pm_ra = []
-        pm_dec = []
-        pm_ra_err = []
-        pm_dec_err = []
+    #     ra = []
+    #     dec = []
+    #     pm_ra = []
+    #     pm_dec = []
+    #     pm_ra_err = []
+    #     pm_dec_err = []
 
-        with open(path) as fp:
-            content = fp.readlines()
+    #     with open(path) as fp:
+    #         content = fp.readlines()
 
-        for line in content:
-            if line[0] is "#":
-                pass
-            else:
-                name, RAh, RAm, RAs, e_RAs, DEd, DEm, DEs, e_DEs, pmRA, e_pmRA, o_pmRA, chi2a, pmDE, e_pmDE, o_pmDE, chi2d = line.split()[0:17]
+    #     for line in content:
+    #         if line[0] is "#":
+    #             pass
+    #         else:
+    #             name, RAh, RAm, RAs, e_RAs, DEd, DEm, DEs, e_DEs, pmRA, e_pmRA, o_pmRA, chi2a, pmDE, e_pmDE, o_pmDE, chi2d = line.split()[0:17]
                 
-                ra.append(int(RAh)*hours+int(RAm)*mins+float(RAs)*secs)
-                dec.append(int(DEd)*deg+int(DEm)*arcmin+float(DEs)*arcsec)
+    #             ra.append(int(RAh)*hours+int(RAm)*mins+float(RAs)*secs)
+    #             dec.append(int(DEd)*deg+int(DEm)*arcmin+float(DEs)*arcsec)
 
-                pm_ra.append(float(pmRA))
-                pm_dec.append(float(pmDE))
+    #             pm_ra.append(float(pmRA))
+    #             pm_dec.append(float(pmDE))
 
-                pm_ra_err.append(float(e_pmRA))
-                pm_dec_err.append(float(e_pmDE))
+    #             pm_ra_err.append(float(e_pmRA))
+    #             pm_dec_err.append(float(e_pmDE))
 
 
-        self.n_objects = len(ra)
+    #     self.n_objects = len(ra)
 
-        self.positions = np.array([ [ra[i], dec[i]] for i in range(self.n_objects)])
-        self.positions = self.deg_to_rad ( self.positions )
+    #     self.positions = np.array([ [ra[i], dec[i]] for i in range(self.n_objects)])
+    #     self.positions = self.deg_to_rad ( self.positions )
 
-        self.positions_Cartesian = CT.geographic_to_Cartesian_point ( self.positions )
+    #     self.positions_Cartesian = CT.geographic_to_Cartesian_point ( self.positions )
 
-        self.proper_motions = np.array([ [pm_ra[i], pm_dec[i]] for i in range(self.n_objects)])
+    #     self.proper_motions = np.array([ [pm_ra[i], pm_dec[i]] for i in range(self.n_objects)])
 
-        proper_motions_err = np.array([ [pm_ra_err[i], pm_dec_err[i]] for i in range(self.n_objects)])
-        proper_motions_err[:,0] = proper_motions_err[:,0] / np.cos ( self.positions[:,1] )
+    #     proper_motions_err = np.array([ [pm_ra_err[i], pm_dec_err[i]] for i in range(self.n_objects)])
+    #     proper_motions_err[:,0] = proper_motions_err[:,0] / np.cos ( self.positions[:,1] )
 
-        proper_motions_err_corr = np.zeros(self.n_objects)
+    #     proper_motions_err_corr = np.zeros(self.n_objects)
 
-        covariance = covariant_matrix ( proper_motions_err , proper_motions_err_corr )
+    #     covariance = covariant_matrix ( proper_motions_err , proper_motions_err_corr )
 
-        self.inv_proper_motion_error_matrix = np.linalg.inv ( covariance )
+    #     self.inv_proper_motion_error_matrix = np.linalg.inv ( covariance )
 
-        self.generate_VSH_bank()
+    #     self.generate_VSH_bank()
 
-        self.compute_overlap_matrix()
+    #     self.compute_overlap_matrix()
 
+    def compute_overlap_matrix(self, weighted_overlaps=True):
+        """
+        Calculate the overlap matrix (and its Cholesky decomposition) between VSH basis functions
+
+        weighted_overlaps: bool
+            whether or not to use the error weighted overlap sums
+        """
+        prefactor = 4. * np.pi / self.N_obj
+
+        overlap_matrix_size = 2 * self.Lmax * (self.Lmax+2)
+
+        overlap_matrix = np.zeros((overlap_matrix_size, overlap_matrix_size))
+
+        metric = np.zeros((self.N_obj, 2, 2))
+        metric[:,0,0] = np.cos(self.positions[:,1].copy())**2.
+        metric[:,1,1] = 1.
+
+        for i, name_x in enumerate(self.names):
+            for j, name_y in enumerate(self.names):
+                if weighted_overlaps is True:
+                    self.overlap_matrix[i,j] = prefactor * np.einsum ( "...i,...ij,...j->...", self.basis[name_x], self.inv_proper_motion_error_matrix, self.basis[name_y]).sum()
+                else:
+                    self.overlap_matrix[i,j] = prefactor * np.einsum ( "...i,...ij,...j->...", self.basis[name_x], metric, self.basis[name_y]).sum()
+
+        self.overlap_matrix = self.normalize_matrix(self.overlap_matrix)
 
 
  #    def gen_mock_data(self, NumObjects, eps=0.2, noise=0.1):
@@ -514,41 +541,9 @@ class AstrometricDataframe:
 	# # TO DO: implement GR quadrupole injection
 	
 
- #    def normalize_matrix(self, matrix):
- #        """
- #        Normalize the overlap matrix so that the diagonals are of order 1e0.
+ #    
 
- #        matrix: numpy.ndarray
- #            the matrix to be normalized
- #        """
- #        return matrix / ( np.linalg.det(matrix) ** (1./(2*self.Lmax*(self.Lmax+2))) )
-
- #    def compute_overlap_matrix(self, weighted_overlaps=True):
- #        """
- #        Calculate the overlap matrix (and its Cholesky decomposition) between VSH basis functions
-
- #        weighted_overlaps: bool
- #            whether or not to use the error weighted overlap sums
- #        """
- #        prefactor = 4 * np.pi / self.n_objects
-
- #        self.overlap_matrix = np.zeros((len(self.names), len(self.names)))
-
- #        metric = np.zeros((self.n_objects,2,2))
- #        metric[:,0,0] = np.cos(self.positions[:,1].copy())**2.
- #        metric[:,1,1] = 1.
-
- #        for i, name_x in enumerate(self.names):
- #            for j, name_y in enumerate(self.names):
- #                if weighted_overlaps is True:
- #                    self.overlap_matrix[i,j] = prefactor * np.einsum ( "...i,...ij,...j->...", self.basis[name_x], self.inv_proper_motion_error_matrix, self.basis[name_y]).sum()
- #                else:
- #                    self.overlap_matrix[i,j] = prefactor * np.einsum ( "...i,...ij,...j->...", self.basis[name_x], metric, self.basis[name_y]).sum()
-
- #        self.overlap_matrix = self.normalize_matrix(self.overlap_matrix)
-        
- #        # compute Cholesky decompo of overlap matrix
- #        self.Cholesky_overlap_matrix = cholesky(self.overlap_matrix)
+ 
 
  #    def change_basis(self):
  #        """

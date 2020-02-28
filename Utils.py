@@ -116,6 +116,24 @@ def deg_to_rad(degree_vals):
     """
     return np.deg2rad(degree_vals)
 
+def normalize_matrix(matrix, Lmax):
+    """
+    Normalize the overlap matrix so that the diagonals are of order 1e0.
+
+    matrix: numpy.ndarray
+        the matrix to be normalized
+    """
+    norm_exponent = 1. / (2.*Lmax*(Lmax+2))
+
+    norm_matrix = (1. / np.linalg.det(matrix)**norm_exponent) * matrix
+
+    return norm_matrix
+
+
+    
+    # compute Cholesky decompo of overlap matrix
+    self.Cholesky_overlap_matrix = cholesky(self.overlap_matrix)
+
 # def int_length(i):
 #     return len("%i" % i)
 
