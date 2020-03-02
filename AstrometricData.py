@@ -235,12 +235,18 @@ class AstrometricDataframe:
 
     def generate_positions(self, method="uniform", bunch_size_polar=0., bunch_size_azimuthal=0.):
         """
-        Generate random positions from a distorted distribution
+        Generate random positions
     
         INPUTS
         ------
-        bunch_size: float
-            controls this distribution; large eps (e.g. 100) is uniform, small eps (e.g. 0.1) is very non-uniform
+        method: string
+            switches between a uniform distribution and a bunched (biased) distribution
+
+        bunch_size_polar: float
+            controls the distribution in the polar direction; 0. activates the uniform regime, while a small number (e.g. 0.1) is severely non-uniform
+
+        bunch_size_azimuthal: float
+            controls the distribution in the azimuthal direction; 0. activates the uniform regime, while a small number (e.g. 0.1) is severely non-uniform
         """
         if method == "uniform" or (method == "bunched" and bunch_size_polar==0.):
             dec = 0.5*np.pi - np.arccos(np.random.uniform(-1, 1, size=self.N_obj))
