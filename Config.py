@@ -46,10 +46,10 @@ def set_user_params(config, file_name):
     try:
         par_file_parse_merge = config.read(file_name)
     except:
-        sys.exit("Problem interpreting parameter file '{file_name}'.")
+        sys.exit(f"Problem interpreting parameter file '{file_name}'.")
 
     if not par_file_parse_merge:
-        sys.exit("Reading file '{file_name}' has failed.")
+        sys.exit(f"Reading file '{file_name}' has failed.")
 
 def eval_config_types(config):
     """

@@ -20,17 +20,18 @@ import Model as M
 
 def load_astrometric_data(df,
                           Lmax=2,
+                          N_obj=None,
                           positions=1,
                           positions_method="uniform",
                           bunch_size_polar = 0.,
                           bunch_size_azimuthal = 0.,
                           proper_motions=1,
                           proper_motions_method="zero",
-                          pm_errors=1,
-                          N_obj = None,
-                          bunch_size = 0.,
-                          dipole = 0.,
-                          pm_noise = 0.
+                          dipole=0.,
+                          multipole=None,
+                          proper_motion_errors=1,
+                          proper_motion_errors_method="zero",
+                          proper_motion_noise=0.
                          ):
     df.Lmax = Lmax
 
@@ -42,7 +43,7 @@ def load_astrometric_data(df,
                     5: {"cat": "TD", "file_name": "data/TD6.dat"}
                    }
 
-    which_dataset = set([positions, injection, pm_errors]).intersection(set(dataset_dict.keys()))
+    which_dataset = set([positions, proper_motions, proper_motion_errors]).intersection(set(dataset_dict.keys()))
 
     if len(which_dataset) > 1:
         sys.exit("Conflicting datasets cannot be combined.")
@@ -79,24 +80,14 @@ def load_astrometric_data(df,
     elif proper_motions == 5:
         df.load_TD_proper_motions(dataset)
     
-    if pm_errors == 1:
-        df.generate_proper_motion_errors(method="zero")
-    elif pm_errors in [2, 3, 4]:
+    if proper_motion_errors == 1:
+        df.generate_proper_motion_errors(method=proper_motion_errors_method, noise=proper_motion_noise)
+    elif proper_motion_errors in [2, 3, 4]:
         df.load_Gaia_proper_motion_errors(dataset)
-    elif pm_errors == 5:
+    elif proper_motion_errors == 5:
         df.load_TD_proper_motion_errors(dataset)
-    elif pm_errors == 6:
-        df.generate_proper_motion_errors(method="noise")
-    # print(df.proper_motions)
-    
 
-
-
-    self.generate_VSH_bank()
-
-    self.compute_overlap_matrix()
-
-    print(df.names)
+    df.compute_overlap_matrix()
 
 def import_Gaia_dataset(path):
     """
@@ -290,7 +281,7 @@ class AstrometricDataframe:
         self.positions = np.transpose([ra, dec])
         self.positions = U.deg_to_rad(self.positions)
 
-    def generate_proper_motions(self, method="zero", dipole=0., multipole=[0 for l in range(1, self.Lmax+1)]):
+    def generate_proper_motions(self, method="zero", dipole=0., multipole=None):
         if method == "zero":
             self.proper_motions = np.zeros((self.N_obj, 2))
         elif method == "dipole":
@@ -322,32 +313,36 @@ class AstrometricDataframe:
 
             self.proper_motions = M.generate_model(almQ, self.basis)
 
-    def generate_proper_motion_errors(self, method=None, pm_noise=0.):
-        if method == "zero":
+    def load_Gaia_proper_motions(self, dataset):
+        """
+        Load the proper motions from Gaia file
+        """
+        self.proper_motions = dataset[['pmra', 'pmdec']].values
+
+    def load_TD_proper_motions(self, dataset):
+        """
+        Load the proper motions from Truebenbach-Darling file
+        """
+
+        self.proper_motions = dataset[['pmRA', 'pmDE']].values
+
+    def generate_proper_motion_errors(self, method=None, noise=0.):
+        if method == "zero" or (method == "noise" and noise == 0.):
             proper_motions_errors = np.zeros((self.N_obj, 2))
             proper_motions_err_corr = np.ones(self.N_obj)
 
             covariance = U.covariant_matrix(proper_motions_errors, proper_motions_err_corr)
                 
             self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
-        elif method == "noise":
-            if pm_noise == 0.:
-                self.generate_proper_motion_errors(method="zero")
-            else:
-                pm_errors = np.zeros((N_obj, 2))
-                pm_errors[:, 0] = np.random.normal(0, pm_noise) * np.reciprocal(np.cos(self.positions[:,1]))
-                pm_errors[:, 1] = np.random.normal(0, pm_noise) * np.ones(self.N_obj)
-                pm_corr = np.zeros(self.N_obj)
+        elif method == "noise" and noise > 0.:
+            proper_motions_errors = np.zeros((self.N_obj, 2))
+            proper_motions_errors[:, 0] = np.random.normal(0, noise) * np.reciprocal(np.cos(self.positions[:,1]))
+            proper_motions_errors[:, 1] = np.random.normal(0, noise) * np.ones(self.N_obj)
+            proper_motions_err_corr = np.zeros(self.N_obj)
 
-                covariance = U.covariant_matrix(errors, corr)
-                
-                self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
-
-    def load_Gaia_proper_motions(self, dataset):
-        """
-        Load the proper motions from Gaia file
-        """
-        self.proper_motions = dataset[['pmra', 'pmdec']].values
+            covariance = U.covariant_matrix(proper_motions_errors, proper_motions_err_corr)
+            
+            self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
     def load_Gaia_proper_motion_errors(self, dataset):
         """
@@ -362,13 +357,6 @@ class AstrometricDataframe:
                 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
-    def load_TD_proper_motions(self, dataset):
-        """
-        Load the proper motions from Truebenbach-Darling file
-        """
-
-        self.proper_motions = dataset[['pmRA', 'pmDE']].values
-
     def load_TD_proper_motion_errors(self, dataset):
         """
         Load the proper motion errors from Truebenbach-Darling file
@@ -382,67 +370,6 @@ class AstrometricDataframe:
         covariance = U.covariant_matrix(proper_motions_errors, proper_motions_err_corr)
                 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
-
-    # def load_Truebenbach_Darling_data(self, path):
-    #     """
-    #     Load the postions, proper motions and proper motion errors from file  
-    #     """
-
-    #     hours = 360. / 24.
-    #     mins = hours / 60.
-    #     secs = mins / 60.
-
-    #     deg = 1.
-    #     arcmin = deg / 60. 
-    #     arcsec = arcmin / 60.
-
-    #     ra = []
-    #     dec = []
-    #     pm_ra = []
-    #     pm_dec = []
-    #     pm_ra_err = []
-    #     pm_dec_err = []
-
-    #     with open(path) as fp:
-    #         content = fp.readlines()
-
-    #     for line in content:
-    #         if line[0] is "#":
-    #             pass
-    #         else:
-    #             name, RAh, RAm, RAs, e_RAs, DEd, DEm, DEs, e_DEs, pmRA, e_pmRA, o_pmRA, chi2a, pmDE, e_pmDE, o_pmDE, chi2d = line.split()[0:17]
-                
-    #             ra.append(int(RAh)*hours+int(RAm)*mins+float(RAs)*secs)
-    #             dec.append(int(DEd)*deg+int(DEm)*arcmin+float(DEs)*arcsec)
-
-    #             pm_ra.append(float(pmRA))
-    #             pm_dec.append(float(pmDE))
-
-    #             pm_ra_err.append(float(e_pmRA))
-    #             pm_dec_err.append(float(e_pmDE))
-
-
-    #     self.n_objects = len(ra)
-
-    #     self.positions = np.array([ [ra[i], dec[i]] for i in range(self.n_objects)])
-    #     self.positions = self.deg_to_rad ( self.positions )
-
-    #     self.positions_Cartesian = CT.geographic_to_Cartesian_point ( self.positions )
-
-    #     self.proper_motions = np.array([ [pm_ra[i], pm_dec[i]] for i in range(self.n_objects)])
-
-    #     proper_motions_err = np.array([ [pm_ra_err[i], pm_dec_err[i]] for i in range(self.n_objects)])
-    #     proper_motions_err[:,0] = proper_motions_err[:,0] / np.cos ( self.positions[:,1] )
-
-    #     proper_motions_err_corr = np.zeros(self.n_objects)
-
-    #     covariance = covariant_matrix ( proper_motions_err , proper_motions_err_corr )
-
-    #     self.inv_proper_motion_error_matrix = np.linalg.inv ( covariance )
-
-    #     self.generate_VSH_bank()
-
-    #     self.compute_overlap_matrix()
 
     def compute_overlap_matrix(self, weighted_overlaps=True):
         """

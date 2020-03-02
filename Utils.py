@@ -74,11 +74,11 @@ def assert_config_params(params):
     assert isinstance(params['Analysis']['bunch_size_azimuthal'], float) or isinstance(params['Analysis']['bunch_size_azimuthal'], int), sys.exit("bunch_size_azimuthal takes numerical values")
     assert params['Analysis']['bunch_size_azimuthal'] >= 0., sys.exit("bunch_size_azimuthal takes non-negative values")
 
-    # injection should be an integer between 1 and 7
+    # proper_motions should be an integer between 1 and 5
     assert isinstance(params['Analysis']['proper_motions'], int), sys.exit("proper_motions takes integer values")
     assert params['Analysis']['proper_motions'] >= 1 and params['Analysis']['proper_motions'] <= 5, sys.exit("proper_motions takes an integer value between 1 and 5")
 
-    # pm_method should be one of ["zero", "dipole", "multipole"]
+    # proper_motions_method should be one of ["zero", "dipole", "multipole"]
     assert params['Analysis']['proper_motions_method'] in ["zero", "dipole", "multipole"], sys.exit("proper_motions_method takes values \"zero\", \"dipole\" or \"multipole\"")
 
     # dipole should be a non-negative number
@@ -90,13 +90,16 @@ def assert_config_params(params):
     assert len(params['Analysis']['multipole']) == params['Analysis']['Lmax'], sys.exit("The size of multipole needs to match Lmax")
     for x in params['Analysis']['multipole']: assert isinstance(x, float) or isinstance(x, int), sys.exit("multipole takes a list of numbers")
 
-    # pm_errors should be an integer between 1 and 6
-    assert isinstance(params['Analysis']['pm_errors'], int), sys.exit("pm_errors takes integer values")
-    assert params['Analysis']['pm_errors'] >= 1 and params['Analysis']['pm_errors'] <= 6, sys.exit("pm_errors takes an integer value between 1 and 6")
+    # proper_motion_errors should be an integer between 1 and 5
+    assert isinstance(params['Analysis']['proper_motion_errors'], int), sys.exit("proper_motion_errors takes integer values")
+    assert params['Analysis']['proper_motion_errors'] >= 1 and params['Analysis']['proper_motion_errors'] <= 5, sys.exit("proper_motion_errors takes an integer value between 1 and 5")
 
-    # pm_noise should be a non-negative number
-    assert isinstance(params['Analysis']['pm_noise'], float) or isinstance(params['Analysis']['pm_noise'], int), sys.exit("pm_noise takes numerical values")
-    assert params['Analysis']['pm_noise'] >= 0., sys.exit("pm_noise takes non-negative values")
+    # proper_motion_errors_method should be one of ["zero", "noise"]
+    assert params['Analysis']['proper_motion_errors_method'] in ["zero", "noise"], sys.exit("proper_motion_errors_method takes values \"zero\", \"noise\"")
+
+    # proper_motion_noise should be a non-negative number
+    assert isinstance(params['Analysis']['proper_motion_noise'], float) or isinstance(params['Analysis']['proper_motion_noise'], int), sys.exit("proper_motion_noise takes numerical values")
+    assert params['Analysis']['proper_motion_noise'] >= 0., sys.exit("proper_motion_noise takes non-negative values")
 
     # vsh_basis should be one of ["vsh", "mod"]
     assert params['Analysis']['vsh_basis'] in ["vsh", "mod"], sys.exit("vsh_basis takes values \"normal\" or \"mod\"")

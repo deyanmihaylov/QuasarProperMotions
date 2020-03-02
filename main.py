@@ -22,16 +22,18 @@ def main():
 
     AD.load_astrometric_data(data,
                              Lmax = params['Analysis']['Lmax'],
+                             N_obj = params['Analysis']['N_obj'],
                              positions = params['Analysis']['positions'],
                              positions_method = params['Analysis']['positions_method'],
                              bunch_size_polar = params['Analysis']['bunch_size_polar'],
                              bunch_size_azimuthal = params['Analysis']['bunch_size_azimuthal'],
                              proper_motions = params['Analysis']['proper_motions'],
                              proper_motions_method = params['Analysis']['proper_motions_method'],
-                             pm_errors = params['Analysis']['pm_errors'],
-                             N_obj = params['Analysis']['N_obj'],
                              dipole = params['Analysis']['dipole'],
-                             pm_noise = params['Analysis']['pm_noise']
+                             multipole = params['Analysis']['multipole'],
+                             proper_motion_errors = params['Analysis']['proper_motion_errors'],
+                             proper_motion_errors_method = params['Analysis']['proper_motion_errors_method'],
+                             proper_motion_noise = params['Analysis']['proper_motion_noise']
                             )
 
 if __name__ == '__main__':
