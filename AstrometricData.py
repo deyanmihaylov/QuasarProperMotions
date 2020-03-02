@@ -21,6 +21,9 @@ import Model as M
 def load_astrometric_data(df,
                           Lmax=2,
                           positions=1,
+                          positions_method="uniform",
+                          bunch_size_polar = 0.,
+                          bunch_size_azimuthal = 0.,
                           injection=1,
                           pm_errors=1,
                           N_obj = None,
@@ -58,11 +61,13 @@ def load_astrometric_data(df,
         df.N_obj = dataset.shape[0]
 
     if positions == 1:
-        df.generate_positions(method="random", bunch_size=bunch_size)
+        df.generate_positions(method=positions_method, bunch_size_polar=bunch_size_polar, bunch_size_azimuthal=bunch_size_azimuthal)
     elif positions in [2, 3, 4]:
         df.load_Gaia_positions(dataset)
     elif positions == 5:
         df.load_TD_positions(dataset)
+
+    df.positions_Cartesian = CT.geographic_to_Cartesian_point(df.positions)
 
     df.generate_VSHs()
 
@@ -228,7 +233,7 @@ class AstrometricDataframe:
 
         self.basis = VSHs.copy()
 
-    def generate_positions(self, method=None, bunch_size=0.):
+    def generate_positions(self, method="uniform", bunch_size_polar=0., bunch_size_azimuthal=0.):
         """
         Generate random positions from a distorted distribution
     
@@ -237,18 +242,50 @@ class AstrometricDataframe:
         bunch_size: float
             controls this distribution; large eps (e.g. 100) is uniform, small eps (e.g. 0.1) is very non-uniform
         """
-        if method == "random":
-            if bunch_size == 0.:
-                theta = np.random.uniform(0, np.pi, size=self.N_obj)
-            else:
-                theta = 0.5*np.pi + truncnorm.rvs(-0.5*np.pi/bunch_size, 0.5*np.pi/bunch_size, scale=bunch_size, size=self.N_obj)
+        if method == "uniform" or (method == "bunched" and bunch_size_polar==0.):
+            dec = 0.5*np.pi - np.arccos(np.random.uniform(-1, 1, size=self.N_obj))
+        elif method == "bunched" and bunch_size_polar > 0.:
+            dec = 0.5*np.pi - np.arccos(truncnorm.rvs(-1./bunch_size_polar, 1./bunch_size_polar, scale=bunch_size_polar, size=self.N_obj))
 
-            phi = np.random.uniform(0, 2*np.pi, size=self.N_obj)
+        if method == "uniform" or (method == "bunched" and bunch_size_azimuthal==0.):
+            ra = 2 * np.pi * np.random.uniform(0, 1, size=self.N_obj)
+        elif method == "bunched" and bunch_size_azimuthal > 0.:
+            ra = 2 * np.pi * (truncnorm.rvs(-0.5/bunch_size_azimuthal, 0.5/bunch_size_azimuthal, scale=bunch_size_azimuthal, size=self.N_obj)+0.5)
 
-            ra, dec = phi, 0.5*np.pi-theta
+        self.positions = np.array(list(zip(ra, dec)))
 
-            self.positions = np.array(list(zip(ra, dec)))
-            self.positions_Cartesian = CT.geographic_to_Cartesian_point(self.positions)
+    def load_Gaia_positions(self, dataset):
+        """
+        Load the positions from Gaia file
+        """
+        self.positions = dataset[['ra', 'dec']].values
+        self.positions = U.deg_to_rad(self.positions)
+
+    def load_TD_positions(self, dataset):
+        """
+        Load the positions from Truebenbach-Darling file
+        """
+        hours = 360. / 24.
+        mins = hours / 60.
+        secs = mins / 60.
+
+        deg = 1.
+        arcmin = deg / 60. 
+        arcsec = arcmin / 60.
+
+        RAh = dataset['RAh'].values
+        RAm = dataset['RAm'].values
+        RAs = dataset['RAs'].values
+
+        DEd = dataset['DEd'].values
+        DEm = dataset['DEm'].values
+        DEs = dataset['DEs'].values
+
+        ra = RAh*hours + RAm*mins + RAs*secs
+        dec = DEd*deg + DEm*arcmin + DEs*arcsec
+
+        self.positions = np.transpose([ra, dec])
+        self.positions = U.deg_to_rad(self.positions)
 
     def generate_proper_motions(self, method=None, dipole=0.):
         if method == "zero":
@@ -305,15 +342,6 @@ class AstrometricDataframe:
                 
                 self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
-    def load_Gaia_positions(self, dataset):
-        """
-        Load the positions from Gaia file
-        """
-        self.positions = dataset[['ra', 'dec']].values
-        self.positions = U.deg_to_rad(self.positions)
-
-        self.positions_Cartesian = CT.geographic_to_Cartesian_point(self.positions)
-
     def load_Gaia_proper_motions(self, dataset):
         """
         Load the proper motions from Gaia file
@@ -332,34 +360,6 @@ class AstrometricDataframe:
         covariance = U.covariant_matrix(proper_motions_errors, proper_motions_err_corr)
                 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
-
-    def load_TD_positions(self, dataset):
-        """
-        Load the positions from Truebenbach-Darling file
-        """
-        hours = 360. / 24.
-        mins = hours / 60.
-        secs = mins / 60.
-
-        deg = 1.
-        arcmin = deg / 60. 
-        arcsec = arcmin / 60.
-
-        RAh = dataset['RAh'].values
-        RAm = dataset['RAm'].values
-        RAs = dataset['RAs'].values
-
-        DEd = dataset['DEd'].values
-        DEm = dataset['DEm'].values
-        DEs = dataset['DEs'].values
-
-        ra = RAh*hours + RAm*mins + RAs*secs
-        dec = DEd*deg + DEm*arcmin + DEs*arcsec
-
-        self.positions = np.transpose([ra, dec])
-        self.positions = U.deg_to_rad(self.positions)
-
-        self.positions_Cartesian = CT.geographic_to_Cartesian_point(self.positions)
 
     def load_TD_proper_motions(self, dataset):
         """

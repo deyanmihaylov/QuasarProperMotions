@@ -66,13 +66,13 @@ def assert_config_params(params):
     # positions_method should be one of ["uniform", "bunched"]
     assert params['Analysis']['positions_method'] in ["uniform", "bunched"], sys.exit("positions_method takes values \"uniform\" or \"bunched\"")
 
-    # bunch_size_polar should be a positive number
+    # bunch_size_polar should be a non-negative number
     assert isinstance(params['Analysis']['bunch_size_polar'], float) or isinstance(params['Analysis']['bunch_size_polar'], int), sys.exit("bunch_size_polar takes numerical values")
-    assert params['Analysis']['bunch_size_polar'] > 0., sys.exit("bunch_size_polar takes positive values")
+    assert params['Analysis']['bunch_size_polar'] >= 0., sys.exit("bunch_size_polar takes non-negative values")
 
-    # bunch_size_v should be a positive number
+    # bunch_size_azimuthal should be a non-negative number
     assert isinstance(params['Analysis']['bunch_size_azimuthal'], float) or isinstance(params['Analysis']['bunch_size_azimuthal'], int), sys.exit("bunch_size_azimuthal takes numerical values")
-    assert params['Analysis']['bunch_size_azimuthal'] > 0., sys.exit("bunch_size_azimuthal takes positive values")
+    assert params['Analysis']['bunch_size_azimuthal'] >= 0., sys.exit("bunch_size_azimuthal takes non-negative values")
 
     # injection should be an integer between 1 and 7
     assert isinstance(params['Analysis']['injection'], int), sys.exit("injection takes integer values")

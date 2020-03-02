@@ -23,10 +23,12 @@ def main():
     AD.load_astrometric_data(data,
                              Lmax = params['Analysis']['Lmax'],
                              positions = params['Analysis']['positions'],
+                             positions_method = params['Analysis']['positions_method'],
+                             bunch_size_polar = params['Analysis']['bunch_size_polar'],
+                             bunch_size_azimuthal = params['Analysis']['bunch_size_azimuthal'],
                              injection = params['Analysis']['injection'],
                              pm_errors = params['Analysis']['pm_errors'],
                              N_obj = params['Analysis']['N_obj'],
-                             bunch_size = params['Analysis']['bunch_size'],
                              dipole = params['Analysis']['dipole'],
                              pm_noise = params['Analysis']['pm_noise']
                             )
