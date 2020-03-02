@@ -55,13 +55,13 @@ def assert_config_params(params):
     assert isinstance(params['Analysis']['Lmax'], int), sys.exit("Lmax takes integer values")
     assert params['Analysis']['Lmax'] >= 1, sys.exit("Lmax takes non-negative values")
 
-    # positions should be an integer between 1 and 5
-    assert isinstance(params['Analysis']['positions'], int), sys.exit("positions takes integer values")
-    assert params['Analysis']['positions'] >= 1 and params['Analysis']['positions'] <= 5, sys.exit("positions takes an integer value between 1 and 5")
-
     # N_obj should be a positive integer
     assert isinstance(params['Analysis']['N_obj'], int), sys.exit("N_obj takes integer values")
     assert params['Analysis']['N_obj'] >= 1, sys.exit("N_obj takes non-negative integer values")
+
+    # positions should be an integer between 1 and 5
+    assert isinstance(params['Analysis']['positions'], int), sys.exit("positions takes integer values")
+    assert params['Analysis']['positions'] >= 1 and params['Analysis']['positions'] <= 5, sys.exit("positions takes an integer value between 1 and 5")
 
     # positions_method should be one of ["uniform", "bunched"]
     assert params['Analysis']['positions_method'] in ["uniform", "bunched"], sys.exit("positions_method takes values \"uniform\" or \"bunched\"")
@@ -75,12 +75,20 @@ def assert_config_params(params):
     assert params['Analysis']['bunch_size_azimuthal'] >= 0., sys.exit("bunch_size_azimuthal takes non-negative values")
 
     # injection should be an integer between 1 and 7
-    assert isinstance(params['Analysis']['injection'], int), sys.exit("injection takes integer values")
-    assert params['Analysis']['injection'] >= 1 and params['Analysis']['injection'] <= 7, sys.exit("injection takes an integer value between 1 and 7")
+    assert isinstance(params['Analysis']['proper_motions'], int), sys.exit("proper_motions takes integer values")
+    assert params['Analysis']['proper_motions'] >= 1 and params['Analysis']['proper_motions'] <= 5, sys.exit("proper_motions takes an integer value between 1 and 5")
+
+    # pm_method should be one of ["zero", "dipole", "multipole"]
+    assert params['Analysis']['proper_motions_method'] in ["zero", "dipole", "multipole"], sys.exit("proper_motions_method takes values \"zero\", \"dipole\" or \"multipole\"")
 
     # dipole should be a non-negative number
     assert isinstance(params['Analysis']['dipole'], float) or isinstance(params['Analysis']['dipole'], int), sys.exit("dipole takes numerical values")
     assert params['Analysis']['dipole'] >= 0., sys.exit("dipole takes non-negative values")
+
+    # multipole should be a list of non-negative numbers with length equal to Lmax
+    assert isinstance(params['Analysis']['multipole'], list), sys.exit("multipole takes a list of numbers")
+    assert len(params['Analysis']['multipole']) == params['Analysis']['Lmax'], sys.exit("The size of multipole needs to match Lmax")
+    for x in params['Analysis']['multipole']: assert isinstance(x, float) or isinstance(x, int), sys.exit("multipole takes a list of numbers")
 
     # pm_errors should be an integer between 1 and 6
     assert isinstance(params['Analysis']['pm_errors'], int), sys.exit("pm_errors takes integer values")

@@ -24,7 +24,8 @@ def load_astrometric_data(df,
                           positions_method="uniform",
                           bunch_size_polar = 0.,
                           bunch_size_azimuthal = 0.,
-                          injection=1,
+                          proper_motions=1,
+                          proper_motions_method="zero",
                           pm_errors=1,
                           N_obj = None,
                           bunch_size = 0.,
@@ -71,17 +72,13 @@ def load_astrometric_data(df,
 
     df.generate_VSHs()
 
-    if injection == 1:
-        df.generate_proper_motions(method="zero")
-    elif injection in [2, 3, 4]:
+    if proper_motions == 1:
+        df.generate_proper_motions(method=proper_motions_method)
+    elif proper_motions in [2, 3, 4]:
         df.load_Gaia_proper_motions(dataset)
-    elif injection == 5:
+    elif proper_motions == 5:
         df.load_TD_proper_motions(dataset)
-    elif injection == 6:
-        df.generate_proper_motions(method="dipole", dipole=dipole)
-    elif injection == 7:
-        df.generate_proper_motions(method="multipole")
-    exit()
+    
     if pm_errors == 1:
         df.generate_proper_motion_errors(method="zero")
     elif pm_errors in [2, 3, 4]:
@@ -293,7 +290,7 @@ class AstrometricDataframe:
         self.positions = np.transpose([ra, dec])
         self.positions = U.deg_to_rad(self.positions)
 
-    def generate_proper_motions(self, method=None, dipole=0.):
+    def generate_proper_motions(self, method="zero", dipole=0., multipole=[0 for l in range(1, self.Lmax+1)]):
         if method == "zero":
             self.proper_motions = np.zeros((self.N_obj, 2))
         elif method == "dipole":
@@ -311,21 +308,19 @@ class AstrometricDataframe:
             almQ[1][0]['E'] = dipole
 
             self.proper_motions = M.generate_model(almQ, self.basis)
-            
-            # self.proper_motions += M.generate_model(almQ, self.basis)
-
-                # if dir_path is not None:
-                #     par_file_open = open(dir_path + "/injected_par.txt" , "w")
-                #     par_file = csv.writer(par_file_open)
-                
-                #     for key, val in par.items():
-                #         par_file.writerow([key, val])
-
-                #     par_file_open.close()
-            
-            # TO DO: implement GR quadrupole injection
         elif method == "multipole":
-            pass # implement miltipole injection
+            almQ = dict()
+
+            for l in range(1, self.Lmax+1):
+                almQ[l] = dict()
+
+                for m in range(-l, l+1):
+                    almQ[l][m] = dict()
+
+                    almQ[l][m]['E'] = np.random.normal(0, multipole[l])
+                    almQ[l][m]['B'] = np.random.normal(0, multipole[l])
+
+            self.proper_motions = M.generate_model(almQ, self.basis)
 
     def generate_proper_motion_errors(self, method=None, pm_noise=0.):
         if method == "zero":
