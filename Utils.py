@@ -40,67 +40,77 @@ def assert_config_params(params):
     Perform checks that parameters are valid.
     """
 
+    # output_dir should be a valid path in the user's OS
     assert is_pathname_valid(params['General']['output_dir']) == True, sys.exit("output_dir needs to be a valid path")
 
+    # verbose should be a non-negative integer
     assert isinstance(params['General']['verbose'], int), sys.exit("verbose takes integer values")
-
     assert params['General']['verbose'] >= 0, sys.exit("verbose takes non-negative values")
 
+    # plotting should be a non-negative integer
     assert isinstance(params['General']['plotting'], int), sys.exit("plotting takes integer values")
-
     assert params['General']['plotting'] >= 0, sys.exit("plotting takes non-negative values")
 
+    # Lmax should be a positive integer
     assert isinstance(params['Analysis']['Lmax'], int), sys.exit("Lmax takes integer values")
-
     assert params['Analysis']['Lmax'] >= 1, sys.exit("Lmax takes non-negative values")
 
+    # positions should be an integer between 1 and 5
     assert isinstance(params['Analysis']['positions'], int), sys.exit("positions takes integer values")
+    assert params['Analysis']['positions'] >= 1 and params['Analysis']['positions'] <= 5, sys.exit("positions takes an integer value between 1 and 5")
 
-    assert params['Analysis']['positions'] >= 0 and params['Analysis']['positions'] <= 5, sys.exit("positions takes an integer value between 1 and 5")
-
-    assert isinstance(params['Analysis']['injection'], int), sys.exit("injection takes integer values")
-
-    assert params['Analysis']['injection'] >= 0 and params['Analysis']['injection'] <= 7, sys.exit("injection takes an integer value between 1 and 7")
-
-    assert isinstance(params['Analysis']['pm_errors'], int), sys.exit("pm_errors takes integer values")
-
-    assert params['Analysis']['pm_errors'] >= 0 and params['Analysis']['pm_errors'] <= 6, sys.exit("pm_errors takes an integer value between 1 and 6")
-
+    # N_obj should be a positive integer
     assert isinstance(params['Analysis']['N_obj'], int), sys.exit("N_obj takes integer values")
-
     assert params['Analysis']['N_obj'] >= 1, sys.exit("N_obj takes non-negative integer values")
 
-    assert isinstance(params['Analysis']['bunch_size'], float) or isinstance(params['Analysis']['bunch_size'], int), sys.exit("bunch_size takes numerical values")
+    # positions_method should be one of ["uniform", "bunched"]
+    assert params['Analysis']['positions_method'] in ["uniform", "bunched"], sys.exit("positions_method takes values \"uniform\" or \"bunched\"")
 
-    assert params['Analysis']['bunch_size'] >= 0., sys.exit("bunch_size takes non-negative values")
+    # bunch_size_polar should be a positive number
+    assert isinstance(params['Analysis']['bunch_size_polar'], float) or isinstance(params['Analysis']['bunch_size_polar'], int), sys.exit("bunch_size_polar takes numerical values")
+    assert params['Analysis']['bunch_size_polar'] > 0., sys.exit("bunch_size_polar takes positive values")
 
+    # bunch_size_v should be a positive number
+    assert isinstance(params['Analysis']['bunch_size_azimuthal'], float) or isinstance(params['Analysis']['bunch_size_azimuthal'], int), sys.exit("bunch_size_azimuthal takes numerical values")
+    assert params['Analysis']['bunch_size_azimuthal'] > 0., sys.exit("bunch_size_azimuthal takes positive values")
+
+    # injection should be an integer between 1 and 7
+    assert isinstance(params['Analysis']['injection'], int), sys.exit("injection takes integer values")
+    assert params['Analysis']['injection'] >= 1 and params['Analysis']['injection'] <= 7, sys.exit("injection takes an integer value between 1 and 7")
+
+    # dipole should be a non-negative number
     assert isinstance(params['Analysis']['dipole'], float) or isinstance(params['Analysis']['dipole'], int), sys.exit("dipole takes numerical values")
-
     assert params['Analysis']['dipole'] >= 0., sys.exit("dipole takes non-negative values")
 
-    assert isinstance(params['Analysis']['pm_noise'], float) or isinstance(params['Analysis']['pm_noise'], int), sys.exit("pm_noise takes numerical values")
+    # pm_errors should be an integer between 1 and 6
+    assert isinstance(params['Analysis']['pm_errors'], int), sys.exit("pm_errors takes integer values")
+    assert params['Analysis']['pm_errors'] >= 1 and params['Analysis']['pm_errors'] <= 6, sys.exit("pm_errors takes an integer value between 1 and 6")
 
+    # pm_noise should be a non-negative number
+    assert isinstance(params['Analysis']['pm_noise'], float) or isinstance(params['Analysis']['pm_noise'], int), sys.exit("pm_noise takes numerical values")
     assert params['Analysis']['pm_noise'] >= 0., sys.exit("pm_noise takes non-negative values")
 
-    assert params['Analysis']['vsh_basis'] == "vsh" or params['Analysis']['vsh_basis'] == "mod", sys.exit("vsh_basis takes values \"normal\" or \"mod\"")
+    # vsh_basis should be one of ["vsh", "mod"]
+    assert params['Analysis']['vsh_basis'] in ["vsh", "mod"], sys.exit("vsh_basis takes values \"normal\" or \"mod\"")
 
-    assert params['MCMC']['llmethod'] == "permissive" or params['MCMC']['llmethod'] == "quadratic", sys.exit("llmethod takes values \"permissive\" or \"quadratic\"")
+    # ll_method should be one of ["permissive", "quadratic"]
+    assert params['MCMC']['ll_method'] in ["permissive", "quadratic"], sys.exit("llmethod takes values \"permissive\" or \"quadratic\"")
 
+    # nthreads should be a positive integer
     assert isinstance(params['MCMC']['nthreads'], int), sys.exit("nthreads takes integer values")
+    assert params['MCMC']['nthreads'] >= 1, sys.exit("nthreads takes positive values")
 
-    assert params['MCMC']['nthreads'] >= 1, sys.exit("nthreads takes non-negative values")
-
+    # nlive should be a positive integer
     assert isinstance(params['MCMC']['nlive'], int), sys.exit("nlive takes integer values")
+    assert params['MCMC']['nlive'] >= 1, sys.exit("nlive takes positive values")
 
-    assert params['MCMC']['nthreads'] >= 1, sys.exit("nlive takes non-negative values")
-
+    # maxmcmc should be a positive integer
     assert isinstance(params['MCMC']['maxmcmc'], int), sys.exit("maxmcmc takes integer values")
-
     assert params['MCMC']['maxmcmc'] >= 1, sys.exit("maxmcmc takes non-negative values")
 
+    # prior_bounds should be a positive number
     assert isinstance(params['MCMC']['prior_bounds'], float) or isinstance(params['MCMC']['prior_bounds'], int), sys.exit("prior_bounds takes numerical values")
-
-    assert params['MCMC']['prior_bounds'] >= 0., sys.exit("prior_bounds takes non-negative values")
+    assert params['MCMC']['prior_bounds'] > 0., sys.exit("prior_bounds takes positive values")
 
 def covariant_matrix(errors, corr):
     """
