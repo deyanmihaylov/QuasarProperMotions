@@ -2,21 +2,13 @@ import numpy as np
 import sys
 import itertools
 from scipy.stats import truncnorm
+from scipy.linalg import cholesky
 import pandas as pd
 
 import CoordinateTransformations as CT
 import VectorSphericalHarmonics as VSH
 import Utils as U
 import Model as M
-
-# import csv
-
-
-
-
-
-# 
-# from scipy.linalg import cholesky
 
 def load_astrometric_data(df,
                           Lmax=2,
@@ -88,6 +80,8 @@ def load_astrometric_data(df,
         df.load_TD_proper_motion_errors(dataset)
 
     df.compute_overlap_matrix()
+
+    
 
 def import_Gaia_dataset(path):
     """
@@ -187,20 +181,10 @@ class AstrometricDataframe:
         self.names = dict()
 
         self.overlap_matrix = np.array([])
+        self.Cholesky_overlap_matrix = np.array([])
 
     def generate_names(self):
-        names = {}
-
-        for l in range(1, self.Lmax + 1):
-            names[l] = dict()
-
-            for m in range(-l, l+1):
-                names[l][m] = dict()
-
-                names[l][m]['E'] = f"Y^E_{l},{m}"
-                names[l][m]['B'] = f"Y^B_{l},{m}"
-
-        self.names = names.copy()
+        self.names = {l: {m: {Q: f"Y^{Q}_{l},{m}" for Q in ['E', 'B']} for m in range(-l, l+1)} for l in range(1, self.Lmax+1)}
 
     def generate_VSHs(self):
         """
@@ -382,116 +366,49 @@ class AstrometricDataframe:
 
         overlap_matrix_size = 2 * self.Lmax * (self.Lmax+2)
 
-        overlap_matrix = np.zeros((overlap_matrix_size, overlap_matrix_size))
+        self.overlap_matrix = np.zeros((overlap_matrix_size, overlap_matrix_size))
 
-        metric = np.zeros((self.N_obj, 2, 2))
-        metric[:,0,0] = np.cos(self.positions[:,1].copy())**2.
-        metric[:,1,1] = 1.
+        if weighted_overlaps == False:
+            metric = np.zeros((self.N_obj, 2, 2))
+            metric[:, 0, 0] = np.cos(self.positions[:,1].copy())**2.
+            metric[:, 1, 1] = 1.
 
-        for i, name_x in enumerate(self.names):
-            for j, name_y in enumerate(self.names):
-                if weighted_overlaps is True:
-                    self.overlap_matrix[i,j] = prefactor * np.einsum ( "...i,...ij,...j->...", self.basis[name_x], self.inv_proper_motion_error_matrix, self.basis[name_y]).sum()
-                else:
-                    self.overlap_matrix[i,j] = prefactor * np.einsum ( "...i,...ij,...j->...", self.basis[name_x], metric, self.basis[name_y]).sum()
+        basis_flattened = [self.basis[l][m][Q] for l in self.basis.keys() for m in self.basis[l].keys() for Q in ['E', 'B']]
 
-        self.overlap_matrix = self.normalize_matrix(self.overlap_matrix)
+        for ((i, vsh_i), (j, vsh_j)) in itertools.product(enumerate(basis_flattened), repeat=2):
+            if weighted_overlaps == True:
+                self.overlap_matrix[i,j] = prefactor * np.einsum("...i,...ij,...j->...", vsh_i, self.inv_proper_motion_error_matrix, vsh_j).sum()
+            else:
+                self.overlap_matrix[i,j] = prefactor * np.einsum("...i,...ij,...j->...", vsh_i, metric, vsh_i).sum()
 
+        self.overlap_matrix = U.normalize_matrix(self.overlap_matrix, L=self.Lmax)
 
- #    def gen_mock_data(self, NumObjects, eps=0.2, noise=0.1):
- #        """
- #        Generate mock postions, and proper motion errors for the QSO
-	# The proper motions are just noise at this stage (the injection is handled elsewhere)
-            
- #        INPUTS
- #        ------
- #        NumObjects: int
- #                Desired number of objects in mock catalog
- #        eps: float
- #                The QSO positions will be drawn from a distribution which favours the equator over the poles.
- #                eps controls this distribution; large eps (e.g. 100) is uniform, small eps (e.g. 0.1) is very non-uniform
- #        noise: float
- #                The size of the proper motion error [mas/yr]
- #        """
-            
- #        self.n_objects = NumObjects
+    def change_basis(self):
+        """
+        Method to change from VSH basis to orthogonal basis
+        """
 
- #        # Positions
- #        self.non_uniform_random_positions(eps=eps)
+        # compute Cholesky decompo of overlap matrix
+        overlap_matrix_Cholesky = cholesky(self.overlap_matrix)
+
+        invL = np.linalg.inv(overlap_matrix_Cholesky)
+
+        basis_flattened = [self.basis[l][m][Q] for l in self.basis.keys() for m in self.basis[l].keys() for Q in ['E', 'B']]
 	
- #        # Compute the VSH bank
- #        self.generate_VSH_bank()
- #        self.compute_overlap_matrix()
-            
- #        # Proper Motion Errors
- #        errors = np.zeros((self.n_objects, 2))
- #        errors[:,0] = noise * np.reciprocal(np.cos(self.positions[:,1])) # RA error
- #        errors[:,1] = noise * np.ones(self.n_objects)                    # DEC error
- #        corr = np.zeros(self.n_objects)
- #        cov = covariant_matrix(errors, corr)
- #        self.inv_proper_motion_error_matrix = np.linalg.inv(cov)
-            
- #        # Proper Motions - noise component
- #        self.proper_motions = np.zeros((self.n_objects, 2))
- #        pmra_noise = np.array([ np.random.normal(0, noise/np.cos(self.positions[i][1])) for i in range(self.n_objects)])
- #        pmdec_noise = np.random.normal(0, noise, size=self.n_objects)
- #        self.proper_motions += np.array(list(zip(pmra_noise, pmdec_noise)))
-	
-	
- #    def inject_proper_motions(self, dipole=0.0, quadrupole=0.0, dir_path=None):
- #        """
- #        Inject some proper motions into the data
-	
- #        INPUTS
- #        ------
- #        dipole: float
-	# 	the strength of the a^E_1,0 component
- #        quadrupole: float
-	# 	the strength of the GW background [not implemented]
- #        """
- #        par = {}
- #        for l in range(1, self.Lmax+1):
- #            for m in range(-l, l+1):
- #                par[ 'a^E_' + str(l) + ',' + str(m) ] = 0.
- #                par[ 'a^B_' + str(l) + ',' + str(m) ] = 0.
- #        par[ 'a^E_1,0' ] = dipole
- #        self.proper_motions += generate_model(par, self.basis)
-
- #        if dir_path is not None:
- #            par_file_open = open(dir_path + "/injected_par.txt" , "w")
- #            par_file = csv.writer(par_file_open)
-        
- #            for key, val in par.items():
- #                par_file.writerow([key, val])
-
- #            par_file_open.close()
-	
-	# # TO DO: implement GR quadrupole injection
-	
-
- #    
-
- 
-
- #    def change_basis(self):
- #        """
- #        Method to change from VSH basis to orthogonal basis
- #        """
-	
- #        new_basis = dict( { name:np.zeros((self.n_objects, 2)) for name in self.names } )
+        new_basis = dict( { name:np.zeros((self.n_objects, 2)) for name in self.names } )
     
- #        invL = np.linalg.inv(self.Cholesky_overlap_matrix)
+        
 
- #        for i in range(self.n_objects):
- #            v = np.array([ self.basis[name][i] for name in self.names])
- #            u = np.einsum('ij,ik->jk', invL, v)
- #            for j, name in enumerate(self.names):
- #                new_basis[name][i] = u[j]
+        for i in range(self.n_objects):
+            v = np.array([ self.basis[name][i] for name in self.names])
+            u = np.einsum('ij,ik->jk', invL, v)
+            for j, name in enumerate(self.names):
+                new_basis[name][i] = u[j]
 
- #        self.basis = new_basis
- #        self.which_basis = "modified orthogonal basis"
+        self.basis = new_basis
+        self.which_basis = "modified orthogonal basis"
 
- #        self.compute_overlap_matrix()
+        self.compute_overlap_matrix()
 
 
  #    def plot_overlap_matrix(self, output):
