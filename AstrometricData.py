@@ -23,7 +23,8 @@ def load_astrometric_data(df,
                           multipole=None,
                           proper_motion_errors=1,
                           proper_motion_errors_method="zero",
-                          proper_motion_noise=0.
+                          proper_motion_noise=0.,
+                          basis="vsh"
                          ):
     df.Lmax = Lmax
 
@@ -81,7 +82,9 @@ def load_astrometric_data(df,
 
     df.compute_overlap_matrix()
 
-    
+    if basis == "orthogonal":
+        df.change_basis()
+        df.compute_overlap_matrix()
 
 def import_Gaia_dataset(path):
     """
@@ -184,26 +187,7 @@ class AstrometricDataframe:
         self.Cholesky_overlap_matrix = np.array([])
 
     def generate_names(self):
-        self.names = {l: {m: {Q: f"Y^{Q}_{l},{m}" for Q in ['E', 'B']} for m in range(-l, l+1)} for l in range(1, self.Lmax+1)}
-
-    def generate_VSHs(self):
-        """
-        Precompute VSH functions at QSO locations 
-        """
-        VSHs = {}
-
-        for l in range(1, self.Lmax + 1):
-            VSHs[l] = dict()
-
-            for m in range(-l, l+1):
-                VSHs[l][m] = dict()
-
-                VSHs[l][m]['E'] = CT.Cartesian_to_geographic_vector(self.positions_Cartesian, VSH.RealVectorSphericalHarmonicE(l, m, self.positions_Cartesian))
-                VSHs[l][m]['B'] = CT.Cartesian_to_geographic_vector(self.positions_Cartesian, VSH.RealVectorSphericalHarmonicB(l, m, self.positions_Cartesian))
-            
-        self.which_basis = "vsh"
-
-        self.basis = VSHs.copy()
+        self.names = {(l, m, Q): f"Y^{Q}_{l},{m}" for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
 
     def generate_positions(self, method="uniform", bunch_size_polar=0., bunch_size_azimuthal=0.):
         """
@@ -265,35 +249,31 @@ class AstrometricDataframe:
         self.positions = np.transpose([ra, dec])
         self.positions = U.deg_to_rad(self.positions)
 
+    def generate_VSHs(self):
+        """
+        Precompute VSH functions at QSO locations 
+        """
+        def VSHs(l, m, Q):
+            if Q == "E":
+                return CT.Cartesian_to_geographic_vector(self.positions_Cartesian, VSH.RealVectorSphericalHarmonicE(l, m, self.positions_Cartesian))
+            elif Q == "B":
+                return CT.Cartesian_to_geographic_vector(self.positions_Cartesian, VSH.RealVectorSphericalHarmonicB(l, m, self.positions_Cartesian))
+
+        self.basis = {(l, m, Q): VSHs(l, m, Q) for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
+
+        self.which_basis = "vsh"
+
     def generate_proper_motions(self, method="zero", dipole=0., multipole=None):
         if method == "zero":
             self.proper_motions = np.zeros((self.N_obj, 2))
         elif method == "dipole":
-            almQ = dict()
+            almQ = {(l, m, Q): 0. for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
             
-            for l in range(1, self.Lmax+1):
-                almQ[l] = dict()
-
-                for m in range(-l, l+1):
-                    almQ[l][m] = dict()
-
-                    almQ[l][m]['E'] = 0.
-                    almQ[l][m]['B'] = 0.
-            
-            almQ[1][0]['E'] = dipole
+            almQ[(1, 0, 'E')] = dipole
 
             self.proper_motions = M.generate_model(almQ, self.basis)
         elif method == "multipole":
-            almQ = dict()
-
-            for l in range(1, self.Lmax+1):
-                almQ[l] = dict()
-
-                for m in range(-l, l+1):
-                    almQ[l][m] = dict()
-
-                    almQ[l][m]['E'] = np.random.normal(0, multipole[l])
-                    almQ[l][m]['B'] = np.random.normal(0, multipole[l])
+            almQ = {(l, m, Q): np.random.normal(0, multipole[l]) for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
 
             self.proper_motions = M.generate_model(almQ, self.basis)
 
@@ -371,11 +351,11 @@ class AstrometricDataframe:
         if weighted_overlaps == False:
             metric = np.zeros((self.N_obj, 2, 2))
             metric[:, 0, 0] = np.cos(self.positions[:,1].copy())**2.
-            metric[:, 1, 1] = 1.
+            metric[:, 1, 1] = 1
 
-        basis_flattened = [self.basis[l][m][Q] for l in self.basis.keys() for m in self.basis[l].keys() for Q in ['E', 'B']]
+        basis_values = np.array(list(self.basis.values()))
 
-        for ((i, vsh_i), (j, vsh_j)) in itertools.product(enumerate(basis_flattened), repeat=2):
+        for ((i, vsh_i), (j, vsh_j)) in itertools.product(enumerate(basis_values), repeat=2):
             if weighted_overlaps == True:
                 self.overlap_matrix[i,j] = prefactor * np.einsum("...i,...ij,...j->...", vsh_i, self.inv_proper_motion_error_matrix, vsh_j).sum()
             else:
@@ -393,20 +373,13 @@ class AstrometricDataframe:
 
         invL = np.linalg.inv(overlap_matrix_Cholesky)
 
-        basis_flattened = [self.basis[l][m][Q] for l in self.basis.keys() for m in self.basis[l].keys() for Q in ['E', 'B']]
-	
-        new_basis = dict( { name:np.zeros((self.n_objects, 2)) for name in self.names } )
-    
+        vsh_basis_values = np.array(list(self.basis.values()))
+
+        orthogonal_basis_values = np.einsum('i...j,ik->k...j', vsh_basis_values, invL)
+
+        self.basis = {key: orthogonal_basis_values[i] for i, key in enumerate(self.names)}
         
-
-        for i in range(self.n_objects):
-            v = np.array([ self.basis[name][i] for name in self.names])
-            u = np.einsum('ij,ik->jk', invL, v)
-            for j, name in enumerate(self.names):
-                new_basis[name][i] = u[j]
-
-        self.basis = new_basis
-        self.which_basis = "modified orthogonal basis"
+        self.which_basis = "orthogonal"
 
         self.compute_overlap_matrix()
 

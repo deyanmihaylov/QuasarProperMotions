@@ -102,7 +102,7 @@ def assert_config_params(params):
     assert params['Analysis']['proper_motion_noise'] >= 0., sys.exit("proper_motion_noise takes non-negative values")
 
     # vsh_basis should be one of ["vsh", "mod"]
-    assert params['Analysis']['vsh_basis'] in ["vsh", "mod"], sys.exit("vsh_basis takes values \"normal\" or \"mod\"")
+    assert params['Analysis']['basis'] in ["vsh", "orthogonal"], sys.exit("vsh_basis takes values \"vsh\" or \"orthogonal\"")
 
     # ll_method should be one of ["permissive", "quadratic"]
     assert params['MCMC']['ll_method'] in ["permissive", "quadratic"], sys.exit("llmethod takes values \"permissive\" or \"quadratic\"")
@@ -144,7 +144,7 @@ def normalize_matrix(matrix, L=None):
     matrix: numpy.ndarray
         the matrix to be normalized
     """
-    if Lmax is None:
+    if L is None:
         norm_exponent = 1
     else:
         norm_exponent = 1. / (2.*L*(L+2))

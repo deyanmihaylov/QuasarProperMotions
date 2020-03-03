@@ -33,7 +33,8 @@ def main():
                              multipole = params['Analysis']['multipole'],
                              proper_motion_errors = params['Analysis']['proper_motion_errors'],
                              proper_motion_errors_method = params['Analysis']['proper_motion_errors_method'],
-                             proper_motion_noise = params['Analysis']['proper_motion_noise']
+                             proper_motion_noise = params['Analysis']['proper_motion_noise'],
+                             basis = params['Analysis']['basis']
                             )
 
 if __name__ == '__main__':
