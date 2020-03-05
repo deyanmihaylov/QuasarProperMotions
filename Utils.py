@@ -101,11 +101,11 @@ def assert_config_params(params):
     assert isinstance(params['Analysis']['proper_motion_noise'], float) or isinstance(params['Analysis']['proper_motion_noise'], int), sys.exit("proper_motion_noise takes numerical values")
     assert params['Analysis']['proper_motion_noise'] >= 0., sys.exit("proper_motion_noise takes non-negative values")
 
-    # vsh_basis should be one of ["vsh", "mod"]
+    # vsh_basis should be one of ["vsh", "orthogonal"]
     assert params['Analysis']['basis'] in ["vsh", "orthogonal"], sys.exit("vsh_basis takes values \"vsh\" or \"orthogonal\"")
 
     # ll_method should be one of ["permissive", "quadratic"]
-    assert params['MCMC']['ll_method'] in ["permissive", "quadratic"], sys.exit("llmethod takes values \"permissive\" or \"quadratic\"")
+    assert params['MCMC']['logL_method'] in ["permissive", "quadratic"], sys.exit("llmethod takes values \"permissive\" or \"quadratic\"")
 
     # nthreads should be a positive integer
     assert isinstance(params['MCMC']['nthreads'], int), sys.exit("nthreads takes integer values")

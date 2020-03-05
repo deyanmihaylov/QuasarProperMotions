@@ -1,8 +1,8 @@
-import numpy as np
+# import numpy as np
 
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+# import matplotlib
+# matplotlib.use('Agg')
+# import matplotlib.pyplot as plt
 
 
 
@@ -14,7 +14,7 @@ def Quad(aQlm, names):
     return Quad
 
 
-def post_process_results(posterior_file, mod_basis, L):
+def post_process_results(posterior_file, basis, L):
     """
     Post process CPNest results
 
@@ -26,10 +26,10 @@ def post_process_results(posterior_file, mod_basis, L):
         whether the modified basis of functions is used
 
     """
-
     with open(posterior_file) as f: 
         coeff_names = f.readline().split()[1:-2]
-
+    print(coeff_names)
+    exit()
     a_posteior_samples = np.loadtxt(posterior_file)
     
     Q = np.array([ Quad(sample, coeff_names) for sample in a_posteior_samples])

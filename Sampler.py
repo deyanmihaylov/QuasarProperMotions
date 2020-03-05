@@ -1,50 +1,43 @@
 import numpy as np
-
 import cpnest
 import cpnest.model
 
-import Model 
-
 import AstrometricData as AD
+import Model as M
 
-
-
-def R_values(pm, invcovs, model):
+def R_values(data, invcovs, model):
     """
     Compute R values from data, model, and the inverse of the covariant matrix
     """
-    M = pm - model
-    R_values = np.sqrt( np.einsum('...i,...ij,...j->...', M, invcovs, M))
+    M = data - model
+    R_values = np.sqrt(np.einsum('...i,...ij,...j->...', M, invcovs, M))
+    
     return R_values
 
-  
-  
 def logL_permissive(R):
     """
     The permissive log-likelihood (Darling et al. inspired)
     """
-    return np.log( 
-                    ( 1. - np.exp(-0.5 * (R**2)) ) 
-                    / ( 0.5 * (R**2) )
-                )
-  
-  
-  
+    half_R_squared = 0.5 * (R**2)
+    return np.log((1.-np.exp(-half_R_squared)) / half_R_squared)
+
 def logL_quadratic(R):
     """
     The normal log-likelihood 
     """
     return -0.5 * (R**2)
-  
-  
-  
+
 
 class model(cpnest.model.Model):
     """
     Model to fit to the proper motions
     """
 
-    def __init__(self, dataset, prior_bound=1, whichlikelihood="permissive"):
+    def __init__(self,
+                 ADf: AD.AstrometricDataframe,
+                 logL_method="permissive",
+                 prior_bounds=1
+                ):
         """
         Initialise the model class
       
@@ -52,39 +45,39 @@ class model(cpnest.model.Model):
         ------
         prior_bound: float
             the range of coefficients to search over [mas/yr]
-        whichlikelihood: str
+        logL_method: str
             which likelihood function to use [either "permissive" or "normal"]
         """
-        assert whichlikelihood=="permissive" or whichlikelihood=="normal", "Unrecognised likelihood option"
-
         self.tol = 1.0e-5
 
-        self.dataset = dataset
-        self.whichlikelihood = whichlikelihood
-        self.prior_bound = prior_bound
-        
-        self.names = [ name.replace("Y","a") for name in self.dataset.names]
-        
-        self.bounds = [[ -self.prior_bound , self.prior_bound ] for i in range(len(self.names))]
-                        
-        print("Searching over the following parameters:\n", '\n'.join(self.names))
+        self.names = list(ADf.names.values())
 
+        self.proper_motions = ADf.proper_motions
+        self.inv_proper_motion_error_matrix = ADf.inv_proper_motion_error_matrix
 
-    def log_likelihood(self, params):  
+        self.basis = {ADf.names[key]: ADf.basis[key] for key in ADf.names.keys()}
+
+        if logL_method == "permissive":
+            self.logL = logL_permissive
+        elif logL_method == "quadratic":
+            self.logL = logL_quadratic
+        
+        self.bounds = [[-prior_bounds, prior_bounds] for name in self.names]
+                       
+        # TO DO: 
+        # print("Searching over the following parameters:\n", '\n'.join(self.names))
+
+    def log_likelihood(self, almQ):  
         """
         The log-likelihood function
         """
-        model_pm = Model.generate_model(params, self.dataset.basis)
+        model = M.generate_model(almQ, self.basis)
+        
+        R = R_values(self.proper_motions, self.inv_proper_motion_error_matrix, model)
 
-        Rvals = R_values(self.dataset.proper_motions, self.dataset.inv_proper_motion_error_matrix, model_pm)
+        R = np.maximum(R, self.tol)
 
-        Rvals = np.maximum(Rvals, self.tol)
-
-        if self.whichlikelihood == "permissive":
-            log_likelihood = np.sum( logL_permissive( Rvals ) )
-
-        else:
-            log_likelihood = np.sum( logL_quadratic( Rvals ) )
+        log_likelihood = np.sum(self.logL(R))
 
         return log_likelihood
 

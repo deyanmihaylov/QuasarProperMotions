@@ -1,9 +1,11 @@
 import argparse
+import cpnest
 
 import Config as C
 import Utils as U
 import AstrometricData as AD
-
+import Sampler as S
+import PostProcessing as PP
 
 def main():
     parser = argparse.ArgumentParser(description="Quasar proper motions code")
@@ -36,6 +38,31 @@ def main():
                              proper_motion_noise = params['Analysis']['proper_motion_noise'],
                              basis = params['Analysis']['basis']
                             )
+
+    astrometric_model = S.model(data,
+                                logL_method = params['MCMC']['logL_method'],
+                                prior_bounds = params['MCMC']['prior_bounds']
+                               )
+    
+    # nest = cpnest.CPNest(astrometric_model,
+    #                      output = params['General']['output_dir'],
+    #                      nthreads = params['MCMC']['nthreads'],
+    #                      nlive = params['MCMC']['nlive'], 
+    #                      maxmcmc = params['MCMC']['maxmcmc'],
+    #                      resume=False,
+    #                      verbose=0
+    #                     )
+    # nest.run()
+    # nest.get_nested_samples(filename='nested_samples.dat')
+    # print(nest.get_posterior_samples(filename='posterior.dat'))
+
+    # import numpy as np
+    # np.savetxt("post.dat", posterior_samples)
+
+    # posterior_samples = np.loadtxt("post.dat")
+    # print(posterior_samples.shape)
+
+    PP.post_process_results('posterior.dat', astrometric_model.basis, params['Analysis']['Lmax'])
 
 if __name__ == '__main__':
     main()

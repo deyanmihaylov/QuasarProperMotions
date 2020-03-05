@@ -10,158 +10,6 @@ import VectorSphericalHarmonics as VSH
 import Utils as U
 import Model as M
 
-def load_astrometric_data(df,
-                          Lmax=2,
-                          N_obj=None,
-                          positions=1,
-                          positions_method="uniform",
-                          bunch_size_polar = 0.,
-                          bunch_size_azimuthal = 0.,
-                          proper_motions=1,
-                          proper_motions_method="zero",
-                          dipole=0.,
-                          multipole=None,
-                          proper_motion_errors=1,
-                          proper_motion_errors_method="zero",
-                          proper_motion_noise=0.,
-                          basis="vsh"
-                         ):
-    df.Lmax = Lmax
-
-    df.generate_names()
-
-    dataset_dict = {2: {"cat": "Gaia", "file_name": "data/type2.csv"},
-                    3: {"cat": "Gaia", "file_name": "data/type3.csv"},
-                    4: {"cat": "Gaia", "file_name": "data/type2and3.csv"},
-                    5: {"cat": "TD", "file_name": "data/TD6.dat"}
-                   }
-
-    which_dataset = set([positions, proper_motions, proper_motion_errors]).intersection(set(dataset_dict.keys()))
-
-    if len(which_dataset) > 1:
-        sys.exit("Conflicting datasets cannot be combined.")
-    elif len(which_dataset) == 1:
-        chosen_dataset = next(iter(which_dataset))
-        
-        if dataset_dict[chosen_dataset]['cat'] == "Gaia":
-            dataset = import_Gaia_dataset(dataset_dict[chosen_dataset]['file_name'])
-        elif dataset_dict[chosen_dataset]['cat'] == "TD":
-            dataset = import_TD_dataset(dataset_dict[chosen_dataset]['file_name'])
-    else:
-        dataset = None
-
-    if dataset is None:
-        df.N_obj = N_obj
-    else:
-        df.N_obj = dataset.shape[0]
-
-    if positions == 1:
-        df.generate_positions(method=positions_method, bunch_size_polar=bunch_size_polar, bunch_size_azimuthal=bunch_size_azimuthal)
-    elif positions in [2, 3, 4]:
-        df.load_Gaia_positions(dataset)
-    elif positions == 5:
-        df.load_TD_positions(dataset)
-
-    df.positions_Cartesian = CT.geographic_to_Cartesian_point(df.positions)
-
-    df.generate_VSHs()
-
-    if proper_motions == 1:
-        df.generate_proper_motions(method=proper_motions_method)
-    elif proper_motions in [2, 3, 4]:
-        df.load_Gaia_proper_motions(dataset)
-    elif proper_motions == 5:
-        df.load_TD_proper_motions(dataset)
-    
-    if proper_motion_errors == 1:
-        df.generate_proper_motion_errors(method=proper_motion_errors_method, noise=proper_motion_noise)
-    elif proper_motion_errors in [2, 3, 4]:
-        df.load_Gaia_proper_motion_errors(dataset)
-    elif proper_motion_errors == 5:
-        df.load_TD_proper_motion_errors(dataset)
-
-    df.compute_overlap_matrix()
-
-    if basis == "orthogonal":
-        df.change_basis()
-        df.compute_overlap_matrix()
-
-def import_Gaia_dataset(path):
-    """
-    Import Gaia dataset
-    """
-    dataset = pd.read_csv(path,
-                          sep=',',
-                          header='infer',
-                          squeeze=False,
-                          mangle_dupe_cols=True,
-                          engine='python',
-                          skipinitialspace=False,
-                          skipfooter=0,
-                          keep_default_na=True,
-                          na_filter=True,
-                          verbose=False,
-                          skip_blank_lines=True,
-                          parse_dates=False,
-                          infer_datetime_format=False,
-                          keep_date_col=False,
-                          dayfirst=False,
-                          iterator=False,
-                          decimal=b'.',
-                          doublequote=True,
-                          error_bad_lines=True,
-                          warn_bad_lines=True,
-                          delim_whitespace=False,
-                          low_memory=True,
-                          memory_map=False,
-                         )
-
-    dropna_columns = ['ra',
-            'dec',
-            'pmra',
-            'pmdec',
-            'pmra_error',
-            'pmdec_error',
-            'pmra_pmdec_corr']
-
-    dataset.dropna(axis=0,
-                   how='any',
-                   thresh=None,
-                   subset=dropna_columns,
-                   inplace=True
-                  )
-
-    return dataset
-
-def import_TD_dataset(path):
-    """
-    Import TD dataset
-    """
-
-    col_names = ['Name', 'RAh', 'RAm', 'RAs', 'e_RAs', 'DEd', 'DEm',
-                 'DEs', 'e_DEs', 'pmRA', 'e_pmRA', 'o_pmRA', 'chi2a', 'pmDE', 'e_pmDE',
-                 'o_pmDE', 'chi2d', 'Length', 'MJD', 'Flag', 'z', 'f_z', 'r_z']
-
-    dataset = pd.read_fwf(path,
-                          colspecs='infer',
-                          names=col_names,
-                          widths=None,
-                          comment = '#',
-                          infer_nrows=500
-                         )
-
-    dropna_columns = ['RAh', 'RAm', 'RAs', 'e_RAs', 'DEd', 'DEm', 'DEs', 'e_DEs',
-                      'pmRA', 'e_pmRA', 'o_pmRA', 'chi2a', 'pmDE', 'e_pmDE', 'o_pmDE', 'chi2d']
-
-    dataset.dropna(axis=0,
-                   how='any',
-                   thresh=None,
-                   subset=dropna_columns,
-                   inplace=True
-                  )
-    
-    return dataset
-
 
 class AstrometricDataframe:
     def __init__(self):
@@ -368,7 +216,6 @@ class AstrometricDataframe:
         Method to change from VSH basis to orthogonal basis
         """
 
-        # compute Cholesky decompo of overlap matrix
         overlap_matrix_Cholesky = cholesky(self.overlap_matrix)
 
         invL = np.linalg.inv(overlap_matrix_Cholesky)
@@ -382,6 +229,159 @@ class AstrometricDataframe:
         self.which_basis = "orthogonal"
 
         self.compute_overlap_matrix()
+
+
+def load_astrometric_data(ADf: AstrometricDataframe,
+                          Lmax=2,
+                          N_obj=None,
+                          positions=1,
+                          positions_method="uniform",
+                          bunch_size_polar = 0.,
+                          bunch_size_azimuthal = 0.,
+                          proper_motions=1,
+                          proper_motions_method="zero",
+                          dipole=0.,
+                          multipole=None,
+                          proper_motion_errors=1,
+                          proper_motion_errors_method="zero",
+                          proper_motion_noise=0.,
+                          basis="vsh"
+                         ):
+    ADf.Lmax = Lmax
+
+    ADf.generate_names()
+
+    dataset_dict = {2: {"cat": "Gaia", "file_name": "data/type2.csv"},
+                    3: {"cat": "Gaia", "file_name": "data/type3.csv"},
+                    4: {"cat": "Gaia", "file_name": "data/type2and3.csv"},
+                    5: {"cat": "TD", "file_name": "data/TD6.dat"}
+                   }
+
+    which_dataset = set([positions, proper_motions, proper_motion_errors]).intersection(set(dataset_dict.keys()))
+
+    if len(which_dataset) > 1:
+        sys.exit("Conflicting datasets cannot be combined.")
+    elif len(which_dataset) == 1:
+        chosen_dataset = next(iter(which_dataset))
+        
+        if dataset_dict[chosen_dataset]['cat'] == "Gaia":
+            dataset = import_Gaia_dataset(dataset_dict[chosen_dataset]['file_name'])
+        elif dataset_dict[chosen_dataset]['cat'] == "TD":
+            dataset = import_TD_dataset(dataset_dict[chosen_dataset]['file_name'])
+    else:
+        dataset = None
+
+    if dataset is None:
+        ADf.N_obj = N_obj
+    else:
+        ADf.N_obj = dataset.shape[0]
+
+    if positions == 1:
+        ADf.generate_positions(method=positions_method, bunch_size_polar=bunch_size_polar, bunch_size_azimuthal=bunch_size_azimuthal)
+    elif positions in [2, 3, 4]:
+        ADf.load_Gaia_positions(dataset)
+    elif positions == 5:
+        ADf.load_TD_positions(dataset)
+
+    ADf.positions_Cartesian = CT.geographic_to_Cartesian_point(ADf.positions)
+
+    ADf.generate_VSHs()
+
+    if proper_motions == 1:
+        ADf.generate_proper_motions(method=proper_motions_method)
+    elif proper_motions in [2, 3, 4]:
+        ADf.load_Gaia_proper_motions(dataset)
+    elif proper_motions == 5:
+        ADf.load_TD_proper_motions(dataset)
+    
+    if proper_motion_errors == 1:
+        ADf.generate_proper_motion_errors(method=proper_motion_errors_method, noise=proper_motion_noise)
+    elif proper_motion_errors in [2, 3, 4]:
+        ADf.load_Gaia_proper_motion_errors(dataset)
+    elif proper_motion_errors == 5:
+        ADf.load_TD_proper_motion_errors(dataset)
+
+    ADf.compute_overlap_matrix()
+
+    if basis == "orthogonal":
+        ADf.change_basis()
+        ADf.compute_overlap_matrix()
+
+def import_Gaia_dataset(path):
+    """
+    Import Gaia dataset
+    """
+    dataset = pd.read_csv(path,
+                          sep=',',
+                          header='infer',
+                          squeeze=False,
+                          mangle_dupe_cols=True,
+                          engine='python',
+                          skipinitialspace=False,
+                          skipfooter=0,
+                          keep_default_na=True,
+                          na_filter=True,
+                          verbose=False,
+                          skip_blank_lines=True,
+                          parse_dates=False,
+                          infer_datetime_format=False,
+                          keep_date_col=False,
+                          dayfirst=False,
+                          iterator=False,
+                          decimal=b'.',
+                          doublequote=True,
+                          error_bad_lines=True,
+                          warn_bad_lines=True,
+                          delim_whitespace=False,
+                          low_memory=True,
+                          memory_map=False,
+                         )
+
+    dropna_columns = ['ra',
+            'dec',
+            'pmra',
+            'pmdec',
+            'pmra_error',
+            'pmdec_error',
+            'pmra_pmdec_corr']
+
+    dataset.dropna(axis=0,
+                   how='any',
+                   thresh=None,
+                   subset=dropna_columns,
+                   inplace=True
+                  )
+
+    return dataset
+
+def import_TD_dataset(path):
+    """
+    Import TD dataset
+    """
+
+    col_names = ['Name', 'RAh', 'RAm', 'RAs', 'e_RAs', 'DEd', 'DEm',
+                 'DEs', 'e_DEs', 'pmRA', 'e_pmRA', 'o_pmRA', 'chi2a', 'pmDE', 'e_pmDE',
+                 'o_pmDE', 'chi2d', 'Length', 'MJD', 'Flag', 'z', 'f_z', 'r_z']
+
+    dataset = pd.read_fwf(path,
+                          colspecs='infer',
+                          names=col_names,
+                          widths=None,
+                          comment = '#',
+                          infer_nrows=500
+                         )
+
+    dropna_columns = ['RAh', 'RAm', 'RAs', 'e_RAs', 'DEd', 'DEm', 'DEs', 'e_DEs',
+                      'pmRA', 'e_pmRA', 'o_pmRA', 'chi2a', 'pmDE', 'e_pmDE', 'o_pmDE', 'chi2d']
+
+    dataset.dropna(axis=0,
+                   how='any',
+                   thresh=None,
+                   subset=dropna_columns,
+                   inplace=True
+                  )
+    
+    return dataset
 
 
  #    def plot_overlap_matrix(self, output):
@@ -401,33 +401,6 @@ class AstrometricDataframe:
 
  #        plt.tight_layout()
  #        plt.savefig(output)
- #        plt.clf()
-
- #    def eccentricity(self, axes):
- #        return np.sqrt(1. - (np.min(axes, axis=1)/np.max(axes, axis=1))**2)
-
- #    def ecc_hist(self, outfile):
- #        inv_matrix = self.inv_proper_motion_error_matrix.copy()
-        
- #        inv_matrix[...,0,0] = self.inv_proper_motion_error_matrix[...,0,0] / (np.cos(self.positions[:,1]) ** 2)
- #        inv_matrix[...,1,0] = self.inv_proper_motion_error_matrix[...,1,0] / np.cos(self.positions[:,1])
- #        inv_matrix[...,0,1] = self.inv_proper_motion_error_matrix[...,0,1] / np.cos(self.positions[:,1])
-
- #        sq_eigenvalues, eigenvectors = np.linalg.eig(inv_matrix)
-
- #        eigenvalues = np.sqrt(sq_eigenvalues)
-
- #        eccentricities = self.eccentricity(eigenvalues)
-
- #        plt.hist(eccentricities)
-            
- #        plt.xlabel('PM errors eccentricity')
- #        plt.ylabel('Number of quasars')
- #        plt.title('Histogram of PM errors eccentricity')
- #        plt.yscale('log')
-
- #        plt.tight_layout()
- #        plt.savefig(outfile)
  #        plt.clf()
         
  #    def plot(self, outfile, proper_motions=False, projection='mollweide', proper_motion_scale=1):
