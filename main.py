@@ -52,17 +52,20 @@ def main():
     #                      resume=False,
     #                      verbose=0
     #                     )
+
     # nest.run()
+
     # nest.get_nested_samples(filename='nested_samples.dat')
-    # print(nest.get_posterior_samples(filename='posterior.dat'))
+    
+    # nest.get_posterior_samples(filename='posterior.dat')
 
-    # import numpy as np
-    # np.savetxt("post.dat", posterior_samples)
-
-    # posterior_samples = np.loadtxt("post.dat")
-    # print(posterior_samples.shape)
-
-    PP.post_process_results('posterior.dat', astrometric_model.basis, params['Analysis']['Lmax'])
+    # TO DO: Rewrite this with passing the samples instead of writing and reading a file. In March 2020 there is a bug in CPnest.
+    import os
+    PP.post_process_results(posterior_file = os.path.join(params['General']['output_dir'], 'posterior.dat'),
+                            which_basis = astrometric_model.which_basis,
+                            Lmax = params['Analysis']['Lmax'],
+                            L = astrometric_model.overlap_matrix_Cholesky
+                           )
 
 if __name__ == '__main__':
     main()

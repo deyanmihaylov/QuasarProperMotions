@@ -56,6 +56,8 @@ class model(cpnest.model.Model):
         self.inv_proper_motion_error_matrix = ADf.inv_proper_motion_error_matrix
 
         self.basis = {ADf.names[key]: ADf.basis[key] for key in ADf.names.keys()}
+        self.which_basis = ADf.which_basis
+        self.overlap_matrix_Cholesky = ADf.overlap_matrix_Cholesky
 
         if logL_method == "permissive":
             self.logL = logL_permissive

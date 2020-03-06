@@ -1,4 +1,4 @@
-# import numpy as np
+import numpy as np
 
 # import matplotlib
 # matplotlib.use('Agg')
@@ -6,15 +6,15 @@
 
 
 
-def Quad(aQlm, names):
-    Quad = 0.0
-    for i, name in enumerate(names):
-        if name[4]=='2':
-            Quad += aQlm[i]**2
-    return Quad
+# def Quad(aQlm, names):
+#     Quad = 0.0
+#     for i, name in enumerate(names):
+#         if name[4]=='1' and name[2]=='E':
+#             Quad += aQlm[i]**2
+#     return Quad
 
 
-def post_process_results(posterior_file, basis, L):
+def post_process_results(posterior_file, which_basis, Lmax, L):
     """
     Post process CPNest results
 
@@ -28,34 +28,69 @@ def post_process_results(posterior_file, basis, L):
     """
     with open(posterior_file) as f: 
         coeff_names = f.readline().split()[1:-2]
+    print(posterior_file)
     print(coeff_names)
-    exit()
-    a_posteior_samples = np.loadtxt(posterior_file)
     
-    Q = np.array([ Quad(sample, coeff_names) for sample in a_posteior_samples])
+    almQ_posterior_samples = np.loadtxt(posterior_file)
+    almQ_posterior_samples = almQ_posterior_samples[:, 0:6]
+    print(almQ_posterior_samples)
 
-    plt.hist(Q, bins=np.linspace(0, np.max(Q), 30))
+    # Q = np.array([ Quad(sample, coeff_names) for sample in almQ_posterior_samples])
 
-    plt.xlim(0, np.max(Q))
+    # this is wrong, only a^E_1,0 has to be 1
+    M_v1 = np.diagflat([[1, 0.] * (2*(l+1)+1) for l, k in enumerate([(8.*(np.pi)**2.)/9.])])
+    M_v2 = np.diagflat([[1/k, 0.] * (2*(l+1)+1) for l, k in enumerate([(8.*(np.pi)**2.)/9.])])
 
-    plt.xlabel("Q [mas^2/yr^2]")
-    plt.ylabel("Probability")
+    Q_v1 = np.einsum('...i,ij,...j->...', almQ_posterior_samples, M_v1, almQ_posterior_samples)
+    Q_v2 = np.einsum('...i,ij,...j->...', almQ_posterior_samples, M_v2, almQ_posterior_samples)
 
-    plt.tight_layout()
+    # plt.hist(Q, bins=np.linspace(0, np.max(Q), 30))
 
-    output = posterior_file[0:-13] + "Q_histogram.png"
-    plt.savefig(output)
+    # plt.xlim(0, np.max(Q))
 
-    plt.clf()
+    # plt.xlabel("Q [mas^2/yr^2]")
+    # plt.ylabel("Probability")
 
-    Q90 = np.sort(Q)[int(0.9*len(Q))]
+    # plt.tight_layout()
 
-    LimitsFile = posterior_file[0:-13] + "Limits.txt"
+    # output = posterior_file[0:-13] + "Q_histogram.png"
+    # plt.savefig(output)
 
-    with open(LimitsFile, 'w') as text_file:
-        text_file.write("Q90: {0}\n".format(Q90))
+    # plt.clf()
 
-    C2 = 4. * np.pi**2 / 9.
+    # Q90 = np.sort(Q_v1)[int(0.9*len(Q_v1))]
+
+    Q90_v1 = np.percentile(Q_v1, 90)
+    Q90_v2 = np.percentile(Q_v2, 90)
+
+    # LimitsFile = posterior_file[0:-13] + "Limits.txt"
+
+    # with open(LimitsFile, 'w') as text_file:
+    #     text_file.write("Q90: {0}\n".format(Q90))
+
+    # C2 = 4. * np.pi**2 / 9.
+
+    if which_basis == "vsh":
+        chi90_limit = 10.6446 # k = 6
+
+        A90_v1 = np.sqrt(Q90_v1/chi90_limit)
+        A90_v2 = np.sqrt(Q90_v2/chi90_limit)
+
+        print (A90_v1, A90_v2)
+    elif which_basis == "orthogonal":
+        X = np.einsum("li,lk,kj->ij", L, M_v2, L)
+        print(X)
+        z = np.random.multivariate_normal(np.zeros(len(coeff_names)), np.diag(np.ones(len(coeff_names))), size=10000)
+        y = np.einsum("...i,...ij,...j->...", z, X, z)
+        y90 = np.percentile(y, 90)
+
+        A90 = np.sqrt(Q90_v2/y90)
+        print(A90)
+        exit()
+
+
+    print(which_basis)
+    exit()
 
     if mod_basis:
         M = np.zeros((len(coeff_names),len(coeff_names)))

@@ -32,7 +32,7 @@ class AstrometricDataframe:
         self.names = dict()
 
         self.overlap_matrix = np.array([])
-        self.Cholesky_overlap_matrix = np.array([])
+        self.overlap_matrix_Cholesky = np.array([])
 
     def generate_names(self):
         self.names = {(l, m, Q): f"Y^{Q}_{l},{m}" for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
@@ -216,9 +216,9 @@ class AstrometricDataframe:
         Method to change from VSH basis to orthogonal basis
         """
 
-        overlap_matrix_Cholesky = cholesky(self.overlap_matrix)
+        self.overlap_matrix_Cholesky = cholesky(self.overlap_matrix)
 
-        invL = np.linalg.inv(overlap_matrix_Cholesky)
+        invL = np.linalg.inv(self.overlap_matrix_Cholesky)
 
         vsh_basis_values = np.array(list(self.basis.values()))
 
