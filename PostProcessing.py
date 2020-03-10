@@ -14,8 +14,15 @@ import Utils as U
 #             Quad += aQlm[i]**2
 #     return Quad
 
-def C_l_GR(l):
+def C_l_GR(l: int) -> float:
     """
+    Get the values of the correlation coefficients for a GR background
+
+    INPUTS
+    ------
+    l: int
+        the spectral mode
+
     TO DO: push this to a file
     """
     
@@ -34,13 +41,26 @@ def C_l_GR(l):
 
     return C_l[l-1]
 
-def C_l_B(l):
+def C_l_B(l: int) -> float:
+    """
+    Get the values of the correlation coefficients for a Breatiing mode background
+
+    INPUTS
+    ------
+    l: int
+        the spectral mode
+    """
     if l == 1:
         return 8.77298
     else:
         return 0.
 
-def post_process_results(posterior_file, which_basis, Lmax, L, pol, limit):
+def post_process_results(posterior_file: str,
+                         which_basis: str,
+                         Lmax: int,
+                         L: np.ndarray,
+                         pol: str,
+                         limit: float):
     """
     Post process CPNest results
 
@@ -74,8 +94,6 @@ def post_process_results(posterior_file, which_basis, Lmax, L, pol, limit):
         chi_squared_limit = U.chi_squared_limit(len(coeff_names), limit)
 
         A_limit = np.sqrt(Q_limit/chi_squared_limit)
-
-        print (A_limit)
     elif which_basis == "orthogonal":
         X = np.einsum("li,lk,kj->ij", L, M, L)
         
@@ -83,7 +101,7 @@ def post_process_results(posterior_file, which_basis, Lmax, L, pol, limit):
 
         A_limit = np.sqrt(Q_limit/generalized_chi_squared_limit)
 
-        print(A_limit)
+    return A_limit
 
         
         

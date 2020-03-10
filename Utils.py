@@ -166,6 +166,22 @@ def normalize_matrix(matrix, L=None):
     return norm_matrix
 
 def chi_squared_limit(k, P):
+    """
+    Find the P-percent certainty limit of the chi-squared distribution
+
+    INPUTS
+    ------
+    k: int
+        number of dimensions of the distribution
+
+    P: float
+        certainty of the distrubtion, in percents
+
+    RETURNS
+    -------
+    limit: float
+        limit of the distribution
+    """
     def CDF(x):
         return chi2.cdf(x, k) - P/100.
 
@@ -175,6 +191,21 @@ def chi_squared_limit(k, P):
 
 def generalized_chi_squared_limit(k, A, P):
     """
+    Find the P-percent certainty limit of the generalized chi-squared distribution
+
+    INPUTS
+    ------
+    k: int
+        number of dimensions of the distribution
+
+    P: float
+        certainty of the distrubtion, in percents
+
+    RETURNS
+    -------
+    limit: float
+        limit of the distribution
+
     TO DO: rewrite this with a CDF instead of this brute force
     """
     z = np.random.multivariate_normal(np.zeros(k), np.diag(np.ones(k)), size=100000)
