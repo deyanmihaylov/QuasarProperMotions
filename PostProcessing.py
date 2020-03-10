@@ -1,5 +1,6 @@
 import numpy as np
 
+import Utils as U
 # import matplotlib
 # matplotlib.use('Agg')
 # import matplotlib.pyplot as plt
@@ -13,8 +14,33 @@ import numpy as np
 #             Quad += aQlm[i]**2
 #     return Quad
 
+def C_l_GR(l):
+    """
+    TO DO: push this to a file
+    """
+    
+    C_l = [0, 4.386490845, 0.4386490845, 0.08772981690, 0.02506566197,
+           0.008952022133, 0.003730009222, 0.001740670970, 0.0008861597667,
+           0.0004833598727, 0.0002788614650, 0.0001685426437, 0.0001059410903,
+           0.00006886170871, 0.00004607658451, 0.00003162118544,
+           0.00002219030558, 0.00001588358715, 0.00001157232778,
+           8.566528356e-6, 6.433361216e-6, 4.894948752e-6,
+           3.769110539e-6, 2.934107589e-6, 2.307161523e-6,
+           1.831080574e-6, 1.465766469e-6, 1.182721909e-6,
+           9.614384554e-7, 7.869838970e-7, 6.483674151e-7,
+           5.374168414e-7, 4.479979048e-7, 3.754649107e-7,
+           3.162699923e-7, 2.676822837e-7, 2.275841278e-7,
+           1.943218322e-7, 1.665954245e-7, 1.433765500e-7]
 
-def post_process_results(posterior_file, which_basis, Lmax, L):
+    return C_l[l-1]
+
+def C_l_B(l):
+    if l == 1:
+        return 8.77298
+    else:
+        return 0.
+
+def post_process_results(posterior_file, which_basis, Lmax, L, pol, limit):
     """
     Post process CPNest results
 
@@ -28,135 +54,75 @@ def post_process_results(posterior_file, which_basis, Lmax, L):
     """
     with open(posterior_file) as f: 
         coeff_names = f.readline().split()[1:-2]
-    print(posterior_file)
-    print(coeff_names)
     
     almQ_posterior_samples = np.loadtxt(posterior_file)
     almQ_posterior_samples = almQ_posterior_samples[:, 0:6]
-    print(almQ_posterior_samples)
 
-    # Q = np.array([ Quad(sample, coeff_names) for sample in almQ_posterior_samples])
+    if pol == "GR":
+        diag_of_M = [[0. if C_l_GR(l) == 0 else 1./C_l_GR(l)] * 2*(2*l+1) for l in range(1, Lmax+1)]
+    elif pol == "B":
+        diag_of_M = [[0. if C_l_B(l) == 0 else 1./C_l_B(l), 0.] * (2*l+1) for l in range(1, Lmax+1)]
 
-    # this is wrong, only a^E_1,0 has to be 1
-    M_v1 = np.diagflat([[1, 0.] * (2*(l+1)+1) for l, k in enumerate([(8.*(np.pi)**2.)/9.])])
-    M_v2 = np.diagflat([[1/k, 0.] * (2*(l+1)+1) for l, k in enumerate([(8.*(np.pi)**2.)/9.])])
+    diag_of_M_flat = [coeff for coeffs in diag_of_M for coeff in coeffs]
+    M = np.diag(diag_of_M_flat)
+    
+    Q = np.einsum('...i,ij,...j->...', almQ_posterior_samples, M, almQ_posterior_samples)
 
-    Q_v1 = np.einsum('...i,ij,...j->...', almQ_posterior_samples, M_v1, almQ_posterior_samples)
-    Q_v2 = np.einsum('...i,ij,...j->...', almQ_posterior_samples, M_v2, almQ_posterior_samples)
-
-    # plt.hist(Q, bins=np.linspace(0, np.max(Q), 30))
-
-    # plt.xlim(0, np.max(Q))
-
-    # plt.xlabel("Q [mas^2/yr^2]")
-    # plt.ylabel("Probability")
-
-    # plt.tight_layout()
-
-    # output = posterior_file[0:-13] + "Q_histogram.png"
-    # plt.savefig(output)
-
-    # plt.clf()
-
-    # Q90 = np.sort(Q_v1)[int(0.9*len(Q_v1))]
-
-    Q90_v1 = np.percentile(Q_v1, 90)
-    Q90_v2 = np.percentile(Q_v2, 90)
-
-    # LimitsFile = posterior_file[0:-13] + "Limits.txt"
-
-    # with open(LimitsFile, 'w') as text_file:
-    #     text_file.write("Q90: {0}\n".format(Q90))
-
-    # C2 = 4. * np.pi**2 / 9.
+    Q_limit = np.percentile(Q, limit)
 
     if which_basis == "vsh":
-        chi90_limit = 10.6446 # k = 6
+        chi_squared_limit = U.chi_squared_limit(len(coeff_names), limit)
 
-        A90_v1 = np.sqrt(Q90_v1/chi90_limit)
-        A90_v2 = np.sqrt(Q90_v2/chi90_limit)
+        A_limit = np.sqrt(Q_limit/chi_squared_limit)
 
-        print (A90_v1, A90_v2)
+        print (A_limit)
     elif which_basis == "orthogonal":
-        X = np.einsum("li,lk,kj->ij", L, M_v2, L)
-        print(X)
-        z = np.random.multivariate_normal(np.zeros(len(coeff_names)), np.diag(np.ones(len(coeff_names))), size=10000)
-        y = np.einsum("...i,...ij,...j->...", z, X, z)
-        y90 = np.percentile(y, 90)
-
-        A90 = np.sqrt(Q90_v2/y90)
-        print(A90)
-        exit()
-
-
-    print(which_basis)
-    exit()
-
-    if mod_basis:
-        M = np.zeros((len(coeff_names),len(coeff_names)))
-
-        for i, name_x in enumerate(coeff_names):
-            A_x = 1. if name_x[4]=='2' else 0.
-
-            for j, name_y in enumerate(coeff_names):
-                A_y = 1. if name_x[4]=='2' else 0.
-
-                M[i,j] = A_x * A_y
-
         X = np.einsum("li,lk,kj->ij", L, M, L)
+        
+        generalized_chi_squared_limit = U.generalized_chi_squared_limit(len(coeff_names), X, limit)
 
-        z = np.random.multivariate_normal(np.zeros(len(coeff_names)), np.diag(np.ones(len(coeff_names))), size=10000)
+        A_limit = np.sqrt(Q_limit/generalized_chi_squared_limit)
 
-        y = np.einsum("...i,...ij,...j->...", z, X, z)
+        print(A_limit)
 
-        y90 = np.sort(y)[int(0.9*len(y))]
-
-        A90 = np.sqrt(Q90/(C2 * y90))
-    else:
-        chi_90 = 16.
-
-        A90 = np.sqrt(Q90/(C2*chi_90))
-
-    with open(LimitsFile, 'a') as text_file:
-        text_file.write("A90: {0}\n".format(A90))
         
         
         
         
         
         
-def plot_vector_field(coeffs, scale=1):
-    """
-    Smooth vector field plot.
-    Cylindrical projection
-    """
-    eps = 1.0e-3
-    ra_vals = np.arange(15,350+eps,15)
-    dec_vals = np.arange(-80,80+eps,10)
+# def plot_vector_field(coeffs, scale=1):
+#     """
+#     Smooth vector field plot.
+#     Cylindrical projection
+#     """
+#     eps = 1.0e-3
+#     ra_vals = np.arange(15,350+eps,15)
+#     dec_vals = np.arange(-80,80+eps,10)
     
-    for ra in ra_vals:
-        for dec in dec_vals:
+#     for ra in ra_vals:
+#         for dec in dec_vals:
             
-            start = geographic_to_Cartesian_point(np.array([[np.pi*ra/180, np.pi*dec/180]]))[0] 
-            end = start
-            for name in coeffs.keys():
-                l, m = int(name[4]), int(name[6:])
-                if 'E' in name:
-                    end += scale * coeffs[name] * RealVectorSphericalHarmonicE(l, m, start)
-                else:
-                    end += scale * coeffs[name] * RealVectorSphericalHarmonicB(l, m, start)
-            end = Cartesian_to_geographic_point(np.array([end]))[0]
-            if end[0]<0:
-                end[0]+=2*np.pi
-            plt.plot([ra, 180*end[0]/np.pi], [dec, 180*end[1]/np.pi], linestyle='-', color='cyan')
+#             start = geographic_to_Cartesian_point(np.array([[np.pi*ra/180, np.pi*dec/180]]))[0] 
+#             end = start
+#             for name in coeffs.keys():
+#                 l, m = int(name[4]), int(name[6:])
+#                 if 'E' in name:
+#                     end += scale * coeffs[name] * RealVectorSphericalHarmonicE(l, m, start)
+#                 else:
+#                     end += scale * coeffs[name] * RealVectorSphericalHarmonicB(l, m, start)
+#             end = Cartesian_to_geographic_point(np.array([end]))[0]
+#             if end[0]<0:
+#                 end[0]+=2*np.pi
+#             plt.plot([ra, 180*end[0]/np.pi], [dec, 180*end[1]/np.pi], linestyle='-', color='cyan')
             
-    Sag_Astar = (266.41684, -29.00781)
-    plt.plot([Sag_Astar[0]], [Sag_Astar[1]], marker='+', color='red', markersize=12)
+#     Sag_Astar = (266.41684, -29.00781)
+#     plt.plot([Sag_Astar[0]], [Sag_Astar[1]], marker='+', color='red', markersize=12)
     
-    plt.xlim(0,360)
-    plt.ylim(-90,90)
+#     plt.xlim(0,360)
+#     plt.ylim(-90,90)
     
-    plt.xlabel(r"ra$^{\circ}$")
-    plt.ylabel(r"dec$^{\circ}$")
+#     plt.xlabel(r"ra$^{\circ}$")
+#     plt.ylabel(r"dec$^{\circ}$")
     
-    plt.show()
+#     plt.show()

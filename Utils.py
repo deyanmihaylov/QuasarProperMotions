@@ -2,6 +2,8 @@ import os
 import sys
 import numpy as np
 import errno
+from scipy.stats import chi2
+from scipy.optimize import broyden1
 
 def is_pathname_valid(path_name: str) -> bool:
     """
@@ -82,14 +84,16 @@ def assert_config_params(params):
     # proper_motions_method should be one of ["zero", "dipole", "multipole"]
     assert params['Analysis']['proper_motions_method'] in ["zero", "dipole", "multipole"], sys.exit("proper_motions_method takes values \"zero\", \"dipole\" or \"multipole\"")
 
-    # dipole should be a non-negative number
-    assert isinstance(params['Analysis']['dipole'], float) or isinstance(params['Analysis']['dipole'], int), sys.exit("dipole takes numerical values")
-    assert params['Analysis']['dipole'] >= 0., sys.exit("dipole takes non-negative values")
+    # dipole should be a non-negative number (check only if proper_motions_method is "dipole")
+    if params['Analysis']['proper_motions_method'] == "dipole":
+        assert isinstance(params['Analysis']['dipole'], float) or isinstance(params['Analysis']['dipole'], int), sys.exit("dipole takes numerical values")
+        assert params['Analysis']['dipole'] >= 0., sys.exit("dipole takes non-negative values")
 
-    # multipole should be a list of non-negative numbers with length equal to Lmax
-    assert isinstance(params['Analysis']['multipole'], list), sys.exit("multipole takes a list of numbers")
-    assert len(params['Analysis']['multipole']) == params['Analysis']['Lmax'], sys.exit("The size of multipole needs to match Lmax")
-    for x in params['Analysis']['multipole']: assert isinstance(x, float) or isinstance(x, int), sys.exit("multipole takes a list of numbers")
+    # multipole should be a list of non-negative numbers with length equal to Lmax (check only if proper_motions_method is "multipole")
+    if params['Analysis']['proper_motions_method'] == "multipole":
+        assert isinstance(params['Analysis']['multipole'], list), sys.exit("multipole takes a list of numbers")
+        assert len(params['Analysis']['multipole']) == params['Analysis']['Lmax'], sys.exit("The size of multipole needs to match Lmax")
+        for x in params['Analysis']['multipole']: assert isinstance(x, float) or isinstance(x, int), sys.exit("multipole takes a list of numbers")
 
     # proper_motion_errors should be an integer between 1 and 5
     assert isinstance(params['Analysis']['proper_motion_errors'], int), sys.exit("proper_motion_errors takes integer values")
@@ -124,6 +128,13 @@ def assert_config_params(params):
     assert isinstance(params['MCMC']['prior_bounds'], float) or isinstance(params['MCMC']['prior_bounds'], int), sys.exit("prior_bounds takes numerical values")
     assert params['MCMC']['prior_bounds'] > 0., sys.exit("prior_bounds takes positive values")
 
+    # pol should be one of ["GR", "B"]
+    assert params['Post_processing']['pol'] in ["GR", "B"], sys.exit("pol takes values \"GR\" or \"B\"")
+
+    # limit should be a number between 0 and 100
+    assert isinstance(params['Post_processing']['limit'], float) or isinstance(params['Post_processing']['limit'], int), sys.exit("limit takes numerical values")
+    assert params['Post_processing']['limit'] >= 0. and params['Post_processing']['limit'] <= 100., sys.exit("limit takes values between 0 and 100")
+
 def covariant_matrix(errors, corr):
     """
     Function for computing the covariant matrix from errors and correlations.
@@ -154,7 +165,25 @@ def normalize_matrix(matrix, L=None):
 
     return norm_matrix
 
+def chi_squared_limit(k, P):
+    def CDF(x):
+        return chi2.cdf(x, k) - P/100.
 
+    limit = broyden1(CDF, k, f_tol=1e-10)
+
+    return limit
+
+def generalized_chi_squared_limit(k, A, P):
+    """
+    TO DO: rewrite this with a CDF instead of this brute force
+    """
+    z = np.random.multivariate_normal(np.zeros(k), np.diag(np.ones(k)), size=100000)
+
+    samples = np.einsum("...i,...ij,...j->...", z, A, z)
+
+    limit = np.percentile(samples, P)
+
+    return limit
     
     
 
