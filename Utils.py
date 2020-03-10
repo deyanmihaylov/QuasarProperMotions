@@ -184,13 +184,3 @@ def generalized_chi_squared_limit(k, A, P):
     limit = np.percentile(samples, P)
 
     return limit
-    
-    
-
-# def int_length(i):
-#     return len("%i" % i)
-
-
-
-
-

@@ -82,4 +82,3 @@ class model(cpnest.model.Model):
         log_likelihood = np.sum(self.logL(R))
 
         return log_likelihood
-
