@@ -1,0 +1,90 @@
+# Quasar proper motions default par file
+
+[General]
+
+output_dir = "./test1"
+verbose = 0
+plotting = 1
+
+
+[Analysis]
+
+Lmax = 1
+
+N_obj = 1000
+
+# positions legend:
+# (1) - Mock data, requires N_obj and positions_method
+# (2) - Gaia dataset, type 2
+# (3) - Gaia dataset, type 3
+# (4) - Gaia dataset, type 2 and 3
+# (5) - Darling and Truebenbach dataset
+positions = 2
+
+# mock positions method:
+# "uniform", "bunched"
+positions_method = "bunched"
+
+# bunch_size_polar: horizontal
+bunch_size_polar = 0.5
+
+# bunch_size_azimuthal: vertical
+bunch_size_azimuthal = 0.2
+
+# proper_motions legend:
+# (1) - Mock proper motions
+# (2) - Gaia dataset, type 2
+# (3) - Gaia dataset, type 3
+# (4) - Gaia dataset, type 2 and 3
+# (5) - Darling and Truebenbach dataset
+proper_motions = 2
+
+# mock proper motions method:
+# "zero", "dipole", "multipole"
+proper_motions_method = "zero"
+
+# dipole: strength of dipole
+dipole = 0.4
+
+# multipole: list of standard deviations for each multipole order
+multipole = [0.2]
+
+# proper motions errors legend:
+# (1) - No proper motion errors
+# (2) - Gaia dataset, type 2
+# (3) - Gaia dataset, type 3
+# (4) - Gaia dataset, type 2 and 3
+# (5) - Darling and Truebenbach dataset
+proper_motion_errors = 2
+
+# proper_motion_errors_method:
+# "zero", "noise"
+proper_motion_errors_method = "noise"
+
+# proper_motion_noise: STD of the Gaussian noise to add to the proper motions
+proper_motion_noise = 0.2
+
+# Vector spherical harmonics basis: "vsh" or "orthogonal"
+basis = "orthogonal"
+
+
+[MCMC]
+
+# Log-likelihood method: "permissive", "quadratic"
+logL_method = "permissive"
+
+nthreads = 16
+nlive = 1024
+maxmcmc = 128
+prior_bounds = 1.
+
+
+[Post_processing]
+
+# pol: specifies what polarization correlation coefficients to use to convert the results into a limit on the amplitude
+# "GR": use all l >= 1 with values as described in Mihaylov et. al.
+# "B": use l = 1 
+pol = "B"
+
+# limit: specifies the %-limit for the bound
+limit = 90

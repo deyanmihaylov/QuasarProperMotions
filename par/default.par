@@ -1,0 +1,31 @@
+# Quasar proper motions default par file
+
+[General]
+
+output_dir = "./"
+verbose = 0
+plotting = 1
+
+
+[Analysis]
+
+Lmax = 4
+positions = 1
+injection = 0
+pm_errors = 0
+N_obj = 1000
+eps = 0.
+
+# Vector spherical harmonics basis: "normal" or "mod"
+vsh_basis = "normal"
+
+
+[MCMC]
+
+# Log-likelihood method: "permissive", "quadratic"
+llmethod = "permissive"
+
+nthreads = 2
+nlive = 1024
+maxmcmc = 128
+prior_bounds = 1.
