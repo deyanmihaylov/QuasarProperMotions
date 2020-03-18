@@ -99,8 +99,16 @@ def assert_config_params(params):
     assert isinstance(params['Analysis']['proper_motion_errors'], int), sys.exit("proper_motion_errors takes integer values")
     assert params['Analysis']['proper_motion_errors'] >= 1 and params['Analysis']['proper_motion_errors'] <= 5, sys.exit("proper_motion_errors takes an integer value between 1 and 5")
 
-    # proper_motion_errors_method should be one of ["zero", "noise"]
-    assert params['Analysis']['proper_motion_errors_method'] in ["zero", "noise"], sys.exit("proper_motion_errors_method takes values \"zero\", \"noise\"")
+    if params['Analysis']['proper_motion_errors'] == 1:
+        # proper_motion_errors_method should be one of ["flat", "adaptive"]
+        assert params['Analysis']['proper_motion_errors_method'] in ["flat", "adaptive"], sys.exit("proper_motion_errors_method takes values \"flat\", \"adaptive\"")
+
+        # proper_motion_errors_std should be a positive number
+        assert isinstance(params['Analysis']['proper_motion_errors_std'], float) or isinstance(params['Analysis']['proper_motion_errors_std'], int), sys.exit("proper_motion_errors_std takes numerical values")
+        assert params['Analysis']['proper_motion_errors_std'] > 0., sys.exit("proper_motion_errors_std takes positive values")
+
+        # proper_motion_errors_corr_method should be one of ["zero", "total+", "total-", "random"]
+        assert params['Analysis']['proper_motion_errors_corr_method'] in ["zero", "total+", "total-", "random"], sys.exit("proper_motion_errors_corr_method takes values \"zero\", \"total+\", \"total-\", \"random\"")
 
     # proper_motion_noise should be a non-negative number
     assert isinstance(params['Analysis']['proper_motion_noise'], float) or isinstance(params['Analysis']['proper_motion_noise'], int), sys.exit("proper_motion_noise takes numerical values")

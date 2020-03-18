@@ -50,19 +50,27 @@ dipole = 0.4
 multipole = [0.2]
 
 # proper motions errors legend:
-# (1) - No proper motion errors
+# (1) - Mock proper motion errors
 # (2) - Gaia dataset, type 2
 # (3) - Gaia dataset, type 3
 # (4) - Gaia dataset, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-proper_motion_errors = 2
+proper_motion_errors = 1
 
-# proper_motion_errors_method:
-# "zero", "noise"
-proper_motion_errors_method = "noise"
+# mock proper motion errors method:
+# "flat", "adaptive"
+# "adaptive": proper_motion_errors_std is multiplied by the absolute value of each proper motion
+proper_motion_errors_method = "adaptive"
 
-# proper_motion_noise: STD of the Gaussian noise to add to the proper motions
-proper_motion_noise = 0.2
+# mock proper motion errors standard deviation:
+proper_motion_errors_std = 1.
+
+# mock proper motion errors correlations method:
+# "zero", "total+", "total-", "random"
+proper_motion_errors_corr_method = "random"
+
+# proper_motion_noise: standard deviation of the Gaussian noise to add to the proper motions
+proper_motion_noise = 0.02
 
 # Vector spherical harmonics basis: "vsh" or "orthogonal"
 basis = "orthogonal"

@@ -7,6 +7,10 @@ import AstrometricData as AD
 import Sampler as S
 import PostProcessing as PP
 
+# will be made obsolete
+import os
+import numpy as np
+
 def main():
     parser = argparse.ArgumentParser(description="Quasar proper motions code")
     parser.add_argument("parameter_file", metavar="Parameter file", type=str, help=".par file")
@@ -35,6 +39,8 @@ def main():
                              multipole = params['Analysis']['multipole'],
                              proper_motion_errors = params['Analysis']['proper_motion_errors'],
                              proper_motion_errors_method = params['Analysis']['proper_motion_errors_method'],
+                             proper_motion_errors_std = params['Analysis']['proper_motion_errors_std'],
+                             proper_motion_errors_corr_method = params['Analysis']['proper_motion_errors_corr_method'],
                              proper_motion_noise = params['Analysis']['proper_motion_noise'],
                              basis = params['Analysis']['basis']
                             )
@@ -50,7 +56,7 @@ def main():
                          nlive = params['MCMC']['nlive'], 
                          maxmcmc = params['MCMC']['maxmcmc'],
                          resume=False,
-                         verbose=0
+                         verbose=2
                         )
 
     nest.run()
@@ -60,14 +66,15 @@ def main():
     nest.get_posterior_samples(filename='posterior.dat')
 
     # TO DO: Rewrite this with passing the samples instead of writing and reading a file. In March 2020 there is a bug in CPnest.
-    import os
-    PP.post_process_results(posterior_file = os.path.join(params['General']['output_dir'], 'posterior.dat'),
-                            which_basis = astrometric_model.which_basis,
-                            Lmax = params['Analysis']['Lmax'],
-                            L = astrometric_model.overlap_matrix_Cholesky,
-                            pol = params['Post_processing']['pol'],
-                            limit = params['Post_processing']['limit']
-                           )
+    A_limit = PP.post_process_results(posterior_file = os.path.join(params['General']['output_dir'], 'posterior.dat'),
+                                      which_basis = astrometric_model.which_basis,
+                                      Lmax = params['Analysis']['Lmax'],
+                                      L = astrometric_model.overlap_matrix_Cholesky,
+                                      pol = params['Post_processing']['pol'],
+                                      limit = params['Post_processing']['limit']
+                                     )
+
+    np.savetxt(os.path.join(params['General']['output_dir'], "limit.dat"), np.array([A_limit]))
 
 if __name__ == '__main__':
     main()

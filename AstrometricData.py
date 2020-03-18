@@ -138,23 +138,30 @@ class AstrometricDataframe:
 
         self.proper_motions = dataset[['pmRA', 'pmDE']].values
 
-    def generate_proper_motion_errors(self, method=None, noise=0.):
-        if method == "zero" or (method == "noise" and noise == 0.):
-            proper_motions_errors = np.zeros((self.N_obj, 2))
-            proper_motions_err_corr = np.ones(self.N_obj)
+    def generate_proper_motion_errors(self,
+                                      method: str,
+                                      std: float,
+                                      corr_method: str
+                                     ):
+        if method == "flat":
+            scale = std
+        elif method == "adaptive":
+            scale = std * np.abs(self.proper_motions)
 
-            covariance = U.covariant_matrix(proper_motions_errors, proper_motions_err_corr)
-                
-            self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
-        elif method == "noise" and noise > 0.:
-            proper_motions_errors = np.zeros((self.N_obj, 2))
-            proper_motions_errors[:, 0] = np.random.normal(0, noise) * np.reciprocal(np.cos(self.positions[:,1]))
-            proper_motions_errors[:, 1] = np.random.normal(0, noise) * np.ones(self.N_obj)
-            proper_motions_err_corr = np.zeros(self.N_obj)
+        proper_motion_errors = np.random.normal(loc=0., scale=scale, size=self.proper_motions.shape)
 
-            covariance = U.covariant_matrix(proper_motions_errors, proper_motions_err_corr)
-            
-            self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
+        if corr_method == "zero":
+            proper_motion_err_corrs = np.zeros(self.N_obj)
+        elif corr_method == "total+":
+            proper_motion_err_corrs = np.ones(self.N_obj)
+        elif corr_method == "total-":
+            proper_motion_err_corrs = -np.ones(self.N_obj)
+        elif corr_method == "random":
+            proper_motion_err_corrs = np.random.uniform(low=-1., high=1., size=self.N_obj)
+
+        covariance = U.covariant_matrix(proper_motion_errors, proper_motion_err_corrs)
+
+        self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
     def load_Gaia_proper_motion_errors(self, dataset):
         """
@@ -182,6 +189,12 @@ class AstrometricDataframe:
         covariance = U.covariant_matrix(proper_motions_errors, proper_motions_err_corr)
                 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
+
+    def add_proper_motion_noise(self,
+                                std: float):
+        proper_motion_noise = np.random.normal(loc=0., scale=std, size=self.proper_motions.shape)
+
+        self.proper_motions += proper_motion_noise
 
     def compute_overlap_matrix(self, weighted_overlaps=True):
         """
@@ -232,20 +245,22 @@ class AstrometricDataframe:
 
 
 def load_astrometric_data(ADf: AstrometricDataframe,
-                          Lmax=2,
-                          N_obj=None,
-                          positions=1,
-                          positions_method="uniform",
-                          bunch_size_polar = 0.,
-                          bunch_size_azimuthal = 0.,
-                          proper_motions=1,
-                          proper_motions_method="zero",
-                          dipole=0.,
-                          multipole=None,
-                          proper_motion_errors=1,
-                          proper_motion_errors_method="zero",
-                          proper_motion_noise=0.,
-                          basis="vsh"
+                          Lmax: int,
+                          N_obj: int,
+                          positions: int,
+                          positions_method: str,
+                          bunch_size_polar: float,
+                          bunch_size_azimuthal: float,
+                          proper_motions: int,
+                          proper_motions_method: str,
+                          dipole: float,
+                          multipole: list,
+                          proper_motion_errors: int,
+                          proper_motion_errors_method: str,
+                          proper_motion_errors_std: float,
+                          proper_motion_errors_corr_method: str,
+                          proper_motion_noise: float,
+                          basis: str
                          ):
     ADf.Lmax = Lmax
 
@@ -277,7 +292,10 @@ def load_astrometric_data(ADf: AstrometricDataframe,
         ADf.N_obj = dataset.shape[0]
 
     if positions == 1:
-        ADf.generate_positions(method=positions_method, bunch_size_polar=bunch_size_polar, bunch_size_azimuthal=bunch_size_azimuthal)
+        ADf.generate_positions(method=positions_method,
+                               bunch_size_polar=bunch_size_polar,
+                               bunch_size_azimuthal=bunch_size_azimuthal
+                              )
     elif positions in [2, 3, 4]:
         ADf.load_Gaia_positions(dataset)
     elif positions == 5:
@@ -295,11 +313,16 @@ def load_astrometric_data(ADf: AstrometricDataframe,
         ADf.load_TD_proper_motions(dataset)
     
     if proper_motion_errors == 1:
-        ADf.generate_proper_motion_errors(method=proper_motion_errors_method, noise=proper_motion_noise)
+        ADf.generate_proper_motion_errors(method=proper_motion_errors_method,
+                                          std=proper_motion_errors_std,
+                                          corr_method=proper_motion_errors_corr_method
+                                         )
     elif proper_motion_errors in [2, 3, 4]:
         ADf.load_Gaia_proper_motion_errors(dataset)
     elif proper_motion_errors == 5:
         ADf.load_TD_proper_motion_errors(dataset)
+
+    ADf.add_proper_motion_noise(std=proper_motion_noise)
 
     ADf.compute_overlap_matrix()
 
@@ -381,76 +404,4 @@ def import_TD_dataset(path):
                    inplace=True
                   )
     
-    return dataset
-
-
- #    def plot_overlap_matrix(self, output):
- #        """
- #        Plot an overlap matrix
- #        """
- #        plt.imshow(self.overlap_matrix)
-
- #        names = self.names
- #        if self.which_basis == "modified orthogonal basis":
- #            names = [ name.replace("Y","T") for name in names]
-
- #        plt.xticks(np.arange(len(names)), names, rotation=90)
- #        plt.yticks(np.arange(len(names)), names)
-
- #        plt.colorbar()
-
- #        plt.tight_layout()
- #        plt.savefig(output)
- #        plt.clf()
-        
- #    def plot(self, outfile, proper_motions=False, projection='mollweide', proper_motion_scale=1):
- #        """
- #        method to plot positions (and optionally pms) of QSOs in dataframe
- #        """
- #        fig = plt.figure()
- #        ax = fig.add_subplot(111, projection=projection)
-
- #        ra = np.array([ x-2*np.pi if x>np.pi else x for x in self.positions[:,0]])
- #        dec = self.positions[:,1]
-
- #        # plot the positions
- #        ax.plot(ra, dec, 'o', color='r', markersize=1, alpha=0.8)
-
- #        # plot the proper motions 
- #        if proper_motions:
- #            Nstars = len(self.positions)
- #            for i in range(Nstars):
- #                Ra = [ ra[i] - 0*proper_motion_scale*self.proper_motions[i,0], ra[i] + proper_motion_scale*self.proper_motions[i,0] ]
- #                Dec = [ dec[i] - 0*proper_motion_scale*self.proper_motions[i,1], dec[i] + proper_motion_scale*self.proper_motions[i,1] ]
- #                ax.plot(Ra, Dec, '-', color='r', alpha=0.6)
-
- #        # plot grid lines
- #        plt.grid(True)
-        
- #        plt.tight_layout()
- #        plt.savefig(outfile)
- #        plt.clf()
-            
-
- #    def pm_hist(self, outfile):
- #        """
- #        Plot a histogram of the proper motions of the quasars 
- #        """
- #        proper_motions_Cartesian = np.linalg.norm(CT.geographic_to_Cartesian_vector(self.positions, self.proper_motions), axis = 1)
- #        plt.hist(proper_motions_Cartesian)
-            
- #        plt.xlabel('Proper motion [mas/yr]')
- #        plt.ylabel('Number of quasars')
- #        plt.title('Histogram of quasar proper motions')
- #        plt.yscale('log')
-
- #        plt.tight_layout()
- #        plt.savefig(outfile)
- #        plt.clf()
-
- #    def plot_astrometric_data(self, dir_path):
- #        self.plot(dir_path + "/qso_positions.png")
- #        self.pm_hist(dir_path + "/qso_pm_hist.png")
- #        self.ecc_hist(dir_path + "/qso_err_ecc_hist.png")
- #        self.plot_overlap_matrix(dir_path + "/qso_vsh_overlaps.png")
-        
+    return dataset 
