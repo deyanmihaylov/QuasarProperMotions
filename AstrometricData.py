@@ -148,8 +148,10 @@ class AstrometricDataframe:
         elif method == "adaptive":
             scale = std * np.abs(self.proper_motions)
 
-        #proper_motion_errors = np.random.normal(loc=0., scale=scale, size=self.proper_motions.shape)
-	proper_motion_errors = scale*np.ones(self.proper_motions.shape)
+        proper_motion_errors = scale*np.ones(self.proper_motions.shape)
+
+	# Scale the pm_ra_err by sin(theta)=cos(dec)
+	proper_motion_errors[:,0] = proper_motion_errors[:,0] / np.cos(self.positions[:,1])
 
         if corr_method == "zero":
             proper_motion_err_corrs = np.zeros(self.N_obj)
