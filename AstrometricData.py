@@ -10,6 +10,8 @@ import VectorSphericalHarmonics as VSH
 import Utils as U
 import Model as M
 
+import matplotlib.pyplot as plt
+
 
 class AstrometricDataframe:
     def __init__(self):
@@ -18,7 +20,7 @@ class AstrometricDataframe:
         """
         self.N_obj = 0
         self.Lmax = None
-	        
+
         self.positions = np.array([])
         self.positions_Cartesian = np.array([])
 
@@ -28,7 +30,7 @@ class AstrometricDataframe:
 
         self.basis = dict()
         self.which_basis = None
-	
+
         self.names = dict()
 
         self.overlap_matrix = np.array([])
@@ -40,7 +42,7 @@ class AstrometricDataframe:
     def generate_positions(self, method="uniform", bunch_size_polar=0., bunch_size_azimuthal=0.):
         """
         Generate random positions
-    
+
         INPUTS
         ------
         method: string
@@ -71,6 +73,21 @@ class AstrometricDataframe:
         self.positions = dataset[['ra', 'dec']].values
         self.positions = U.deg_to_rad(self.positions)
 
+    def plot_Gaia_positions(self, output_filename="plot_Gaia_positions.png"):
+        """
+        CJM: I added this function for some testing
+
+        Plot the QSO positions in Mollweide projection
+        """
+        plt.figure()
+        plt.subplot(111, projection="mollweide")
+        RA = self.positions[:,0]; RA[RA>np.pi] -= 2*np.pi
+        DEC = self.positions[:,1]
+        plt.plot(RA, DEC, 'ro')
+        plt.grid(True)
+        plt.savefig(output_filename)
+        plt.clf()
+
     def load_TD_positions(self, dataset):
         """
         Load the positions from Truebenbach-Darling file
@@ -80,7 +97,7 @@ class AstrometricDataframe:
         secs = mins / 60.
 
         deg = 1.
-        arcmin = deg / 60. 
+        arcmin = deg / 60.
         arcsec = arcmin / 60.
 
         RAh = dataset['RAh'].values
@@ -99,7 +116,7 @@ class AstrometricDataframe:
 
     def generate_VSHs(self):
         """
-        Precompute VSH functions at QSO locations 
+        Precompute VSH functions at QSO locations
         """
         def VSHs(l, m, Q):
             if Q == "E":
@@ -116,7 +133,7 @@ class AstrometricDataframe:
             self.proper_motions = np.zeros((self.N_obj, 2))
         elif method == "dipole":
             almQ = {(l, m, Q): 0. for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
-            
+
             almQ[(1, 0, 'E')] = dipole
 
             self.proper_motions = M.generate_model(almQ, self.basis)
@@ -150,8 +167,8 @@ class AstrometricDataframe:
 
         proper_motion_errors = scale*np.ones(self.proper_motions.shape)
 
-	# Scale the pm_ra_err by sin(theta)=cos(dec)
-	proper_motion_errors[:,0] = proper_motion_errors[:,0] / np.cos(self.positions[:,1])
+        # Scale the pm_ra_err by sin(theta)=cos(dec)
+        proper_motion_errors[:,0] = proper_motion_errors[:,0] / np.cos(self.positions[:,1])
 
         if corr_method == "zero":
             proper_motion_err_corrs = np.zeros(self.N_obj)
@@ -174,9 +191,9 @@ class AstrometricDataframe:
         proper_motions_errors[:,0] = proper_motions_errors[:,0] / np.cos(self.positions[:,1])
 
         proper_motions_err_corr = dataset[['pmra_pmdec_corr']].values
-                
+
         covariance = U.covariant_matrix(proper_motions_errors, proper_motions_err_corr)
-                
+
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
     def load_TD_proper_motion_errors(self, dataset):
@@ -190,7 +207,7 @@ class AstrometricDataframe:
         proper_motions_err_corr = np.zeros(self.N_obj)
 
         covariance = U.covariant_matrix(proper_motions_errors, proper_motions_err_corr)
-                
+
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
     def add_proper_motion_noise(self,
@@ -241,7 +258,7 @@ class AstrometricDataframe:
         orthogonal_basis_values = np.einsum('i...j,ik->k...j', vsh_basis_values, invL)
 
         self.basis = {key: orthogonal_basis_values[i] for i, key in enumerate(self.names)}
-        
+
         self.which_basis = "orthogonal"
 
         self.compute_overlap_matrix()
@@ -281,7 +298,7 @@ def load_astrometric_data(ADf: AstrometricDataframe,
         sys.exit("Conflicting datasets cannot be combined.")
     elif len(which_dataset) == 1:
         chosen_dataset = next(iter(which_dataset))
-        
+
         if dataset_dict[chosen_dataset]['cat'] == "Gaia":
             dataset = import_Gaia_dataset(dataset_dict[chosen_dataset]['file_name'])
         elif dataset_dict[chosen_dataset]['cat'] == "TD":
@@ -309,12 +326,12 @@ def load_astrometric_data(ADf: AstrometricDataframe,
     ADf.generate_VSHs()
 
     if proper_motions == 1:
-        ADf.generate_proper_motions(method=proper_motions_method)
+        ADf.generate_proper_motions(method=proper_motions_method, dipole=dipole) # CJM: I added the dipole argument here. Is this right?
     elif proper_motions in [2, 3, 4]:
         ADf.load_Gaia_proper_motions(dataset)
     elif proper_motions == 5:
         ADf.load_TD_proper_motions(dataset)
-    
+
     if proper_motion_errors == 1:
         ADf.generate_proper_motion_errors(method=proper_motion_errors_method,
                                           std=proper_motion_errors_std,
@@ -329,9 +346,12 @@ def load_astrometric_data(ADf: AstrometricDataframe,
 
     ADf.compute_overlap_matrix()
 
+    #ADf.plot_Gaia_positions()
+
     if basis == "orthogonal":
         ADf.change_basis()
         ADf.compute_overlap_matrix()
+
 
 def import_Gaia_dataset(path):
     """
@@ -406,5 +426,5 @@ def import_TD_dataset(path):
                    subset=dropna_columns,
                    inplace=True
                   )
-    
-    return dataset 
+
+    return dataset

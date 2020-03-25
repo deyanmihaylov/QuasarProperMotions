@@ -9,7 +9,7 @@ plotting = 1
 
 [Analysis]
 
-Lmax = 1
+Lmax = 2
 
 N_obj = 1000
 
@@ -19,17 +19,17 @@ N_obj = 1000
 # (3) - Gaia dataset, type 3
 # (4) - Gaia dataset, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-positions = 2
+positions = 1
 
 # mock positions method:
 # "uniform", "bunched"
 positions_method = "bunched"
 
 # bunch_size_polar: horizontal
-bunch_size_polar = 0.5
+bunch_size_polar = 0.0
 
 # bunch_size_azimuthal: vertical
-bunch_size_azimuthal = 0.2
+bunch_size_azimuthal = 0.0
 
 # proper_motions legend:
 # (1) - Mock proper motions
@@ -37,14 +37,14 @@ bunch_size_azimuthal = 0.2
 # (3) - Gaia dataset, type 3
 # (4) - Gaia dataset, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-proper_motions = 2
+proper_motions = 1
 
 # mock proper motions method:
 # "zero", "dipole", "multipole"
-proper_motions_method = "zero"
+proper_motions_method = "dipole"
 
 # dipole: strength of dipole
-dipole = 0.4
+dipole = 0.0
 
 # multipole: list of standard deviations for each multipole order
 multipole = [0.2]
@@ -60,20 +60,20 @@ proper_motion_errors = 1
 # mock proper motion errors method:
 # "flat", "adaptive"
 # "adaptive": proper_motion_errors_std is multiplied by the absolute value of each proper motion
-proper_motion_errors_method = "adaptive"
+proper_motion_errors_method = "flat"
 
 # mock proper motion errors standard deviation:
-proper_motion_errors_std = 1.
+proper_motion_errors_std = 0.1
 
 # mock proper motion errors correlations method:
 # "zero", "total+", "total-", "random"
-proper_motion_errors_corr_method = "random"
+proper_motion_errors_corr_method = "zero"
 
 # proper_motion_noise: standard deviation of the Gaussian noise to add to the proper motions
-proper_motion_noise = 0.02
+proper_motion_noise = 0.1
 
 # Vector spherical harmonics basis: "vsh" or "orthogonal"
-basis = "orthogonal"
+basis = "vsh"
 
 
 [MCMC]
@@ -81,18 +81,18 @@ basis = "orthogonal"
 # Log-likelihood method: "permissive", "quadratic"
 logL_method = "permissive"
 
-nthreads = 16
+nthreads = 8
 nlive = 1024
 maxmcmc = 128
-prior_bounds = 1.
+prior_bounds = 0.5
 
 
 [Post_processing]
 
 # pol: specifies what polarization correlation coefficients to use to convert the results into a limit on the amplitude
 # "GR": use all l >= 1 with values as described in Mihaylov et. al.
-# "B": use l = 1 
-pol = "B"
+# "B": use l = 1
+pol = "GR"
 
 # limit: specifies the %-limit for the bound
 limit = 90

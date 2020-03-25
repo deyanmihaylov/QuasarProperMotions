@@ -197,7 +197,7 @@ def chi_squared_limit(k, P):
 
     return limit
 
-def generalized_chi_squared_limit(k, A, P):
+def generalized_chi_squared_limit(k, A, P, N=100000):
     """
     Find the P-percent certainty limit of the generalized chi-squared distribution
 
@@ -206,8 +206,13 @@ def generalized_chi_squared_limit(k, A, P):
     k: int
         number of dimensions of the distribution
 
+    A: np.array shape=(k,k)
+
     P: float
         certainty of the distrubtion, in percents
+
+    N: int
+        number of random draws
 
     RETURNS
     -------
@@ -216,7 +221,7 @@ def generalized_chi_squared_limit(k, A, P):
 
     TO DO: rewrite this with a CDF instead of this brute force
     """
-    z = np.random.multivariate_normal(np.zeros(k), np.diag(np.ones(k)), size=100000)
+    z = np.random.normal(size=(N,k))
 
     samples = np.einsum("...i,...ij,...j->...", z, A, z)
 
