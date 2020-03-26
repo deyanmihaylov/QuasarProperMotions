@@ -5,6 +5,7 @@
 output_dir = "./test1"
 verbose = 0
 plotting = 1
+seed = 1
 
 
 [Analysis]

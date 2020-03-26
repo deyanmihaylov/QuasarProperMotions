@@ -40,7 +40,7 @@ class AstrometricDataframe:
     def generate_names(self):
         self.names = {(l, m, Q): f"Y^{Q}_{l},{m}" for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
 
-    def generate_positions(self, method="uniform", bunch_size_polar=0., bunch_size_azimuthal=0.):
+    def generate_positions(self, method="uniform", bunch_size_polar=0., bunch_size_azimuthal=0., seed=None):
         """
         Generate random positions
 
@@ -54,7 +54,11 @@ class AstrometricDataframe:
 
         bunch_size_azimuthal: float
             controls the distribution in the azimuthal direction; 0. activates the uniform regime, while a small number (e.g. 0.1) is severely non-uniform
+
+        seed: int
+            random seed
         """
+        if seed: np.random.seed(seed)
         if method == "uniform" or (method == "bunched" and bunch_size_polar==0.):
             dec = 0.5*np.pi - np.arccos(np.random.uniform(-1, 1, size=self.N_obj))
         elif method == "bunched" and bunch_size_polar > 0.:
@@ -224,10 +228,9 @@ class AstrometricDataframe:
 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
-    def add_proper_motion_noise(self,
-                                std: float):
+    def add_proper_motion_noise(self, std, seed=None):
+        if seed: np.random.seed(seed)
         proper_motion_noise = np.random.normal(loc=0., scale=std, size=self.proper_motions.shape)
-
         self.proper_motions += proper_motion_noise
 
     def compute_overlap_matrix(self, weighted_overlaps=True):
@@ -295,8 +298,12 @@ def load_astrometric_data(ADf: AstrometricDataframe,
                           proper_motion_errors_corr_method: str,
                           proper_motion_noise: float,
                           basis: str,
-                          outdir: str
+                          outdir: str,
+                          seed: int
                          ):
+
+    random_seed = None if seed<0 else seed
+
     ADf.Lmax = Lmax
 
     ADf.generate_names()
@@ -329,7 +336,8 @@ def load_astrometric_data(ADf: AstrometricDataframe,
     if positions == 1:
         ADf.generate_positions(method=positions_method,
                                bunch_size_polar=bunch_size_polar,
-                               bunch_size_azimuthal=bunch_size_azimuthal
+                               bunch_size_azimuthal=bunch_size_azimuthal,
+                               seed=random_seed
                               )
     elif positions in [2, 3, 4]:
         ADf.load_Gaia_positions(dataset)
@@ -357,7 +365,7 @@ def load_astrometric_data(ADf: AstrometricDataframe,
     elif proper_motion_errors == 5:
         ADf.load_TD_proper_motion_errors(dataset)
 
-    ADf.add_proper_motion_noise(std=proper_motion_noise)
+    ADf.add_proper_motion_noise(std=proper_motion_noise, seed=random_seed)
 
     ADf.compute_overlap_matrix()
 

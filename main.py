@@ -43,7 +43,8 @@ def main():
                              proper_motion_errors_corr_method = params['Analysis']['proper_motion_errors_corr_method'],
                              proper_motion_noise = params['Analysis']['proper_motion_noise'],
                              basis = params['Analysis']['basis'],
-                             outdir = params['General']['output_dir']
+                             outdir = params['General']['output_dir'],
+                             seed = params['General']['seed']
                             )
 
     astrometric_model = S.model(data,
