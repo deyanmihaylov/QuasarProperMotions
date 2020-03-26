@@ -346,7 +346,10 @@ def load_astrometric_data(ADf: AstrometricDataframe,
 
     ADf.compute_overlap_matrix()
 
-    #ADf.plot_Gaia_positions()
+    #ADf.plot_Gaia_positions(outdir='')
+    #ADf.export_positions(outdir='')
+    #ADf.export_propermotions(outdir='')
+    #ADf.export_overlap_matrices(outdir='')
 
     if basis == "orthogonal":
         ADf.change_basis()
