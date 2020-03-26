@@ -81,7 +81,7 @@ basis = "vsh"
 # Log-likelihood method: "permissive", "quadratic"
 logL_method = "permissive"
 
-nthreads = 8
+nthreads = 2
 nlive = 1024
 maxmcmc = 128
 prior_bounds = 0.5

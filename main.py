@@ -42,18 +42,19 @@ def main():
                              proper_motion_errors_std = params['Analysis']['proper_motion_errors_std'],
                              proper_motion_errors_corr_method = params['Analysis']['proper_motion_errors_corr_method'],
                              proper_motion_noise = params['Analysis']['proper_motion_noise'],
-                             basis = params['Analysis']['basis']
+                             basis = params['Analysis']['basis'],
+                             outdir = params['General']['output_dir']
                             )
 
     astrometric_model = S.model(data,
                                 logL_method = params['MCMC']['logL_method'],
                                 prior_bounds = params['MCMC']['prior_bounds']
                                )
-    
+
     nest = cpnest.CPNest(astrometric_model,
                          output = params['General']['output_dir'],
                          nthreads = params['MCMC']['nthreads'],
-                         nlive = params['MCMC']['nlive'], 
+                         nlive = params['MCMC']['nlive'],
                          maxmcmc = params['MCMC']['maxmcmc'],
                          resume=False,
                          verbose=2
@@ -62,7 +63,7 @@ def main():
     nest.run()
 
     nest.get_nested_samples(filename='nested_samples.dat')
-    
+
     nest.get_posterior_samples(filename='posterior.dat')
 
     # TO DO: Rewrite this with passing the samples instead of writing and reading a file. In March 2020 there is a bug in CPnest.

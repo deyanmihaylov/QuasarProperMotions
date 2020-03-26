@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import sys
 import itertools
 from scipy.stats import truncnorm
@@ -73,20 +74,33 @@ class AstrometricDataframe:
         self.positions = dataset[['ra', 'dec']].values
         self.positions = U.deg_to_rad(self.positions)
 
-    def plot_Gaia_positions(self, output_filename="plot_Gaia_positions.png"):
+    def plot_Gaia_positions(self, outdir=''):
         """
         CJM: I added this function for some testing
 
         Plot the QSO positions in Mollweide projection
         """
+        outfile = os.path.join(outdir,'plot_Gaia_positions.png')
         plt.figure()
         plt.subplot(111, projection="mollweide")
         RA = self.positions[:,0]; RA[RA>np.pi] -= 2*np.pi
         DEC = self.positions[:,1]
         plt.plot(RA, DEC, 'ro')
         plt.grid(True)
-        plt.savefig(output_filename)
+        plt.savefig(outfile)
         plt.clf()
+
+    def export_positions(self, outdir=''):
+        outfile = os.path.join(outdir,'Gaia_positions.dat')
+        np.savetxt(outfile, self.positions)
+
+    def export_propermotions(self, outdir=''):
+        outfile = os.path.join(outdir,'Gaia_proper_motions.dat')
+        np.savetxt(outfile, self.proper_motions)
+
+    def export_overlap_matrices(self, outdir=''):
+        outfile = os.path.join(outdir,'OverlapMatrix.dat')
+        np.savetxt(outfile, self.overlap_matrix)
 
     def load_TD_positions(self, dataset):
         """
@@ -280,7 +294,8 @@ def load_astrometric_data(ADf: AstrometricDataframe,
                           proper_motion_errors_std: float,
                           proper_motion_errors_corr_method: str,
                           proper_motion_noise: float,
-                          basis: str
+                          basis: str,
+                          outdir: str
                          ):
     ADf.Lmax = Lmax
 
@@ -346,10 +361,10 @@ def load_astrometric_data(ADf: AstrometricDataframe,
 
     ADf.compute_overlap_matrix()
 
-    #ADf.plot_Gaia_positions(outdir='')
-    #ADf.export_positions(outdir='')
-    #ADf.export_propermotions(outdir='')
-    #ADf.export_overlap_matrices(outdir='')
+    ADf.plot_Gaia_positions(outdir=outdir)
+    ADf.export_positions(outdir=outdir)
+    ADf.export_propermotions(outdir=outdir)
+    ADf.export_overlap_matrices(outdir=outdir)
 
     if basis == "orthogonal":
         ADf.change_basis()
