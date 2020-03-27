@@ -8,7 +8,7 @@ def set_params(file_name):
     """
 
     config = configparser.ConfigParser()
-    config.optionxform = str
+    config.optionxform = str # make the parser case sentitive
 
     set_default_params(config)
 
@@ -62,7 +62,10 @@ def eval_config_types(config):
         config_parsed[section] = dict()
 
         for key in config[section]:
-            config_parsed[section][key] = eval(config.get(section, key))
+            try:
+                config_parsed[section][key] = eval(config.get(section, key))
+            except:
+                config_parsed[section][key] = eval('"'+config.get(section, key)+'"')
 
     return config_parsed
 

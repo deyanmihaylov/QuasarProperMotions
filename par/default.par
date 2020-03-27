@@ -2,7 +2,7 @@
 
 [General]
 
-output_dir = "./"
+output_dir = ./
 verbose = 0
 plotting = 1
 
@@ -17,13 +17,13 @@ N_obj = 1000
 eps = 0.
 
 # Vector spherical harmonics basis: "normal" or "mod"
-vsh_basis = "normal"
+vsh_basis = normal
 
 
 [MCMC]
 
 # Log-likelihood method: "permissive", "quadratic"
-llmethod = "permissive"
+logL_method = permissive
 
 nthreads = 2
 nlive = 1024

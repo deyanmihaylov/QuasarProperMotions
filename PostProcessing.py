@@ -31,7 +31,7 @@ def C_l_GR(l: int) -> float:
 
 def C_l_B(l: int) -> float:
     """
-    Get the values of the correlation coefficients for a Breatiing mode background
+    Get the values of the correlation coefficients for a Breathing mode background
 
     INPUTS
     ------
