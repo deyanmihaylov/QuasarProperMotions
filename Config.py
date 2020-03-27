@@ -88,6 +88,7 @@ def record_config_params(params, user_specified_output_file = None):
     """
     
     config = configparser.ConfigParser()
+    config.optionxform = str
     config.read_dict(params)
 
     if user_specified_output_file:
