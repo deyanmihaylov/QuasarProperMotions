@@ -65,7 +65,7 @@ def eval_config_types(config):
             try:
                 config_parsed[section][key] = eval(config.get(section, key))
             except:
-                config_parsed[section][key] = eval('"'+config.get(section, key)+'"')
+                config_parsed[section][key] = eval('"' + config.get(section, key) + '"')
 
     return config_parsed
 
@@ -82,29 +82,13 @@ def check_output_dir(dir_name):
 
     return True
 
-def AddQuotesToStrings(old_dict):
-    """
-    Go through a dictionary, recursively digging into sub dictionaries, and add quote marks to all string
-    """
-    new_dict = dict(old_dict)
-    for key in old_dict.keys():
-        if type(old_dict[key]) is str:
-            new_dict[key] = '"' + old_dict[key] + '"'
-        elif type(old_dict[key]) is dict:
-            new_dict[key] = AddQuotesToStrings(old_dict[key])
-        else:
-            pass
-    return new_dict
-            
-
-
 def record_config_params(params, user_specified_output_file = None):
     """
     Record the config parameters in a file.
     """
     
     config = configparser.ConfigParser()
-    config.read_dict(AddQuotesToStrings(params))
+    config.read_dict(params)
 
     if user_specified_output_file:
         output_file_name = user_specified_output_file
