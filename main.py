@@ -14,7 +14,12 @@ import numpy as np
 
 def main():
     parser = argparse.ArgumentParser(description="Quasar proper motions code")
-    parser.add_argument("parameter_file", metavar="Parameter file", type=str, help=".par file")
+    parser.add_argument(
+        "parameter_file",
+        metavar="Parameter file",
+        type=str,
+        help=".par file"
+    )
     args = parser.parse_args()
 
     params = C.set_params(args.parameter_file)
@@ -27,41 +32,44 @@ def main():
 
     data = AD.AstrometricDataframe()
 
-    AD.load_astrometric_data(data,
-                             Lmax = params['Analysis']['Lmax'],
-                             N_obj = params['Analysis']['N_obj'],
-                             positions = params['Analysis']['positions'],
-                             positions_method = params['Analysis']['positions_method'],
-                             positions_seed = params['Analysis']['positions_seed'],
-                             bunch_size_polar = params['Analysis']['bunch_size_polar'],
-                             bunch_size_azimuthal = params['Analysis']['bunch_size_azimuthal'],
-                             proper_motions = params['Analysis']['proper_motions'],
-                             proper_motions_method = params['Analysis']['proper_motions_method'],
-                             proper_motions_seed = params['Analysis']['proper_motions_seed'],
-                             dipole = params['Analysis']['dipole'],
-                             multipole = params['Analysis']['multipole'],
-                             proper_motion_errors = params['Analysis']['proper_motion_errors'],
-                             proper_motion_errors_method = params['Analysis']['proper_motion_errors_method'],
-                             proper_motion_errors_std = params['Analysis']['proper_motion_errors_std'],
-                             proper_motion_errors_corr_method = params['Analysis']['proper_motion_errors_corr_method'],
-                             proper_motion_noise = params['Analysis']['proper_motion_noise'],
-                             proper_motion_noise_seed = params['Analysis']['proper_motion_noise_seed'],
-                             basis = params['Analysis']['basis']
-                            )
+    AD.load_astrometric_data(
+        data,
+        Lmax = params['Analysis']['Lmax'],
+        N_obj = params['Analysis']['N_obj'],
+        positions = params['Analysis']['positions'],
+        positions_method = params['Analysis']['positions_method'],
+        positions_seed = params['Analysis']['positions_seed'],
+        bunch_size_polar = params['Analysis']['bunch_size_polar'],
+        bunch_size_azimuthal = params['Analysis']['bunch_size_azimuthal'],
+        proper_motions = params['Analysis']['proper_motions'],
+        proper_motions_method = params['Analysis']['proper_motions_method'],
+        proper_motions_seed = params['Analysis']['proper_motions_seed'],
+        dipole = params['Analysis']['dipole'],
+        multipole = params['Analysis']['multipole'],
+        proper_motion_errors = params['Analysis']['proper_motion_errors'],
+        proper_motion_errors_method = params['Analysis']['proper_motion_errors_method'],
+        proper_motion_errors_std = params['Analysis']['proper_motion_errors_std'],
+        proper_motion_errors_corr_method = params['Analysis']['proper_motion_errors_corr_method'],
+        proper_motion_noise = params['Analysis']['proper_motion_noise'],
+        proper_motion_noise_seed = params['Analysis']['proper_motion_noise_seed'],
+        basis = params['Analysis']['basis']
+    )
 
-    astrometric_model = S.model(data,
-                                logL_method = params['MCMC']['logL_method'],
-                                prior_bounds = params['MCMC']['prior_bounds']
-                               )
-
-    nest = cpnest.CPNest(astrometric_model,
-                         output = params['General']['output_dir'],
-                         nthreads = params['MCMC']['nthreads'],
-                         nlive = params['MCMC']['nlive'],
-                         maxmcmc = params['MCMC']['maxmcmc'],
-                         resume=False,
-                         verbose=2
+    astrometric_model = S.model(
+                            data,
+                            logL_method = params['MCMC']['logL_method'],
+                            prior_bounds = params['MCMC']['prior_bounds']
                         )
+
+    nest = cpnest.CPNest(
+                astrometric_model,
+                output = params['General']['output_dir'],
+                nthreads = params['MCMC']['nthreads'],
+                nlive = params['MCMC']['nlive'],
+                maxmcmc = params['MCMC']['maxmcmc'],
+                resume=False,
+                verbose=2
+            )
 
     nest.run()
 
@@ -80,13 +88,16 @@ def main():
 
     np.savetxt(os.path.join(params['General']['output_dir'], "limit.dat"), np.array([A_limit]))
 
-    U.export_data(data,
-                  output = params['General']['output_dir'])
+    U.export_data(
+        data,
+        output = params['General']['output_dir']
+    )
 
     if params['General']['plotting'] == True:
-        P.plot(data,
-               output = params['General']['output_dir']
-              )
+        P.plot(
+            data,
+            output = params['General']['output_dir']
+        )
 
 if __name__ == '__main__':
     main()

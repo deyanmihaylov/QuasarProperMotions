@@ -86,4 +86,3 @@ class model(PySO.Model):
             log_likelihood = np.sum( logL_quadratic( Rvals ) )
 
         return log_likelihood
-

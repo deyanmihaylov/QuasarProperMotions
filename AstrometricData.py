@@ -43,7 +43,7 @@ class AstrometricDataframe:
             bunch_size_polar: float,
             bunch_size_azimuthal: float,
             random_seed: int
-                          ):
+        ):
         """
         Generate random positions
 
@@ -75,14 +75,20 @@ class AstrometricDataframe:
 
         self.positions = np.array(list(zip(ra, dec)))
 
-    def load_Gaia_positions(self, dataset):
+    def load_Gaia_positions(
+            self,
+            dataset: pd.DataFrame
+        ):
         """
         Load the positions from Gaia file
         """
         self.positions = dataset[['ra', 'dec']].values
         self.positions = U.deg_to_rad(self.positions)
 
-    def load_TD_positions(self, dataset):
+    def load_TD_positions(
+            self,
+            dataset: pd.DataFrame
+        ):
         """
         Load the positions from Truebenbach-Darling file
         """
@@ -122,12 +128,13 @@ class AstrometricDataframe:
 
         self.which_basis = "vsh"
 
-    def generate_proper_motions(self,
-                                method: str,
-                                dipole: float,
-                                multipole: list,
-                                random_seed: int
-                               ):
+    def generate_proper_motions(
+            self,
+            method: str,
+            dipole: float,
+            multipole: list,
+            random_seed: int
+        ):
 
         if random_seed > 0: np.random.seed(random_seed)
 
@@ -144,24 +151,31 @@ class AstrometricDataframe:
 
             self.proper_motions = M.generate_model(almQ, self.basis)
 
-    def load_Gaia_proper_motions(self, dataset):
+    def load_Gaia_proper_motions(
+            self,
+            dataset: pd.DataFrame
+        ):
         """
         Load the proper motions from Gaia file
         """
         self.proper_motions = dataset[['pmra', 'pmdec']].values
 
-    def load_TD_proper_motions(self, dataset):
+    def load_TD_proper_motions(
+            self,
+            dataset: pd.DataFrame
+        ):
         """
         Load the proper motions from Truebenbach-Darling file
         """
 
         self.proper_motions = dataset[['pmRA', 'pmDE']].values
 
-    def generate_proper_motion_errors(self,
-                                      method: str,
-                                      std: float,
-                                      corr_method: str
-                                     ):
+    def generate_proper_motion_errors(
+            self,
+            method: str,
+            std: float,
+            corr_method: str
+        ):
         if method == "flat":
             scale = std
         elif method == "adaptive":
@@ -185,7 +199,10 @@ class AstrometricDataframe:
 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
-    def load_Gaia_proper_motion_errors(self, dataset):
+    def load_Gaia_proper_motion_errors(
+            self,
+            dataset: pd.DataFrame
+        ):
         """
         Load the proper motion errors from Gaia file
         """
@@ -198,7 +215,10 @@ class AstrometricDataframe:
 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
-    def load_TD_proper_motion_errors(self, dataset):
+    def load_TD_proper_motion_errors(
+            self,
+            dataset: pd.DataFrame
+        ):
         """
         Load the proper motion errors from Truebenbach-Darling file
         TO DO: Use chi2 statistics for correlation
@@ -222,7 +242,10 @@ class AstrometricDataframe:
         proper_motion_noise = np.random.normal(loc=0., scale=std, size=self.proper_motions.shape)
         self.proper_motions += proper_motion_noise
 
-    def compute_overlap_matrix(self, weighted_overlaps=True):
+    def compute_overlap_matrix(
+            self,
+            weighted_overlaps=True
+        ):
         """
         Calculate the overlap matrix (and its Cholesky decomposition) between VSH basis functions
 
@@ -250,7 +273,9 @@ class AstrometricDataframe:
 
         self.overlap_matrix = U.normalize_matrix(self.overlap_matrix, L=self.Lmax)
 
-    def change_basis(self):
+    def change_basis(
+            self
+        ):
         """
         Method to change from VSH basis to orthogonal basis
         """
@@ -270,37 +295,39 @@ class AstrometricDataframe:
         self.compute_overlap_matrix()
 
 
-def load_astrometric_data(ADf: AstrometricDataframe,
-                          Lmax: int,
-                          N_obj: int,
-                          positions: int,
-                          positions_method: str,
-                          positions_seed: int,
-                          bunch_size_polar: float,
-                          bunch_size_azimuthal: float,
-                          proper_motions: int,
-                          proper_motions_method: str,
-                          proper_motions_seed: int,
-                          dipole: float,
-                          multipole: list,
-                          proper_motion_errors: int,
-                          proper_motion_errors_method: str,
-                          proper_motion_errors_std: float,
-                          proper_motion_errors_corr_method: str,
-                          proper_motion_noise: float,
-                          proper_motion_noise_seed: int,
-                          basis: str
-                         ):
+def load_astrometric_data(
+        ADf: AstrometricDataframe,
+        Lmax: int,
+        N_obj: int,
+        positions: int,
+        positions_method: str,
+        positions_seed: int,
+        bunch_size_polar: float,
+        bunch_size_azimuthal: float,
+        proper_motions: int,
+        proper_motions_method: str,
+        proper_motions_seed: int,
+        dipole: float,
+        multipole: list,
+        proper_motion_errors: int,
+        proper_motion_errors_method: str,
+        proper_motion_errors_std: float,
+        proper_motion_errors_corr_method: str,
+        proper_motion_noise: float,
+        proper_motion_noise_seed: int,
+        basis: str
+    ):
 
     ADf.Lmax = Lmax
 
     ADf.generate_names()
 
-    dataset_dict = {2: {"cat": "Gaia", "file_name": "data/type2.csv"},
-                    3: {"cat": "Gaia", "file_name": "data/type3.csv"},
-                    4: {"cat": "Gaia", "file_name": "data/type2and3.csv"},
-                    5: {"cat": "TD", "file_name": "data/TD6.dat"}
-                   }
+    dataset_dict = {
+        2: {"cat": "Gaia", "file_name": "data/type2.csv"},
+        3: {"cat": "Gaia", "file_name": "data/type3.csv"},
+        4: {"cat": "Gaia", "file_name": "data/type2and3.csv"},
+        5: {"cat": "TD", "file_name": "data/TD6.dat"}
+    }
 
     which_dataset = set([positions, proper_motions, proper_motion_errors]).intersection(set(dataset_dict.keys()))
 
@@ -322,11 +349,12 @@ def load_astrometric_data(ADf: AstrometricDataframe,
         ADf.N_obj = dataset.shape[0]
 
     if positions == 1:
-        ADf.generate_positions(method = positions_method,
-                               bunch_size_polar = bunch_size_polar,
-                               bunch_size_azimuthal = bunch_size_azimuthal,
-                               random_seed = positions_seed
-                              )
+        ADf.generate_positions(
+            method = positions_method,
+            bunch_size_polar = bunch_size_polar,
+            bunch_size_azimuthal = bunch_size_azimuthal,
+            random_seed = positions_seed
+        )
     elif positions in [2, 3, 4]:
         ADf.load_Gaia_positions(dataset)
     elif positions == 5:
@@ -337,112 +365,159 @@ def load_astrometric_data(ADf: AstrometricDataframe,
     ADf.generate_VSHs()
 
     if proper_motions == 1:
-        ADf.generate_proper_motions(method=proper_motions_method,
-                                    dipole=dipole,
-                                    multipole=multipole,
-                                    random_seed = proper_motions_seed
-                                   )
+        ADf.generate_proper_motions(
+            method=proper_motions_method,
+            dipole=dipole,
+            multipole=multipole,
+            random_seed = proper_motions_seed
+        )
     elif proper_motions in [2, 3, 4]:
         ADf.load_Gaia_proper_motions(dataset)
     elif proper_motions == 5:
         ADf.load_TD_proper_motions(dataset)
 
     if proper_motion_errors == 1:
-        ADf.generate_proper_motion_errors(method=proper_motion_errors_method,
-                                          std=proper_motion_errors_std,
-                                          corr_method=proper_motion_errors_corr_method
-                                         )
+        ADf.generate_proper_motion_errors(
+            method=proper_motion_errors_method,
+            std=proper_motion_errors_std,
+            corr_method=proper_motion_errors_corr_method
+        )
     elif proper_motion_errors in [2, 3, 4]:
         ADf.load_Gaia_proper_motion_errors(dataset)
     elif proper_motion_errors == 5:
         ADf.load_TD_proper_motion_errors(dataset)
 
-    ADf.add_proper_motion_noise(std=proper_motion_noise,
-                                random_seed=proper_motion_noise_seed
-                               )
+    ADf.add_proper_motion_noise(
+        std=proper_motion_noise,
+        random_seed=proper_motion_noise_seed
+    )
 
     ADf.compute_overlap_matrix()
-
-    # ADf.export_positions(outdir=outdir)
-    # ADf.export_propermotions(outdir=outdir)
-    # ADf.export_overlap_matrices(outdir=outdir)
 
     if basis == "orthogonal":
         ADf.change_basis()
         ADf.compute_overlap_matrix()
 
-def import_Gaia_dataset(path):
+def import_Gaia_dataset(
+        path: str
+    ):
     """
     Import Gaia dataset
     """
-    dataset = pd.read_csv(path,
-                          sep=',',
-                          header='infer',
-                          squeeze=False,
-                          mangle_dupe_cols=True,
-                          engine='python',
-                          skipinitialspace=False,
-                          skipfooter=0,
-                          keep_default_na=True,
-                          na_filter=True,
-                          verbose=False,
-                          skip_blank_lines=True,
-                          parse_dates=False,
-                          infer_datetime_format=False,
-                          keep_date_col=False,
-                          dayfirst=False,
-                          iterator=False,
-                          decimal=b'.',
-                          doublequote=True,
-                          error_bad_lines=True,
-                          warn_bad_lines=True,
-                          delim_whitespace=False,
-                          low_memory=True,
-                          memory_map=False,
-                         )
+    dataset = pd.read_csv(
+        path,
+        sep=',',
+        header='infer',
+        squeeze=False,
+        mangle_dupe_cols=True,
+        engine='python',
+        skipinitialspace=False,
+        skipfooter=0,
+        keep_default_na=True,
+        na_filter=True,
+        verbose=False,
+        skip_blank_lines=True,
+        parse_dates=False,
+        infer_datetime_format=False,
+        keep_date_col=False,
+        dayfirst=False,
+        iterator=False,
+        decimal=b'.',
+        doublequote=True,
+        error_bad_lines=True,
+        warn_bad_lines=True,
+        delim_whitespace=False,
+        low_memory=True,
+        memory_map=False,
+    )
 
-    dropna_columns = ['ra',
-            'dec',
-            'pmra',
-            'pmdec',
-            'pmra_error',
-            'pmdec_error',
-            'pmra_pmdec_corr']
+    dropna_columns = [
+        'ra',
+        'dec',
+        'pmra',
+        'pmdec',
+        'pmra_error',
+        'pmdec_error',
+        'pmra_pmdec_corr'
+    ]
 
-    dataset.dropna(axis=0,
-                   how='any',
-                   thresh=None,
-                   subset=dropna_columns,
-                   inplace=True
-                  )
+    dataset.dropna(
+        axis=0,
+        how='any',
+        thresh=None,
+        subset=dropna_columns,
+        inplace=True
+    )
 
     return dataset
 
-def import_TD_dataset(path):
+def import_TD_dataset(
+        path: str
+    ):
     """
     Import TD dataset
     """
 
-    col_names = ['Name', 'RAh', 'RAm', 'RAs', 'e_RAs', 'DEd', 'DEm',
-                 'DEs', 'e_DEs', 'pmRA', 'e_pmRA', 'o_pmRA', 'chi2a', 'pmDE', 'e_pmDE',
-                 'o_pmDE', 'chi2d', 'Length', 'MJD', 'Flag', 'z', 'f_z', 'r_z']
+    col_names = [
+        'Name',
+        'RAh',
+        'RAm',
+        'RAs',
+        'e_RAs',
+        'DEd',
+        'DEm',
+        'DEs',
+        'e_DEs',
+        'pmRA',
+        'e_pmRA',
+        'o_pmRA',
+        'chi2a',
+        'pmDE',
+        'e_pmDE',
+        'o_pmDE',
+        'chi2d',
+        'Length',
+        'MJD',
+        'Flag',
+        'z',
+        'f_z',
+        'r_z'
+    ]
 
-    dataset = pd.read_fwf(path,
-                          colspecs='infer',
-                          names=col_names,
-                          widths=None,
-                          comment = '#',
-                          infer_nrows=500
-                         )
+    dataset = pd.read_fwf(
+        path,
+        colspecs='infer',
+        names=col_names,
+        widths=None,
+        comment = '#',
+        infer_nrows=500
+    )
 
-    dropna_columns = ['RAh', 'RAm', 'RAs', 'e_RAs', 'DEd', 'DEm', 'DEs', 'e_DEs',
-                      'pmRA', 'e_pmRA', 'o_pmRA', 'chi2a', 'pmDE', 'e_pmDE', 'o_pmDE', 'chi2d']
+    dropna_columns = [
+        'RAh',
+        'RAm',
+        'RAs',
+        'e_RAs',
+        'DEd',
+        'DEm',
+        'DEs',
+        'e_DEs',
+        'pmRA',
+        'e_pmRA',
+        'o_pmRA',
+        'chi2a',
+        'pmDE',
+        'e_pmDE',
+        'o_pmDE',
+        'chi2d'
+    ]
 
-    dataset.dropna(axis=0,
-                   how='any',
-                   thresh=None,
-                   subset=dropna_columns,
-                   inplace=True
-                  )
+    dataset.dropna(
+        axis=0,
+        how='any',
+        thresh=None,
+        subset=dropna_columns,
+        inplace=True
+    )
 
     return dataset
