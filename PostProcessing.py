@@ -43,12 +43,14 @@ def C_l_B(l: int) -> float:
     else:
         return 0.
 
-def post_process_results(posterior_file: str,
-                         which_basis: str,
-                         Lmax: int,
-                         L: np.ndarray,
-                         pol: str,
-                         limit: float):
+def post_process_results(
+        posterior_file: str,
+        which_basis: str,
+        Lmax: int,
+        L: np.ndarray,
+        pol: str,
+        limit: float
+    ):
     """
     Post process CPNest results
 
