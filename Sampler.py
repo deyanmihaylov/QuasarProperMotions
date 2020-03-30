@@ -33,11 +33,12 @@ class model(cpnest.model.Model):
     Model to fit to the proper motions
     """
 
-    def __init__(self,
-                 ADf: AD.AstrometricDataframe,
-                 logL_method="permissive",
-                 prior_bounds=1
-                ):
+    def __init__(
+            self,
+            ADf: AD.AstrometricDataframe,
+            logL_method: str,
+            prior_bounds: float
+        ):
         """
         Initialise the model class
       
@@ -69,7 +70,10 @@ class model(cpnest.model.Model):
         # TO DO: 
         # print("Searching over the following parameters:\n", '\n'.join(self.names))
 
-    def log_likelihood(self, almQ):  
+    def log_likelihood(
+            self,
+            almQ: dict
+        ) -> float:  
         """
         The log-likelihood function
         """
