@@ -34,25 +34,25 @@ def main():
 
     AD.load_astrometric_data(
         data,
-        Lmax = params['Analysis']['Lmax'],
-        N_obj = params['Analysis']['N_obj'],
-        positions = params['Analysis']['positions'],
-        positions_method = params['Analysis']['positions_method'],
-        positions_seed = params['Analysis']['positions_seed'],
-        bunch_size_polar = params['Analysis']['bunch_size_polar'],
-        bunch_size_azimuthal = params['Analysis']['bunch_size_azimuthal'],
-        proper_motions = params['Analysis']['proper_motions'],
-        proper_motions_method = params['Analysis']['proper_motions_method'],
-        proper_motions_seed = params['Analysis']['proper_motions_seed'],
-        dipole = params['Analysis']['dipole'],
-        multipole = params['Analysis']['multipole'],
-        proper_motion_errors = params['Analysis']['proper_motion_errors'],
-        proper_motion_errors_method = params['Analysis']['proper_motion_errors_method'],
-        proper_motion_errors_std = params['Analysis']['proper_motion_errors_std'],
-        proper_motion_errors_corr_method = params['Analysis']['proper_motion_errors_corr_method'],
-        proper_motion_noise = params['Analysis']['proper_motion_noise'],
-        proper_motion_noise_seed = params['Analysis']['proper_motion_noise_seed'],
-        basis = params['Analysis']['basis']
+        Lmax = params['Data']['Lmax'],
+        N_obj = params['Data']['N_obj'],
+        positions = params['Data']['positions'],
+        positions_method = params['Data']['positions_method'],
+        positions_seed = params['Data']['positions_seed'],
+        bunch_size_polar = params['Data']['bunch_size_polar'],
+        bunch_size_azimuthal = params['Data']['bunch_size_azimuthal'],
+        proper_motions = params['Data']['proper_motions'],
+        proper_motions_method = params['Data']['proper_motions_method'],
+        proper_motions_seed = params['Data']['proper_motions_seed'],
+        dipole = params['Data']['dipole'],
+        multipole = params['Data']['multipole'],
+        proper_motion_errors = params['Data']['proper_motion_errors'],
+        proper_motion_errors_method = params['Data']['proper_motion_errors_method'],
+        proper_motion_errors_std = params['Data']['proper_motion_errors_std'],
+        proper_motion_errors_corr_method = params['Data']['proper_motion_errors_corr_method'],
+        proper_motion_noise = params['Data']['proper_motion_noise'],
+        proper_motion_noise_seed = params['Data']['proper_motion_noise_seed'],
+        basis = params['Data']['basis']
     )
 
     astrometric_model = S.model(
@@ -80,7 +80,7 @@ def main():
     # TO DO: Rewrite this with passing the samples instead of writing and reading a file. In March 2020 there is a bug in CPnest.
     A_limit = PP.post_process_results(posterior_file = os.path.join(params['General']['output_dir'], 'posterior.dat'),
                                       which_basis = astrometric_model.which_basis,
-                                      Lmax = params['Analysis']['Lmax'],
+                                      Lmax = params['Data']['Lmax'],
                                       L = astrometric_model.overlap_matrix_Cholesky,
                                       pol = params['Post_processing']['pol'],
                                       limit = params['Post_processing']['limit']

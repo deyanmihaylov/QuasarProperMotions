@@ -6,7 +6,7 @@ verbose = 0
 plotting = 1
 
 
-[Analysis]
+[Data]
 Lmax = 2
 
 N_obj = 10000
