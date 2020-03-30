@@ -1,3 +1,5 @@
+import os
+import sys
 import numpy as np
 
 import Utils as U
@@ -10,22 +12,27 @@ def C_l_GR(l: int) -> float:
     ------
     l: int
         the spectral mode
-
-    TO DO: push this to a file
     """
 
-    C_l = [0, 4.386490845, 0.4386490845, 0.08772981690, 0.02506566197,
-           0.008952022133, 0.003730009222, 0.001740670970, 0.0008861597667,
-           0.0004833598727, 0.0002788614650, 0.0001685426437, 0.0001059410903,
-           0.00006886170871, 0.00004607658451, 0.00003162118544,
-           0.00002219030558, 0.00001588358715, 0.00001157232778,
-           8.566528356e-6, 6.433361216e-6, 4.894948752e-6,
-           3.769110539e-6, 2.934107589e-6, 2.307161523e-6,
-           1.831080574e-6, 1.465766469e-6, 1.182721909e-6,
-           9.614384554e-7, 7.869838970e-7, 6.483674151e-7,
-           5.374168414e-7, 4.479979048e-7, 3.754649107e-7,
-           3.162699923e-7, 2.676822837e-7, 2.275841278e-7,
-           1.943218322e-7, 1.665954245e-7, 1.433765500e-7]
+    GR_coeffs_file_path = "./src/gr_coeffs.dat"
+
+    if not os.path.isfile(GR_coeffs_file_path):
+        sys.exit("The file gr_coeffs.dat cannot be found.")
+
+    try:
+        C_l= np.loadtxt(
+                        GR_coeffs_file_path,
+                        skiprows = 0,
+                        usecols = None,
+                        unpack=False,
+                        ndmin=1,
+                        encoding='bytes',
+                        max_rows = None
+                    )
+    except:
+        sys.exit("The file gr_coeffs.dat cannot be accessed.")
+
+    assert l <= C_l.shape[0], sys.exit(f"The GR correlation coefficient for l = {l} is not available.")
 
     return C_l[l-1]
 

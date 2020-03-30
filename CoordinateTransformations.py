@@ -1,9 +1,11 @@
 import numpy as np
 from scipy.optimize import root
 
-def point_transform(input_points: np.ndarray,
-                    input_coordinates: str,
-                    output_coordinates: str):
+def point_transform(
+        input_points: np.ndarray,
+        input_coordinates: str,
+        output_coordinates: str
+    ) -> np.ndarray:
 
     if input_coordinates == "geographic":
         if output_coordinates == "Cartesian":
@@ -93,7 +95,9 @@ def Cartesian_to_geographic_point(points_Cartesian):
     
     return points_geographic
 
-def geographic_to_Mollweide_point(points_geographic):
+def geographic_to_Mollweide_point(
+        points_geographic: np.ndarray
+    ) -> np.ndarray:
     """
     Transform points on the unit sphere from geographic coordinates (ra,dec)
     to Mollweide projection coordiantes (x,y).
@@ -133,7 +137,9 @@ def geographic_to_Mollweide_point(points_geographic):
 
     return points_Mollweide
 
-def Mollweide_to_geographic_point(points_Mollweide):
+def Mollweide_to_geographic_point(
+        points_Mollweide: np.ndarray
+    ) -> np.ndarray:
     """
     Transform points on the unit sphere from Mollweide projection coordiantes (x,y)
     to geographic coordinates (ra,dec).
