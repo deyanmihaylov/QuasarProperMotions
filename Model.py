@@ -2,7 +2,7 @@ import numpy as np
 
 def generate_model(
 		almQ: dict,
-		basis:dict
+		basis: dict
 	):
     """
     Generate model of proper motions from a dictionary of almQ coefficients

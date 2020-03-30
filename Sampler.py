@@ -5,7 +5,11 @@ import cpnest.model
 import AstrometricData as AD
 import Model as M
 
-def R_values(data, invcovs, model):
+def R_values(
+        data,
+        invcovs,
+        model
+    ):
     """
     Compute R values from data, model, and the inverse of the covariant matrix
     """
