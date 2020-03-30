@@ -67,8 +67,8 @@ def main():
                 nthreads = params['MCMC']['nthreads'],
                 nlive = params['MCMC']['nlive'],
                 maxmcmc = params['MCMC']['maxmcmc'],
-                resume=False,
-                verbose=2
+                resume = False,
+                verbose = params['General']['verbose']
             )
 
     nest.run()
@@ -78,13 +78,14 @@ def main():
     nest.get_posterior_samples(filename='posterior.dat')
 
     # TO DO: Rewrite this with passing the samples instead of writing and reading a file. In March 2020 there is a bug in CPnest.
-    A_limit = PP.post_process_results(posterior_file = os.path.join(params['General']['output_dir'], 'posterior.dat'),
-                                      which_basis = astrometric_model.which_basis,
-                                      Lmax = params['Data']['Lmax'],
-                                      L = astrometric_model.overlap_matrix_Cholesky,
-                                      pol = params['Post_processing']['pol'],
-                                      limit = params['Post_processing']['limit']
-                                     )
+    A_limit = PP.post_process_results(
+                    posterior_file = os.path.join(params['General']['output_dir'], 'posterior.dat'),
+                    which_basis = astrometric_model.which_basis,
+                    Lmax = params['Data']['Lmax'],
+                    L = astrometric_model.overlap_matrix_Cholesky,
+                    pol = params['Post_processing']['pol'],
+                    limit = params['Post_processing']['limit']
+                )
 
     np.savetxt(os.path.join(params['General']['output_dir'], "limit.dat"), np.array([A_limit]))
 

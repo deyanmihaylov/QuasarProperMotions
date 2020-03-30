@@ -3,7 +3,7 @@
 [General]
 
 output_dir = ./test1
-verbose = 0
+verbose = 2
 plotting = 1
 
 

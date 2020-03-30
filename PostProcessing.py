@@ -50,7 +50,7 @@ def post_process_results(
         L: np.ndarray,
         pol: str,
         limit: float
-    ):
+    ) -> float:
     """
     Post process CPNest results
 
