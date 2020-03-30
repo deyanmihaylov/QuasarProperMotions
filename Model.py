@@ -1,6 +1,9 @@
 import numpy as np
 
-def generate_model(almQ, basis):
+def generate_model(
+		almQ: dict,
+		basis:dict
+	):
     """
     Generate model of PMs from a dictionary of almQ coefficients and some spherical harmonics basis
     """
