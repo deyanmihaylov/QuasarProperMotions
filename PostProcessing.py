@@ -63,16 +63,16 @@ def post_process_results(posterior_file: str,
     with open(posterior_file) as f:
         coeff_names = f.readline().split()[1:-2]
 
-    Ncols = 2*Lmax*(Lmax+2)
+    N_cols = 2*Lmax*(Lmax+2)
 
     almQ_posterior_samples = np.loadtxt(posterior_file)
-    almQ_posterior_samples = almQ_posterior_samples[:, 0:Ncols]
+    almQ_posterior_samples = almQ_posterior_samples[:, 0:N_cols]
 
     if pol == "GR":
         assert Lmax>=2
         diag_of_M = [[0. if C_l_GR(l) == 0 else 1./C_l_GR(l)] * 2*(2*l+1) for l in range(1, Lmax+1)]
     elif pol == "B":
-        diag_of_M = [[0. if C_l_B(l) == 0 else 1./C_l_B(l), 0.] * (2*l+1) for l in range(1, Lmax+1)] # CJM: THIS IS WRONG
+        diag_of_M = [[0. if C_l_B(l) == 0 else 1./C_l_B(l), 0.] * (2*l+1) for l in range(1, Lmax+1)]
 
     diag_of_M_flat = [coeff for coeffs in diag_of_M for coeff in coeffs]
     M = np.diag(diag_of_M_flat)
@@ -82,7 +82,7 @@ def post_process_results(posterior_file: str,
     Q_limit = np.percentile(Q, limit)
 
     if which_basis == "vsh":
-        chi_squared_limit = U.generalized_chi_squared_limit(len(coeff_names), M, limit)
+        chi_squared_limit = U.chi_squared_limit(len(coeff_names), limit)
 
         A_limit = np.sqrt(Q_limit/chi_squared_limit)
 

@@ -6,6 +6,7 @@ import Utils as U
 import AstrometricData as AD
 import Sampler as S
 import PostProcessing as PP
+import Plotting as P
 
 # will be made obsolete
 import os
@@ -31,10 +32,12 @@ def main():
                              N_obj = params['Analysis']['N_obj'],
                              positions = params['Analysis']['positions'],
                              positions_method = params['Analysis']['positions_method'],
+                             positions_seed = params['Analysis']['positions_seed'],
                              bunch_size_polar = params['Analysis']['bunch_size_polar'],
                              bunch_size_azimuthal = params['Analysis']['bunch_size_azimuthal'],
                              proper_motions = params['Analysis']['proper_motions'],
                              proper_motions_method = params['Analysis']['proper_motions_method'],
+                             proper_motions_seed = params['Analysis']['proper_motions_seed'],
                              dipole = params['Analysis']['dipole'],
                              multipole = params['Analysis']['multipole'],
                              proper_motion_errors = params['Analysis']['proper_motion_errors'],
@@ -42,9 +45,8 @@ def main():
                              proper_motion_errors_std = params['Analysis']['proper_motion_errors_std'],
                              proper_motion_errors_corr_method = params['Analysis']['proper_motion_errors_corr_method'],
                              proper_motion_noise = params['Analysis']['proper_motion_noise'],
-                             basis = params['Analysis']['basis'],
-                             outdir = params['General']['output_dir'],
-                             seed = params['General']['seed']
+                             proper_motion_noise_seed = params['Analysis']['proper_motion_noise_seed'],
+                             basis = params['Analysis']['basis']
                             )
 
     astrometric_model = S.model(data,
@@ -77,6 +79,14 @@ def main():
                                      )
 
     np.savetxt(os.path.join(params['General']['output_dir'], "limit.dat"), np.array([A_limit]))
+
+    U.export_data(data,
+                  output = params['General']['output_dir'])
+
+    if params['General']['plotting'] == True:
+        P.plot(data,
+               output = params['General']['output_dir']
+              )
 
 if __name__ == '__main__':
     main()

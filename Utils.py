@@ -5,6 +5,8 @@ import errno
 from scipy.stats import chi2
 from scipy.optimize import broyden1
 
+import AstrometricData as AD
+
 def is_pathname_valid(path_name: str) -> bool:
     """
     True if the passed path_name is a valid path_name for the current OS;
@@ -69,6 +71,9 @@ def assert_config_params(params):
     # positions_method should be one of ["uniform", "bunched"]
     assert params['Analysis']['positions_method'] in ["uniform", "bunched"], sys.exit("positions_method takes values \"uniform\" or \"bunched\"")
 
+    # positions_seed should be an int
+    assert isinstance(params['Analysis']['positions_seed'], int), sys.exit("positions_seed takes integer values")
+
     # bunch_size_polar should be a non-negative number
     assert isinstance(params['Analysis']['bunch_size_polar'], float) or isinstance(params['Analysis']['bunch_size_polar'], int), sys.exit("bunch_size_polar takes numerical values")
     assert params['Analysis']['bunch_size_polar'] >= 0., sys.exit("bunch_size_polar takes non-negative values")
@@ -83,6 +88,9 @@ def assert_config_params(params):
 
     # proper_motions_method should be one of ["zero", "dipole", "multipole"]
     assert params['Analysis']['proper_motions_method'] in ["zero", "dipole", "multipole"], sys.exit("proper_motions_method takes values \"zero\", \"dipole\" or \"multipole\"")
+
+    # proper_motions_seed should be an int
+    assert isinstance(params['Analysis']['proper_motions_seed'], int), sys.exit("proper_motions_seed takes integer values")
 
     # dipole should be a non-negative number (check only if proper_motions_method is "dipole")
     if params['Analysis']['proper_motions_method'] == "dipole":
@@ -113,6 +121,9 @@ def assert_config_params(params):
     # proper_motion_noise should be a non-negative number
     assert isinstance(params['Analysis']['proper_motion_noise'], float) or isinstance(params['Analysis']['proper_motion_noise'], int), sys.exit("proper_motion_noise takes numerical values")
     assert params['Analysis']['proper_motion_noise'] >= 0., sys.exit("proper_motion_noise takes non-negative values")
+
+    # proper_motion_noise_seed should be an int
+    assert isinstance(params['Analysis']['proper_motion_noise_seed'], int), sys.exit("proper_motion_noise_seed takes integer values")
 
     # vsh_basis should be one of ["vsh", "orthogonal"]
     assert params['Analysis']['basis'] in ["vsh", "orthogonal"], sys.exit("vsh_basis takes values \"vsh\" or \"orthogonal\"")
@@ -228,3 +239,19 @@ def generalized_chi_squared_limit(k, A, P, N=100000):
     limit = np.percentile(samples, P)
 
     return limit
+
+def export_data(
+        ADf: AD.AstrometricDataframe,
+        output: str
+               ):
+
+    positions_file_name = os.path.join(output, 'positions.dat')
+    np.savetxt(positions_file_name, ADf.positions)
+
+    proper_motions_file_name = os.path.join(output, 'proper_motions.dat')
+    np.savetxt(proper_motions_file_name, ADf.proper_motions)
+
+    overlap_matrix_file_name = os.path.join(output, 'overlap_matrix.dat')
+    np.savetxt(overlap_matrix_file_name, ADf.overlap_matrix)
+
+

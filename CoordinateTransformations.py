@@ -1,4 +1,31 @@
 import numpy as np
+from scipy.optimize import root
+
+def point_transform(input_points: np.ndarray,
+                    input_coordinates: str,
+                    output_coordinates: str):
+
+    if input_coordinates == "geographic":
+        if output_coordinates == "Cartesian":
+            output_points = geographic_to_Cartesian_point(input_points)
+        elif output_coordinates == "Mollweide":
+            output_points = geographic_to_Mollweide_point(input_points)
+        else:
+            output_points = input_points.copy()
+    elif input_coordinates == "Cartesian":
+        if output_coordinates == "geographic":
+            output_points = Cartesian_to_geographic_point(input_points)
+        else:
+            output_points = input_points.copy()
+    elif input_coordinates == "Mollweide":
+        if output_coordinates == "geographic":
+            output_points = Mollweide_to_geographic_point(input_points)
+        else:
+            output_points = input_points.copy()
+    else:
+        output_points = input_points.copy()
+
+    return output_points
 
 def geographic_to_Cartesian_point(points):
     """
@@ -33,8 +60,7 @@ def geographic_to_Cartesian_point(points):
     else:
         return new_points
     
-    
-def Cartesian_to_geographic_point(points):
+def Cartesian_to_geographic_point(points_Cartesian):
     """
     Transform points on the unit sphere from Cartesian 
     coords (x,y,z) to geographic coords (ra,dec)
@@ -52,27 +78,92 @@ def Cartesian_to_geographic_point(points):
         The coords (ra,dec) in radians.
         Either a single point [shape=(2,)], or
         a list of points [shape=(Npoints,3)].
-    """ 
-    new_points = np.zeros((len(points), 2))
+    """
+    shape_geographic = list(points_Cartesian.shape)
+    shape_geographic[-1] = 2
+
+    points_geographic = np.zeros(shape=shape_geographic)
     
-    theta = np.arccos( points[..., 2] / np.linalg.norm(points, axis=1) )
-    phi = np.arctan2( points[..., 1], points[..., 0] )
+    theta = np.arccos(points_Cartesian[..., 2] / np.linalg.norm(points_Cartesian, axis=-1))
+    phi = np.arctan2(points_Cartesian[..., 1], points_Cartesian[..., 0])
+    phi[phi<0] += 2*np.pi
     
-    new_points[...,0] = phi
-    new_points[...,1] = np.pi/2 - theta
+    points_geographic[...,0] = phi
+    points_geographic[...,1] = np.pi/2 - theta
     
-    if len(points.shape) == 1:
-        return new_points[0]
+    return points_geographic
+
+def geographic_to_Mollweide_point(points_geographic):
+    """
+    Transform points on the unit sphere from geographic coordinates (ra,dec)
+    to Mollweide projection coordiantes (x,y).
+    
+    INPUTS
+    ------
+    points_geographic: numpy array
+        The geographic coords (ra,dec).
+        Either a single point [shape=(2,)], or
+        a list of points [shape=(Npoints,2)].
+    
+    RETURNS
+    -------
+    points_Mollweide: numpy array
+        The Mollweide projection coords (x,y).
+        Either a single point [shape=(2,)], or
+        a list of points [shape=(Npoints,2)].
+    """
+    final_shape_Mollweide = list(points_geographic.shape)
+
+    points_geographic = points_geographic.reshape(-1, points_geographic.shape[-1])
+        
+    points_Mollweide = np.zeros(shape=points_geographic.shape,
+                                dtype=points_geographic.dtype)
+
+    alpha_tol = 1.e-6
+
+    def alpha_eq(x):
+        return np.where(np.pi/2 - np.abs(points_geographic[...,1]) < alpha_tol, points_geographic[...,1], 2 * x + np.sin(2 * x) - np.pi * np.sin(points_geographic[...,1]))
+
+    alpha = root(fun=alpha_eq, x0=points_geographic[...,1], method='krylov', tol=1.e-10)
+
+    points_Mollweide[...,0] = 2 * np.sqrt(2) * (points_geographic[...,0] - np.pi) * np.cos(alpha.x) / np.pi
+    points_Mollweide[...,1] = np.sqrt(2) * np.sin(alpha.x)
+
+    points_Mollweide = points_Mollweide.reshape(final_shape_Mollweide)
+
+    return points_Mollweide
+
+def Mollweide_to_geographic_point(points_Mollweide):
+    """
+    Transform points on the unit sphere from Mollweide projection coordiantes (x,y)
+    to geographic coordinates (ra,dec).
+    
+    INPUTS
+    ------
+    points_Mollweide: numpy array
+        The Mollweide projection coords (x,y).
+        Either a single point [shape=(2,)], or
+        a list of points [shape=(Npoints,2)].
+    
+    RETURNS
+    -------
+    points_geographic: numpy array
+        The geographic coords (ra,dec).
+        Either a single point [shape=(2,)], or
+        a list of points [shape=(Npoints,2)].
+    """
+    if points_Mollweide.ndim == 1:
+        points_geographic = np.zeros((2), dtype=points_Mollweide.dtype)
     else:
-        return new_points    
-    
-    
-    
-    
-    
-    
-    
-    
+        points_geographic = np.zeros((points_Mollweide.shape[0], 2), dtype=points_Mollweide.dtype)
+
+    alpha = np.arcsin(points_Mollweide[...,1]/np.sqrt(2))
+
+    points_geographic[...,0] = np.pi + (np.pi * points_Mollweide[...,0]) / (2*np.sqrt(2)*np.cos(alpha))
+    points_geographic[...,1] = np.arcsin((2*alpha + np.sin(2*alpha))/np.pi)
+
+    return points_geographic
+
 def Cartesian_to_geographic_vector(points, dpoints):
     """
     Transform vectors in the tangent plane of the unit sphere from
@@ -115,7 +206,6 @@ def Cartesian_to_geographic_vector(points, dpoints):
     
     return tangent_vector
 
-
 def geographic_to_Cartesian_vector(points, dpoints):
     """
     Transform vectors in the tangent plane of the unit sphere from
@@ -138,7 +228,7 @@ def geographic_to_Cartesian_vector(points, dpoints):
         The coords (d_x,d_y,d_z).
         Either a single point [shape=(3,)], or
         a list of points [shape=(Npoints,3)].
-    """ 
+    """
     if points.ndim == 1:
         tangent_vector = np.zeros((3), dtype=dpoints.dtype)
     else:

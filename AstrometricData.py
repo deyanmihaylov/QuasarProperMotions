@@ -1,5 +1,4 @@
 import numpy as np
-import os
 import sys
 import itertools
 from scipy.stats import truncnorm
@@ -10,8 +9,6 @@ import CoordinateTransformations as CT
 import VectorSphericalHarmonics as VSH
 import Utils as U
 import Model as M
-
-import matplotlib.pyplot as plt
 
 
 class AstrometricDataframe:
@@ -40,7 +37,13 @@ class AstrometricDataframe:
     def generate_names(self):
         self.names = {(l, m, Q): f"Y^{Q}_{l},{m}" for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
 
-    def generate_positions(self, method="uniform", bunch_size_polar=0., bunch_size_azimuthal=0., seed=None):
+    def generate_positions(
+            self,
+            method: str,
+            bunch_size_polar: float,
+            bunch_size_azimuthal: float,
+            random_seed: int
+                          ):
         """
         Generate random positions
 
@@ -58,7 +61,8 @@ class AstrometricDataframe:
         seed: int
             random seed
         """
-        if seed: np.random.seed(seed)
+        if random_seed > 0: np.random.seed(random_seed)
+
         if method == "uniform" or (method == "bunched" and bunch_size_polar==0.):
             dec = 0.5*np.pi - np.arccos(np.random.uniform(-1, 1, size=self.N_obj))
         elif method == "bunched" and bunch_size_polar > 0.:
@@ -77,34 +81,6 @@ class AstrometricDataframe:
         """
         self.positions = dataset[['ra', 'dec']].values
         self.positions = U.deg_to_rad(self.positions)
-
-    def plot_Gaia_positions(self, outdir=''):
-        """
-        CJM: I added this function for some testing
-
-        Plot the QSO positions in Mollweide projection
-        """
-        outfile = os.path.join(outdir,'plot_Gaia_positions.png')
-        plt.figure()
-        plt.subplot(111, projection="mollweide")
-        RA = self.positions[:,0]; RA[RA>np.pi] -= 2*np.pi
-        DEC = self.positions[:,1]
-        plt.plot(RA, DEC, 'ro')
-        plt.grid(True)
-        plt.savefig(outfile)
-        plt.clf()
-
-    def export_positions(self, outdir=''):
-        outfile = os.path.join(outdir,'Gaia_positions.dat')
-        np.savetxt(outfile, self.positions)
-
-    def export_propermotions(self, outdir=''):
-        outfile = os.path.join(outdir,'Gaia_proper_motions.dat')
-        np.savetxt(outfile, self.proper_motions)
-
-    def export_overlap_matrices(self, outdir=''):
-        outfile = os.path.join(outdir,'OverlapMatrix.dat')
-        np.savetxt(outfile, self.overlap_matrix)
 
     def load_TD_positions(self, dataset):
         """
@@ -146,7 +122,15 @@ class AstrometricDataframe:
 
         self.which_basis = "vsh"
 
-    def generate_proper_motions(self, method="zero", dipole=0., multipole=None):
+    def generate_proper_motions(self,
+                                method: str,
+                                dipole: float,
+                                multipole: list,
+                                random_seed: int
+                               ):
+
+        if random_seed > 0: np.random.seed(random_seed)
+
         if method == "zero":
             self.proper_motions = np.zeros((self.N_obj, 2))
         elif method == "dipole":
@@ -228,8 +212,13 @@ class AstrometricDataframe:
 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
-    def add_proper_motion_noise(self, std, seed=None):
-        if seed: np.random.seed(seed)
+    def add_proper_motion_noise(
+            self,
+            std: float,
+            random_seed: int
+        ):
+        if random_seed > 0: np.random.seed(random_seed)
+
         proper_motion_noise = np.random.normal(loc=0., scale=std, size=self.proper_motions.shape)
         self.proper_motions += proper_motion_noise
 
@@ -286,10 +275,12 @@ def load_astrometric_data(ADf: AstrometricDataframe,
                           N_obj: int,
                           positions: int,
                           positions_method: str,
+                          positions_seed: int,
                           bunch_size_polar: float,
                           bunch_size_azimuthal: float,
                           proper_motions: int,
                           proper_motions_method: str,
+                          proper_motions_seed: int,
                           dipole: float,
                           multipole: list,
                           proper_motion_errors: int,
@@ -297,12 +288,9 @@ def load_astrometric_data(ADf: AstrometricDataframe,
                           proper_motion_errors_std: float,
                           proper_motion_errors_corr_method: str,
                           proper_motion_noise: float,
-                          basis: str,
-                          outdir: str,
-                          seed: int
+                          proper_motion_noise_seed: int,
+                          basis: str
                          ):
-
-    random_seed = None if seed<0 else seed
 
     ADf.Lmax = Lmax
 
@@ -334,10 +322,10 @@ def load_astrometric_data(ADf: AstrometricDataframe,
         ADf.N_obj = dataset.shape[0]
 
     if positions == 1:
-        ADf.generate_positions(method=positions_method,
-                               bunch_size_polar=bunch_size_polar,
-                               bunch_size_azimuthal=bunch_size_azimuthal,
-                               seed=random_seed
+        ADf.generate_positions(method = positions_method,
+                               bunch_size_polar = bunch_size_polar,
+                               bunch_size_azimuthal = bunch_size_azimuthal,
+                               random_seed = positions_seed
                               )
     elif positions in [2, 3, 4]:
         ADf.load_Gaia_positions(dataset)
@@ -349,7 +337,11 @@ def load_astrometric_data(ADf: AstrometricDataframe,
     ADf.generate_VSHs()
 
     if proper_motions == 1:
-        ADf.generate_proper_motions(method=proper_motions_method, dipole=dipole) # CJM: I added the dipole argument here. Is this right?
+        ADf.generate_proper_motions(method=proper_motions_method,
+                                    dipole=dipole,
+                                    multipole=multipole,
+                                    random_seed = proper_motions_seed
+                                   )
     elif proper_motions in [2, 3, 4]:
         ADf.load_Gaia_proper_motions(dataset)
     elif proper_motions == 5:
@@ -365,19 +357,19 @@ def load_astrometric_data(ADf: AstrometricDataframe,
     elif proper_motion_errors == 5:
         ADf.load_TD_proper_motion_errors(dataset)
 
-    ADf.add_proper_motion_noise(std=proper_motion_noise, seed=random_seed)
+    ADf.add_proper_motion_noise(std=proper_motion_noise,
+                                random_seed=proper_motion_noise_seed
+                               )
 
     ADf.compute_overlap_matrix()
 
-    ADf.plot_Gaia_positions(outdir=outdir)
-    ADf.export_positions(outdir=outdir)
-    ADf.export_propermotions(outdir=outdir)
-    ADf.export_overlap_matrices(outdir=outdir)
+    # ADf.export_positions(outdir=outdir)
+    # ADf.export_propermotions(outdir=outdir)
+    # ADf.export_overlap_matrices(outdir=outdir)
 
     if basis == "orthogonal":
         ADf.change_basis()
         ADf.compute_overlap_matrix()
-
 
 def import_Gaia_dataset(path):
     """
