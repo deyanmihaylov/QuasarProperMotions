@@ -1,31 +1,47 @@
 # Quasar proper motions default par file
 
 [General]
-
-output_dir = ./
+output_dir = ./test1
 verbose = 0
 plotting = 1
 
 
 [Analysis]
+Lmax = 2
 
-Lmax = 4
-positions = 1
-injection = 0
-pm_errors = 0
-N_obj = 1000
-eps = 0.
+N_obj = 10000
 
-# Vector spherical harmonics basis: "normal" or "mod"
-vsh_basis = normal
+positions = 2
+positions_seed = 2
+positions_method = bunched
+bunch_size_polar = 0.0
+bunch_size_azimuthal = 0.0
+
+proper_motions = 2
+proper_motions_seed = 2
+proper_motions_method = dipole
+dipole = 0.2
+multipole = [0.2]
+
+proper_motion_errors = 2
+proper_motion_errors_method = flat
+proper_motion_errors_std = 0.1
+proper_motion_errors_corr_method = zero
+
+proper_motion_noise = 0.1
+proper_motion_noise_seed = 3
+
+basis = vsh
 
 
 [MCMC]
-
-# Log-likelihood method: "permissive", "quadratic"
 logL_method = permissive
-
 nthreads = 2
 nlive = 1024
 maxmcmc = 128
-prior_bounds = 1.
+prior_bounds = 0.5
+
+
+[Post_processing]
+pol = GR
+limit = 90
