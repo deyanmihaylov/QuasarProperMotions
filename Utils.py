@@ -115,8 +115,9 @@ def assert_config_params(params):
         assert isinstance(params['Data']['proper_motion_errors_std'], float) or isinstance(params['Data']['proper_motion_errors_std'], int), sys.exit("proper_motion_errors_std takes numerical values")
         assert params['Data']['proper_motion_errors_std'] > 0., sys.exit("proper_motion_errors_std takes positive values")
 
-        # proper_motion_errors_corr_method should be one of ["zero", "total+", "total-", "random"]
-        assert params['Data']['proper_motion_errors_corr_method'] in ["zero", "total+", "total-", "random"], sys.exit("proper_motion_errors_corr_method takes values \"zero\", \"total+\", \"total-\", \"random\"")
+        # proper_motion_errors_corr should be a number in the interval (-1, 1)
+        assert isinstance(params['Data']['proper_motion_errors_corr'], float) or isinstance(params['Data']['proper_motion_errors_corr'], int), sys.exit("proper_motion_errors_corr takes numerical values")
+        assert params['Data']['proper_motion_errors_corr'] > -1. and params['Data']['proper_motion_errors_corr'] < 1., sys.exit("proper_motion_errors_corr takes values in the interval (-1, 1)")
 
     # proper_motion_noise should be a non-negative number
     assert isinstance(params['Data']['proper_motion_noise'], float) or isinstance(params['Data']['proper_motion_noise'], int), sys.exit("proper_motion_noise takes numerical values")

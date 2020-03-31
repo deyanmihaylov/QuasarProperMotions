@@ -49,7 +49,7 @@ def main():
         proper_motion_errors = params['Data']['proper_motion_errors'],
         proper_motion_errors_method = params['Data']['proper_motion_errors_method'],
         proper_motion_errors_std = params['Data']['proper_motion_errors_std'],
-        proper_motion_errors_corr_method = params['Data']['proper_motion_errors_corr_method'],
+        proper_motion_errors_corr = params['Data']['proper_motion_errors_corr'],
         proper_motion_noise = params['Data']['proper_motion_noise'],
         proper_motion_noise_seed = params['Data']['proper_motion_noise_seed'],
         basis = params['Data']['basis']

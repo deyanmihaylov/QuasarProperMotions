@@ -174,7 +174,7 @@ class AstrometricDataframe:
             self,
             method: str,
             std: float,
-            corr_method: str
+            corr: float
         ):
         if method == "flat":
             scale = std
@@ -183,19 +183,12 @@ class AstrometricDataframe:
 
         proper_motion_errors = scale*np.ones(self.proper_motions.shape)
 
-        # Scale the pm_ra_err by sin(theta)=cos(dec)
+        # Scale the pm_ra_err by sin(theta) = cos(dec)
         proper_motion_errors[:,0] = proper_motion_errors[:,0] / np.cos(self.positions[:,1])
 
-        if corr_method == "zero":
-            proper_motion_err_corrs = np.zeros(self.N_obj)
-        elif corr_method == "total+":
-            proper_motion_err_corrs = np.ones(self.N_obj)
-        elif corr_method == "total-":
-            proper_motion_err_corrs = -np.ones(self.N_obj)
-        elif corr_method == "random":
-            proper_motion_err_corrs = np.random.uniform(low=-1., high=1., size=self.N_obj)
+        proper_motion_errors_corr = corr * np.ones(self.N_obj)
 
-        covariance = U.covariant_matrix(proper_motion_errors, proper_motion_err_corrs)
+        covariance = U.covariant_matrix(proper_motion_errors, proper_motion_errors_corr)
 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
@@ -312,7 +305,7 @@ def load_astrometric_data(
         proper_motion_errors: int,
         proper_motion_errors_method: str,
         proper_motion_errors_std: float,
-        proper_motion_errors_corr_method: str,
+        proper_motion_errors_corr: float,
         proper_motion_noise: float,
         proper_motion_noise_seed: int,
         basis: str
@@ -380,7 +373,7 @@ def load_astrometric_data(
         ADf.generate_proper_motion_errors(
             method = proper_motion_errors_method,
             std = proper_motion_errors_std,
-            corr_method = proper_motion_errors_corr_method
+            corr = proper_motion_errors_corr
         )
     elif proper_motion_errors in [2, 3, 4]:
         ADf.load_Gaia_proper_motion_errors(dataset)

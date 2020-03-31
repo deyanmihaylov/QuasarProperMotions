@@ -59,19 +59,18 @@ multipole = [0.2]
 # (3) - Gaia dataset, type 3
 # (4) - Gaia dataset, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-proper_motion_errors = 2
+proper_motion_errors = 1
 
 # mock proper motion errors method:
 # "flat", "adaptive"
 # "adaptive": proper_motion_errors_std is multiplied by the absolute value of each proper motion
-proper_motion_errors_method = flat
+proper_motion_errors_method = adaptive
 
 # mock proper motion errors standard deviation:
 proper_motion_errors_std = 0.1
 
-# mock proper motion errors correlations method:
-# "zero", "total+", "total-", "random"
-proper_motion_errors_corr_method = zero
+# mock proper motion errors correlations:
+proper_motion_errors_corr = 0.5
 
 # proper_motion_noise: standard deviation of the Gaussian noise to add to the proper motions
 proper_motion_noise = 0.1
