@@ -64,7 +64,7 @@ proper_motion_errors = 1
 # mock proper motion errors method:
 # "flat", "adaptive"
 # "adaptive": proper_motion_errors_std is multiplied by the absolute value of each proper motion
-proper_motion_errors_method = adaptive
+proper_motion_errors_method = flat
 
 # mock proper motion errors standard deviation:
 proper_motion_errors_std = 0.1

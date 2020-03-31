@@ -87,10 +87,9 @@ def main():
                     limit = params['Post_processing']['limit']
                 )
 
-    np.savetxt(os.path.join(params['General']['output_dir'], "limit.dat"), np.array([A_limit]))
-
     U.export_data(
         data,
+        A_limit,
         output = params['General']['output_dir']
     )
 

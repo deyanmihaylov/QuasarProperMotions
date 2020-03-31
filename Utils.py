@@ -243,9 +243,10 @@ def generalized_chi_squared_limit(k, A, P, N=1000000):
 
 def export_data(
         ADf: AD.AstrometricDataframe,
+        limit: float,
         output: str
-               ):
-
+    ):
+    
     positions_file_name = os.path.join(output, 'positions.dat')
     np.savetxt(positions_file_name, ADf.positions)
 
@@ -254,5 +255,8 @@ def export_data(
 
     overlap_matrix_file_name = os.path.join(output, 'overlap_matrix.dat')
     np.savetxt(overlap_matrix_file_name, ADf.overlap_matrix)
+
+    limit_file_name = os.path.join(output, 'limit.dat')
+    np.savetxt(np.array([A_limit]), limit_file_name)
 
 
