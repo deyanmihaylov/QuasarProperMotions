@@ -208,7 +208,7 @@ def chi_squared_limit(k, P):
 
     return limit
 
-def generalized_chi_squared_limit(k, A, P, N=100000):
+def generalized_chi_squared_limit(k, A, P, N=1000000):
     """
     Find the P-percent certainty limit of the generalized chi-squared distribution
 

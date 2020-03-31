@@ -366,9 +366,9 @@ def load_astrometric_data(
 
     if proper_motions == 1:
         ADf.generate_proper_motions(
-            method=proper_motions_method,
-            dipole=dipole,
-            multipole=multipole,
+            method = proper_motions_method,
+            dipole = dipole,
+            multipole = multipole,
             random_seed = proper_motions_seed
         )
     elif proper_motions in [2, 3, 4]:
@@ -378,9 +378,9 @@ def load_astrometric_data(
 
     if proper_motion_errors == 1:
         ADf.generate_proper_motion_errors(
-            method=proper_motion_errors_method,
-            std=proper_motion_errors_std,
-            corr_method=proper_motion_errors_corr_method
+            method = proper_motion_errors_method,
+            std = proper_motion_errors_std,
+            corr_method = proper_motion_errors_corr_method
         )
     elif proper_motion_errors in [2, 3, 4]:
         ADf.load_Gaia_proper_motion_errors(dataset)
