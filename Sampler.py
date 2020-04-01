@@ -74,6 +74,26 @@ class model(cpnest.model.Model):
         # TO DO: 
         # print("Searching over the following parameters:\n", '\n'.join(self.names))
 
+    def astrometric_model(
+            self,
+            almQ: dict,
+            basis: dict
+        ):
+        """
+        Generate model of proper motions from a dictionary of almQ coefficients
+        and some spherical harmonics basis
+
+        INPUTS
+        ------
+        almQ: dict
+            Dictionary containing the vector spherical harmonics coefficients
+        basis: dict
+            Dictionary containing the vector spherical harmonics
+        """
+        model = np.sum([almQ[key] * basis[key] for key in almQ.keys()], axis=0)
+
+        return model
+
     def log_likelihood(
             self,
             almQ: dict
@@ -81,7 +101,8 @@ class model(cpnest.model.Model):
         """
         The log-likelihood function
         """
-        model = M.generate_model(almQ, self.basis)
+        # model = M.generate_model(almQ, self.basis)
+        model = self.astrometric_model(almQ, self.basis)
         
         R = R_values(self.proper_motions, self.inv_proper_motion_error_matrix, model)
 

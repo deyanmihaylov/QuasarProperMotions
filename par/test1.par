@@ -9,7 +9,7 @@ plotting = 1
 
 [Data]
 
-Lmax = 1
+Lmax = 3
 
 N_obj = 1000000
 
@@ -59,7 +59,7 @@ multipole = [0.2]
 # (3) - Gaia dataset, type 3
 # (4) - Gaia dataset, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-proper_motion_errors = 1
+proper_motion_errors = 2
 
 # mock proper motion errors method:
 # "flat", "adaptive"

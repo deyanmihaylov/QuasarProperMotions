@@ -71,7 +71,13 @@ def main():
                 verbose = params['General']['verbose']
             )
 
+    import time
+
+    t_b = time.time()
+
     nest.run()
+
+    t_f = time.time()
 
     nest.get_nested_samples(filename='nested_samples.dat')
 
@@ -98,6 +104,8 @@ def main():
             data,
             output = params['General']['output_dir']
         )
+
+    print (t_f - t_b)
 
 if __name__ == '__main__':
     main()
