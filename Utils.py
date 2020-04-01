@@ -257,6 +257,6 @@ def export_data(
     np.savetxt(overlap_matrix_file_name, ADf.overlap_matrix)
 
     limit_file_name = os.path.join(output, 'limit.dat')
-    np.savetxt(np.array([limit]), limit_file_name)
+    np.savetxt(limit_file_name, np.array([limit]))
 
 

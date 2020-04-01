@@ -76,8 +76,7 @@ class model(cpnest.model.Model):
 
     def astrometric_model(
             self,
-            almQ: dict,
-            basis: dict
+            almQ: dict
         ):
         """
         Generate model of proper motions from a dictionary of almQ coefficients
@@ -90,7 +89,7 @@ class model(cpnest.model.Model):
         basis: dict
             Dictionary containing the vector spherical harmonics
         """
-        model = np.sum([almQ[key] * basis[key] for key in almQ.keys()], axis=0)
+        model = np.sum([almQ[key] * self.basis[key] for key in almQ.keys()], axis=0)
 
         return model
 
