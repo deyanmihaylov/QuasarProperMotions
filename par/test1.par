@@ -9,7 +9,7 @@ plotting = 1
 
 [Data]
 
-Lmax = 2
+Lmax = 3
 
 N_obj = 1000000
 

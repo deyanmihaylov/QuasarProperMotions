@@ -100,8 +100,8 @@ class model(cpnest.model.Model):
         """
         The log-likelihood function
         """
-        # model = M.generate_model(almQ, self.basis)
-        model = self.astrometric_model(almQ, self.basis)
+
+        model = M.generate_model(almQ, self.basis)
         
         R = R_values(self.proper_motions, self.inv_proper_motion_error_matrix, model)
 
