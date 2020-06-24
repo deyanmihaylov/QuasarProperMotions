@@ -329,6 +329,8 @@ def load_astrometric_data(
     elif len(which_dataset) == 1:
         chosen_dataset = next(iter(which_dataset))
 
+        print(chosen_dataset)
+
         if dataset_dict[chosen_dataset]['cat'] == "Gaia":
             dataset = import_Gaia_dataset(dataset_dict[chosen_dataset]['file_name'])
         elif dataset_dict[chosen_dataset]['cat'] == "TD":
@@ -403,7 +405,7 @@ def import_Gaia_dataset(
         header='infer',
         squeeze=False,
         mangle_dupe_cols=True,
-        engine='python',
+        engine='c',
         skipinitialspace=False,
         skipfooter=0,
         keep_default_na=True,
