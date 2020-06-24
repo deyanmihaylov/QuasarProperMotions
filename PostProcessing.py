@@ -20,7 +20,7 @@ def C_l_GR(l: int) -> float:
         sys.exit("The file gr_coeffs.dat cannot be found.")
 
     try:
-        C_l= np.loadtxt(
+        C_l = np.loadtxt(
                         GR_coeffs_file_path,
                         skiprows = 0,
                         usecols = None,
@@ -72,10 +72,78 @@ def post_process_results(
     with open(posterior_file) as f:
         coeff_names = f.readline().split()[1:-2]
 
-    N_cols = 2*Lmax*(Lmax+2)
+    N_cols = 2 * Lmax * (Lmax+2)
 
-    almQ_posterior_samples = np.loadtxt(posterior_file)
-    almQ_posterior_samples = almQ_posterior_samples[:, 0:N_cols]
+    almQ_posterior_data = np.loadtxt(posterior_file)
+    almQ_posterior_samples = almQ_posterior_data[:, 0:N_cols]
+
+    if pol == "GR":
+        assert Lmax>=2
+        diag_of_M = [[0. if C_l_GR(l) == 0 else 1./C_l_GR(l)] * 2*(2*l+1) for l in range(1, Lmax+1)]
+    elif pol == "B":
+        diag_of_M = [[0. if C_l_B(l) == 0 else 1./C_l_B(l), 0.] * (2*l+1) for l in range(1, Lmax+1)]
+
+    diag_of_M_flat = [coeff for coeffs in diag_of_M for coeff in coeffs]
+    M = np.diag(diag_of_M_flat)
+
+    Q = np.einsum('...i,ij,...j->...', almQ_posterior_samples, M, almQ_posterior_samples)
+
+    A_prior = np.random.uniform(
+                            low=0.,
+                            high=np.sqrt(Q.max()),
+                            size=100000
+                        )
+
+    P_A_given_D = np.array([np.sum(np.exp(- N_cols*np.log(A) - Q/(2.*(A**2.)))) for A in A_prior])
+
+    P_sum = P_A_given_D.sum()
+
+    P_A_given_D = P_A_given_D / P_sum
+
+    import matplotlib.pyplot as plt
+
+    plt.hist(P_A_given_D)
+    plt.xlabel('A')
+    plt.ylabel('P(A|D)')
+    plt.title('Histogram of A (amplitude of the SGWB)')
+    plt.yscale('log')
+
+    outfile = "./hist_A.png"
+
+    plt.tight_layout()
+    plt.savefig(outfile)
+    plt.clf()
+
+    A_limit = np.percentile(P_A_given_D, limit)
+
+    return A_limit
+
+def post_process_results_old(
+        posterior_file: str,
+        which_basis: str,
+        Lmax: int,
+        L: np.ndarray,
+        pol: str,
+        limit: float
+    ) -> float:
+    """
+    Post process CPNest results
+
+    INPUTS
+    ------
+    post_process_results: str
+        the path to the posterior.dat file produced by CPNest
+    mod_basis: bool
+        whether the modified basis of functions is used
+
+    """
+    with open(posterior_file) as f:
+        coeff_names = f.readline().split()[1:-2]
+
+    N_cols = 2 * Lmax * (Lmax+2)
+
+    almQ_posterior_data = np.loadtxt(posterior_file)
+    almQ_posterior_samples = almQ_posterior_data[:, 0:N_cols]
 
     if pol == "GR":
         assert Lmax>=2

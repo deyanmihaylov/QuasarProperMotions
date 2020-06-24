@@ -59,9 +59,9 @@ def plot_positions(
 
     ax.scatter(positions_Mollweide[:,0],
     		   positions_Mollweide[:,1],
-    		   marker='o',
-    		   c='b',
-    		   s=marker_size
+    		   marker = 'o',
+    		   c = 'black',
+    		   s = marker_size
     		  )
 
     border_ellipse = Ellipse(

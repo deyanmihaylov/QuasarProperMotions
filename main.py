@@ -13,12 +13,12 @@ import os
 import numpy as np
 
 def main():
-    parser = argparse.ArgumentParser(description="Quasar proper motions code")
+    parser = argparse.ArgumentParser(description = "Quasar proper motions code")
     parser.add_argument(
         "parameter_file",
-        metavar="Parameter file",
-        type=str,
-        help=".par file"
+        metavar = "Parameter file",
+        type = str,
+        help = ".par file"
     )
     args = parser.parse_args()
 
@@ -71,41 +71,33 @@ def main():
                 verbose = params['General']['verbose']
             )
 
-    import time
-
-    t_b = time.time()
-
     nest.run()
-
-    t_f = time.time()
 
     nest.get_nested_samples(filename='nested_samples.dat')
 
     nest.get_posterior_samples(filename='posterior.dat')
 
     # TO DO: Rewrite this with passing the samples instead of writing and reading a file. In March 2020 there is a bug in CPnest.
-    A_limit = PP.post_process_results(
-                    posterior_file = os.path.join(params['General']['output_dir'], 'posterior.dat'),
-                    which_basis = astrometric_model.which_basis,
-                    Lmax = params['Data']['Lmax'],
-                    L = astrometric_model.overlap_matrix_Cholesky,
-                    pol = params['Post_processing']['pol'],
-                    limit = params['Post_processing']['limit']
-                )
+    # A_limit = PP.post_process_results(
+    #                 posterior_file = os.path.join(params['General']['output_dir'], 'posterior.dat'),
+    #                 which_basis = astrometric_model.which_basis,
+    #                 Lmax = params['Data']['Lmax'],
+    #                 L = astrometric_model.overlap_matrix_Cholesky,
+    #                 pol = params['Post_processing']['pol'],
+    #                 limit = params['Post_processing']['limit']
+    #             )
 
-    U.export_data(
-        data,
-        A_limit,
-        output = params['General']['output_dir']
-    )
+    # U.export_data(
+    #     data,
+    #     A_limit,
+    #     output = params['General']['output_dir']
+    # )
 
-    if params['General']['plotting'] == True:
-        P.plot(
-            data,
-            output = params['General']['output_dir']
-        )
-
-    print (t_f - t_b)
+    # if params['General']['plotting'] == True:
+    #     P.plot(
+    #         data,
+    #         output = params['General']['output_dir']
+    #     )
 
 if __name__ == '__main__':
     main()
