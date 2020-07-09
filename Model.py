@@ -15,6 +15,6 @@ def generate_model(
     basis: dict
     	Dictionary containing the vector spherical harmonics
     """
-    model = np.sum([almQ[key] * basis[key] for key in almQ.keys()], axis=0)
+    model = np.sum([almQ[key] * basis[key] for key in basis.keys()], axis=0)
 
     return model

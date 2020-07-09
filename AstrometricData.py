@@ -308,7 +308,8 @@ def load_astrometric_data(
         proper_motion_errors_corr: float,
         proper_motion_noise: float,
         proper_motion_noise_seed: int,
-        basis: str
+        basis: str,
+	nrows=None
     ):
 
     ADf.Lmax = Lmax
@@ -332,7 +333,7 @@ def load_astrometric_data(
         print(chosen_dataset)
 
         if dataset_dict[chosen_dataset]['cat'] == "Gaia":
-            dataset = import_Gaia_dataset(dataset_dict[chosen_dataset]['file_name'])
+            dataset = import_Gaia_dataset(dataset_dict[chosen_dataset]['file_name'], nrows=nrows)
         elif dataset_dict[chosen_dataset]['cat'] == "TD":
             dataset = import_TD_dataset(dataset_dict[chosen_dataset]['file_name'])
     else:
@@ -394,7 +395,8 @@ def load_astrometric_data(
         ADf.compute_overlap_matrix()
 
 def import_Gaia_dataset(
-        path: str
+        path,
+	nrows=None
     ):
     """
     Import Gaia dataset
@@ -424,6 +426,7 @@ def import_Gaia_dataset(
         delim_whitespace=False,
         low_memory=True,
         memory_map=False,
+	nrows=nrows
     )
 
     dropna_columns = [
