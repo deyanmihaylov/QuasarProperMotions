@@ -380,10 +380,10 @@ def load_astrometric_data(
     elif proper_motion_errors == 5:
         ADf.load_TD_proper_motion_errors(dataset)
 
-    ADf.add_proper_motion_noise(
-        std=proper_motion_noise,
-        random_seed=proper_motion_noise_seed
-    )
+    # ADf.add_proper_motion_noise(
+    #     std=proper_motion_noise,
+    #     random_seed=proper_motion_noise_seed
+    # )
 
     ADf.compute_overlap_matrix()
 
@@ -403,7 +403,7 @@ def import_Gaia_dataset(
         header='infer',
         squeeze=False,
         mangle_dupe_cols=True,
-        engine='python',
+        engine='c',
         skipinitialspace=False,
         skipfooter=0,
         keep_default_na=True,
