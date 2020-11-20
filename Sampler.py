@@ -48,7 +48,12 @@ def logL_goodandbad(R, beta, gamma):
     Some fraction beta of the data is assumed to come from a
     normal distribution with errors larger by a factor of gamma.
     """
-    return logsumexp([ -0.5*(R/gamma)**2+np.log(beta/gamma**2) , -0.5*R**2+np.log(1-beta) ], axis=0)
+
+    # enforce conditions 0<beta<1 and 1<gamma
+    my_beta = np.clip(beta,0,1)
+    my_gamma = np.clip(gamma,1,10)
+        
+    return logsumexp([ -0.5*(R/my_gamma)**2+np.log(my_beta/my_gamma**2) , -0.5*R**2+np.log(1-my_beta) ], axis=0)
 
 
 class model(cpnest.model.Model):
