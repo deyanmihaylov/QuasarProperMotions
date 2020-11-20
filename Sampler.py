@@ -41,13 +41,14 @@ def logL_2Dpermissive(R):
     return np.log( (np.sqrt(np.pi/2)*erf(R/np.sqrt(2)) - R*np.exp(-R**2/2)) / (R**3) )
 
 from scipy.special import logsumexp
-def logL_goodandbad(R, beta, gamma, eps=1.0e-6):
+def logL_goodandbad(R, beta, gamma):
     """
-    The good and bad data model.
+    Following the notation of Sivia and Skilling, this is "the good and bad data model".
+    
     Some fraction beta of the data is assumed to come from a
-    normal distribution with errors larger by a factor of gamma
+    normal distribution with errors larger by a factor of gamma.
     """
-    return logsumexp([ -0.5*(R/gamma)**2+np.log(beta/gamma) , -0.5*R**2+np.log(1-beta) ], axis=0)
+    return logsumexp([ -0.5*(R/gamma)**2+np.log(beta/gamma**2) , -0.5*R**2+np.log(1-beta) ], axis=0)
 
 
 class model(cpnest.model.Model):
