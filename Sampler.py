@@ -18,6 +18,12 @@ def R_values(
 
     return R_values
 
+def logL_quadratic(R):
+    """
+    The normal log-likelihood
+    """
+    return -0.5 * (R**2)
+
 def logL_permissive(R):
     """
     The permissive log-likelihood (Darling et al. inspired)
@@ -32,11 +38,7 @@ def logL_2Dpermissive(R):
     """
     return np.log( (np.sqrt(np.pi)*erf(R)-2*R*np.exp(-R**2)) / (R**3) )
 
-def logL_quadratic(R):
-    """
-    The normal log-likelihood
-    """
-    return -0.5 * (R**2)
+
 
 from scipy.special import logsumexp
 def logL_goodandbad(R, beta, gamma, eps=1.0e-6):
