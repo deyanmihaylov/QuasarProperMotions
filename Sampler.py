@@ -26,7 +26,8 @@ def logL_quadratic(R):
 
 def logL_permissive(R):
     """
-    The permissive log-likelihood (Darling et al. inspired)
+    The permissive log-likelihood 
+    As used in Darling et al. 2018 and coming from Sivia and Skilling p.168
     """
     half_R_squared = 0.5 * (R**2)
     return np.log((1.-np.exp(-half_R_squared)) / half_R_squared)
@@ -34,11 +35,10 @@ def logL_permissive(R):
 from scipy.special import erf
 def logL_2Dpermissive(R):
     """
-    The modified permissive log-likelihood for 2D problems
+    The modified permissive log-likelihood for 2D data
+    A generalisation of the Sivia and Skilling likelihood (p.168) for 2D data
     """
-    return np.log( (np.sqrt(np.pi)*erf(R)-2*R*np.exp(-R**2)) / (R**3) )
-
-
+    return np.log( (np.sqrt(np.pi/2)*erf(R/np.sqrt(2)) - R*np.exp(-R**2/2)) / (R**3) )
 
 from scipy.special import logsumexp
 def logL_goodandbad(R, beta, gamma, eps=1.0e-6):
