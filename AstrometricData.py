@@ -286,6 +286,49 @@ class AstrometricDataframe:
         self.which_basis = "orthogonal"
 
         self.compute_overlap_matrix()
+	
+	
+    def drop_outliers(
+            self,
+            threshold=None
+        ):
+        """
+        Remove outliers from dataset
+
+        Define the dimensionless proper motion for each object as
+        R = proper_motion_vector^T . inverse_error_matrix . proper_motion_vector
+
+        We will remove outliers with R greater than a given threshold (e.g 7.33)
+
+        INPUTS
+        ------
+        threshold: float
+            remove outliers with R>threshold
+        """
+
+        if threshold is not None:
+
+            R = np.sqrt(np.einsum('...i,...ij,...j->...',
+                                    self.proper_motions, 
+                                    self.inv_proper_motion_error_matrix,
+                                    self.proper_motions))
+
+            indices_to_remove = np.where(R>threshold)[0]
+
+            self.num_outliers_removed = len(indices_to_remove)
+            print("Removing {} outliers.".format(self.num_outliers_removed))
+
+	    # remove the offending rows from positions, proper_motions and...
+	    # ... inv_proper_motion_error_matrix data sets. 
+	    # IS THERE ANYWHERE ELSE WE NEED TO DELETE ROWS?
+            self.positions = np.delete(self.positions,
+                                        indices_to_remove, axis=0)
+
+            self.proper_motions = np.delete(self.proper_motions,
+                                        indices_to_remove, axis=0)
+
+            self.inv_proper_motion_error_matrix = np.delete(self.inv_proper_motion_error_matrix,
+                                        indices_to_remove, axis=0)
 
 
 def load_astrometric_data(
