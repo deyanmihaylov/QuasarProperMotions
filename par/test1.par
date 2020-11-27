@@ -9,7 +9,7 @@ plotting = 1
 
 [Data]
 
-Lmax = 4
+Lmax = 2
 
 N_obj = 1000000
 
@@ -19,7 +19,7 @@ N_obj = 1000000
 # (3) - Gaia dataset, type 3
 # (4) - Gaia dataset, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-positions = 3
+positions = 2
 
 positions_seed = 2
 
@@ -39,7 +39,7 @@ bunch_size_azimuthal = 0.0
 # (3) - Gaia dataset, type 3
 # (4) - Gaia dataset, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-proper_motions = 3
+proper_motions = 2
 
 proper_motions_seed = 2
 
@@ -59,7 +59,7 @@ multipole = [0.2]
 # (3) - Gaia dataset, type 3
 # (4) - Gaia dataset, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-proper_motion_errors = 3
+proper_motion_errors = 2
 
 # mock proper motion errors method:
 # "flat", "adaptive"
@@ -90,6 +90,9 @@ nthreads = 2
 nlive = 1024
 maxmcmc = 128
 prior_bounds = 0.5
+
+beta = 0.4
+gamma = 1.1
 
 
 [Post_processing]

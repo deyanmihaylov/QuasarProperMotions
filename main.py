@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 import cpnest
 
@@ -56,38 +57,38 @@ def main():
     )
 
     astrometric_model = S.model(
-                            data,
-                            logL_method = params['MCMC']['logL_method'],
-                            prior_bounds = params['MCMC']['prior_bounds'],
-                            beta = params['MCMC']['beta'],
-                            gamma = params['MCMC']['gamma']
-                        )
+        data,
+        logL_method = params['MCMC']['logL_method'],
+        prior_bounds = params['MCMC']['prior_bounds'],
+        beta = params['MCMC']['beta'],
+        gamma = params['MCMC']['gamma']
+    )
 
-    # nest = cpnest.CPNest(
-    #             astrometric_model,
-    #             output = params['General']['output_dir'],
-    #             nthreads = params['MCMC']['nthreads'],
-    #             nlive = params['MCMC']['nlive'],
-    #             maxmcmc = params['MCMC']['maxmcmc'],
-    #             resume = False,
-    #             verbose = params['General']['verbose']
-    #         )
+    nest = cpnest.CPNest(
+        astrometric_model,
+        output = params['General']['output_dir'],
+        nthreads = params['MCMC']['nthreads'],
+        nlive = params['MCMC']['nlive'],
+        maxmcmc = params['MCMC']['maxmcmc'],
+        resume = False,
+        verbose = params['General']['verbose']
+    )
 
-    # nest.run()
+    nest.run()
 
-    # nest.get_nested_samples(filename='nested_samples.dat')
+    nest.get_nested_samples(filename='nested_samples.dat')
 
-    # nest.get_posterior_samples(filename='posterior.dat')
+    nest.get_posterior_samples(filename='posterior.dat')
 
     # TO DO: Rewrite this with passing the samples instead of writing and reading a file. In March 2020 there is a bug in CPnest.
     A_limit = PP.post_process_results(
-                    posterior_file = os.path.join(params['General']['output_dir'], 'type23_post.dat'),
-                    which_basis = astrometric_model.which_basis,
-                    Lmax = 4,
-                    L = astrometric_model.overlap_matrix_Cholesky,
-                    pol = params['Post_processing']['pol'],
-                    limit = params['Post_processing']['limit']
-                )
+        posterior_file = os.path.join(params['General']['output_dir'], 'type23_post.dat'),
+        which_basis = astrometric_model.which_basis,
+        Lmax = 2,
+        L = astrometric_model.overlap_matrix_Cholesky,
+        pol = params['Post_processing']['pol'],
+        limit = params['Post_processing']['limit']
+    )
 
     U.export_data(
         data,
