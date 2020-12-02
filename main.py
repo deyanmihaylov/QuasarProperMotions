@@ -64,27 +64,40 @@ def main():
         gamma = params['MCMC']['gamma']
     )
 
-    nest = cpnest.CPNest(
-        astrometric_model,
-        output = params['General']['output_dir'],
-        nthreads = params['MCMC']['nthreads'],
-        nlive = params['MCMC']['nlive'],
-        maxmcmc = params['MCMC']['maxmcmc'],
-        resume = False,
-        verbose = params['General']['verbose']
-    )
+    # nest = cpnest.CPNest(
+    #     astrometric_model,
+    #     output = params['General']['output_dir'],
+    #     nthreads = params['MCMC']['nthreads'],
+    #     nlive = params['MCMC']['nlive'],
+    #     maxmcmc = params['MCMC']['maxmcmc'],
+    #     resume = False,
+    #     verbose = params['General']['verbose']
+    # )
 
-    nest.run()
+    # nest.run()
 
-    nest.get_nested_samples(filename='nested_samples.dat')
+    # nested_samples = nest.get_nested_samples(filename=None)
+    # np.savetxt(
+    #     os.path.join(params['General']['output_dir'], 'nested_samples.dat'),
+    #     nested_samples.ravel(),
+    #     header=' '.join(nested_samples.dtype.names),
+    #     newline='\n',
+    #     delimiter=' '
+    # )
 
-    nest.get_posterior_samples(filename='posterior.dat')
+    # posterior_samples = nest.get_posterior_samples(filename=None)
+    # np.savetxt(
+    #     os.path.join(params['General']['output_dir'], 'posterior_samples.dat'),
+    #     posterior_samples.ravel(),
+    #     header=' '.join(posterior_samples.dtype.names),
+    #     newline='\n',
+    #     delimiter=' '
+    # )
 
-    # TO DO: Rewrite this with passing the samples instead of writing and reading a file. In March 2020 there is a bug in CPnest.
     A_limit = PP.post_process_results(
-        posterior_file = os.path.join(params['General']['output_dir'], 'type23_post.dat'),
+        posterior_file = os.path.join(params['General']['output_dir'], 'posterior_samples.dat'),
         which_basis = astrometric_model.which_basis,
-        Lmax = 2,
+        Lmax = params['Data']['Lmax'],
         L = astrometric_model.overlap_matrix_Cholesky,
         pol = params['Post_processing']['pol'],
         limit = params['Post_processing']['limit']

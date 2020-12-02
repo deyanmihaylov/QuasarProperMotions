@@ -2,14 +2,14 @@
 
 [General]
 
-output_dir = ./
+output_dir = ./test/
 verbose = 2
 plotting = 1
 
 
 [Data]
 
-Lmax = 2
+Lmax = 1
 
 N_obj = 1000000
 
@@ -100,7 +100,7 @@ gamma = 1.1
 # pol: specifies what polarization correlation coefficients to use to convert the results into a limit on the amplitude
 # "GR": use all l >= 1 with values as described in Mihaylov et. al.
 # "B": use l = 1
-pol = GR
+pol = B
 
 # limit: specifies the %-limit for the bound
 limit = 90

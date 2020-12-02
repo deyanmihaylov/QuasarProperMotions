@@ -78,7 +78,7 @@ def post_process_results(
     almQ_posterior_samples = almQ_posterior_data[:, 0:N_cols]
 
     if pol == "GR":
-        assert Lmax>=2
+        assert Lmax>=2, sys.exit("Lmax for GR background needs to be larger than, or equal to 2")
         diag_of_M = [[0. if C_l_GR(l) == 0 else 1./C_l_GR(l)] * 2*(2*l+1) for l in range(1, Lmax+1)]
     elif pol == "B":
         diag_of_M = [[0. if C_l_B(l) == 0 else 1./C_l_B(l), 0.] * (2*l+1) for l in range(1, Lmax+1)]
@@ -89,10 +89,10 @@ def post_process_results(
     Q = np.einsum('...i,ij,...j->...', almQ_posterior_samples, M, almQ_posterior_samples)
 
     A_prior = np.random.uniform(
-                            low=0.,
-                            high=np.sqrt(Q.max()),
-                            size=100000
-                        )
+        low=0.,
+        high=np.sqrt(Q.max()),
+        size=100000
+    )
 
     P_A_given_D = np.array([np.sum(np.exp(- N_cols*np.log(A) - Q/(2.*(A**2.)))) for A in A_prior])
 
