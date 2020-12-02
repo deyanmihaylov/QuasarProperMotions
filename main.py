@@ -64,35 +64,35 @@ def main():
         gamma = params['MCMC']['gamma']
     )
 
-    # nest = cpnest.CPNest(
-    #     astrometric_model,
-    #     output = params['General']['output_dir'],
-    #     nthreads = params['MCMC']['nthreads'],
-    #     nlive = params['MCMC']['nlive'],
-    #     maxmcmc = params['MCMC']['maxmcmc'],
-    #     resume = False,
-    #     verbose = params['General']['verbose']
-    # )
+    nest = cpnest.CPNest(
+        astrometric_model,
+        output = params['General']['output_dir'],
+        nthreads = params['MCMC']['nthreads'],
+        nlive = params['MCMC']['nlive'],
+        maxmcmc = params['MCMC']['maxmcmc'],
+        resume = False,
+        verbose = params['General']['verbose']
+    )
 
-    # nest.run()
+    nest.run()
 
-    # nested_samples = nest.get_nested_samples(filename=None)
-    # np.savetxt(
-    #     os.path.join(params['General']['output_dir'], 'nested_samples.dat'),
-    #     nested_samples.ravel(),
-    #     header=' '.join(nested_samples.dtype.names),
-    #     newline='\n',
-    #     delimiter=' '
-    # )
+    nested_samples = nest.get_nested_samples(filename=None)
+    np.savetxt(
+        os.path.join(params['General']['output_dir'], 'nested_samples.dat'),
+        nested_samples.ravel(),
+        header=' '.join(nested_samples.dtype.names),
+        newline='\n',
+        delimiter=' '
+    )
 
-    # posterior_samples = nest.get_posterior_samples(filename=None)
-    # np.savetxt(
-    #     os.path.join(params['General']['output_dir'], 'posterior_samples.dat'),
-    #     posterior_samples.ravel(),
-    #     header=' '.join(posterior_samples.dtype.names),
-    #     newline='\n',
-    #     delimiter=' '
-    # )
+    posterior_samples = nest.get_posterior_samples(filename=None)
+    np.savetxt(
+        os.path.join(params['General']['output_dir'], 'posterior_samples.dat'),
+        posterior_samples.ravel(),
+        header=' '.join(posterior_samples.dtype.names),
+        newline='\n',
+        delimiter=' '
+    )
 
     A_limit = PP.post_process_results(
         posterior_file = os.path.join(params['General']['output_dir'], 'posterior_samples.dat'),
