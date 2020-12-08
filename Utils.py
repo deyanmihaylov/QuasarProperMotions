@@ -46,27 +46,61 @@ def assert_config_params(params):
     """
 
     # output_dir should be a valid path in the user's OS
-    assert is_pathname_valid(params['General']['output_dir']) == True, sys.exit("output_dir needs to be a valid path")
+    assert (
+        is_pathname_valid(params['General']['output_dir']) == True
+    ), sys.exit("output_dir needs to be a valid path")
 
     # verbose should be a non-negative integer
-    assert isinstance(params['General']['verbose'], int), sys.exit("verbose takes integer values")
-    assert params['General']['verbose'] >= 0, sys.exit("verbose takes non-negative values")
+    assert isinstance(
+        params['General']['verbose'],
+        int
+    ), sys.exit("verbose takes integer values")
+
+    assert (
+        params['General']['verbose'] >= 0
+    ), sys.exit("verbose takes non-negative values")
 
     # plotting should be a non-negative integer
-    assert isinstance(params['General']['plotting'], int), sys.exit("plotting takes integer values")
-    assert params['General']['plotting'] >= 0, sys.exit("plotting takes non-negative values")
+    assert isinstance(
+        params['General']['plotting'],
+        int
+    ), sys.exit("plotting takes integer values")
+
+    assert (
+        params['General']['plotting'] >= 0
+    ), sys.exit("plotting takes non-negative values")
 
     # Lmax should be a positive integer
-    assert isinstance(params['Data']['Lmax'], int), sys.exit("Lmax takes integer values")
-    assert params['Data']['Lmax'] >= 1, sys.exit("Lmax takes non-negative values")
+    assert isinstance(
+        params['Data']['Lmax'],
+        int
+    ), sys.exit("Lmax takes integer values")
+
+    assert (
+        params['Data']['Lmax'] >= 1
+    ), sys.exit("Lmax takes non-negative values")
 
     # N_obj should be a positive integer
-    assert isinstance(params['Data']['N_obj'], int), sys.exit("N_obj takes integer values")
-    assert params['Data']['N_obj'] >= 1, sys.exit("N_obj takes non-negative integer values")
+    assert isinstance(
+        params['Data']['N_obj'],
+        int
+    ), sys.exit("N_obj takes integer values")
+
+    assert (
+        params['Data']['N_obj'] >= 1
+    ), sys.exit("N_obj takes non-negative integer values")
 
     # positions should be an integer between 1 and 5
-    assert isinstance(params['Data']['positions'], int), sys.exit("positions takes integer values")
-    assert params['Data']['positions'] >= 1 and params['Data']['positions'] <= 5, sys.exit("positions takes an integer value between 1 and 5")
+    assert isinstance(
+        params['Data']['positions'],
+        int
+    ), sys.exit("positions takes integer values")
+
+    assert (
+        params['Data']['positions'] >= 1
+        and
+        params['Data']['positions'] <= 5
+    ), sys.exit("positions takes an integer value between 1 and 5")
 
     # positions_method should be one of ["uniform", "bunched"]
     assert params['Data']['positions_method'] in ["uniform", "bunched"], sys.exit("positions_method takes values \"uniform\" or \"bunched\"")
@@ -150,7 +184,9 @@ def assert_config_params(params):
         assert params['Data']['dimensionless_proper_motion_threshold'] > 0., sys.exit("dimensionless_proper_motion_threshold takes positive values")
 
     # vsh_basis should be one of ["vsh", "orthogonal"]
-    assert params['Data']['basis'] in ["vsh", "orthogonal"], sys.exit("vsh_basis takes values \"vsh\" or \"orthogonal\"")
+    assert (
+        params['Data']['basis'] in ["vsh", "orthogonal"]
+    ), sys.exit("vsh_basis takes values \"vsh\" or \"orthogonal\"")
 
     # ll_method should be one of ["permissive", "quadratic"]
     assert params['MCMC']['logL_method'] in ["permissive", "quadratic"], sys.exit("llmethod takes values \"permissive\" or \"quadratic\"")
@@ -178,7 +214,10 @@ def assert_config_params(params):
     assert isinstance(params['Post_processing']['limit'], float) or isinstance(params['Post_processing']['limit'], int), sys.exit("limit takes numerical values")
     assert params['Post_processing']['limit'] >= 0. and params['Post_processing']['limit'] <= 100., sys.exit("limit takes values between 0 and 100")
 
-def covariant_matrix(errors, corr):
+def covariant_matrix(
+        errors,
+        corr
+    ):
     """
     Function for computing the covariant matrix from errors and correlations.
     """
@@ -186,7 +225,9 @@ def covariant_matrix(errors, corr):
     covariant_matrix[...,0,1] = covariant_matrix[...,1,0] = np.multiply(covariant_matrix[...,1,0], corr.flatten())
     return covariant_matrix
 
-def deg_to_rad(degree_vals):
+def deg_to_rad(
+        degree_vals
+    ):
     """
     Does what it says on the tin
     """

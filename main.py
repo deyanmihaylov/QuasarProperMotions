@@ -14,7 +14,10 @@ import os
 import numpy as np
 
 def main():
-    parser = argparse.ArgumentParser(description = "Quasar proper motions code")
+    parser = argparse.ArgumentParser(
+        description = "Quasar proper motions code"
+    )
+    
     parser.add_argument(
         "parameter_file",
         metavar = "Parameter file",
