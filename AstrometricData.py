@@ -375,26 +375,15 @@ class AstrometricDataframe:
 
 def load_astrometric_data(
         ADf: AstrometricDataframe,
-        params: dict,
-        positions: int,
-        positions_method: str,
-        positions_seed: int,
-        bunch_size_polar: float,
-        bunch_size_azimuthal: float,
-        proper_motions: int,
-        proper_motions_method: str,
-        proper_motions_seed: int,
-        dipole: float,
-        multipole: list,
-        proper_motion_errors: int,
-        proper_motion_errors_method: str,
-        proper_motion_errors_std: float,
-        proper_motion_errors_corr: float,
-        basis: str
+        params: dict
     ):
     ADf.Lmax = params['Lmax']
 
     ADf.generate_names()
+
+    positions = params['positions']
+    proper_motions = params['proper_motions']
+    proper_motion_errors = params['proper_motion_errors']
 
     dataset_dict = {
         2: {"cat": "Gaia", "file_name": "data/type2.csv"},
@@ -431,13 +420,13 @@ def load_astrometric_data(
         ADf.N_obj = params['N_obj']
     else:
         ADf.N_obj = dataset.shape[0]
-
+    
     if positions == 1:
         ADf.generate_positions(
-            method = positions_method,
-            bunch_size_polar = bunch_size_polar,
-            bunch_size_azimuthal = bunch_size_azimuthal,
-            random_seed = positions_seed
+            method = params['positions_method'],
+            bunch_size_polar = params['bunch_size_polar'],
+            bunch_size_azimuthal = params['bunch_size_azimuthal'],
+            random_seed = params['positions_seed']
         )
     elif positions in [2, 3, 4]:
         ADf.load_Gaia_positions(dataset)
@@ -450,10 +439,10 @@ def load_astrometric_data(
 
     if proper_motions == 1:
         ADf.generate_proper_motions(
-            method = proper_motions_method,
-            dipole = dipole,
-            multipole = multipole,
-            random_seed = proper_motions_seed
+            method = params['proper_motions_method'],
+            dipole = params['dipole'],
+            multipole = params['multipole'],
+            random_seed = params['proper_motions_seed']
         )
     elif proper_motions in [2, 3, 4]:
         ADf.load_Gaia_proper_motions(dataset)
@@ -462,9 +451,9 @@ def load_astrometric_data(
 
     if proper_motion_errors == 1:
         ADf.generate_proper_motion_errors(
-            method = proper_motion_errors_method,
-            std = proper_motion_errors_std,
-            corr = proper_motion_errors_corr
+            method = params['proper_motion_errors_method'],
+            std = params['proper_motion_errors_std'],
+            corr = params['proper_motion_errors_corr']
         )
     elif proper_motion_errors in [2, 3, 4]:
         ADf.load_Gaia_proper_motion_errors(dataset)
@@ -493,7 +482,7 @@ def load_astrometric_data(
 
     ADf.compute_overlap_matrix()
 
-    if basis == "orthogonal":
+    if params['basis'] == "orthogonal":
         ADf.change_basis()
         ADf.compute_overlap_matrix()
 

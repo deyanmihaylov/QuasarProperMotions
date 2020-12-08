@@ -35,22 +35,7 @@ def main():
 
     AD.load_astrometric_data(
         data,
-        params = params['Data'],
-        positions = params['Data']['positions'],
-        positions_method = params['Data']['positions_method'],
-        positions_seed = params['Data']['positions_seed'],
-        bunch_size_polar = params['Data']['bunch_size_polar'],
-        bunch_size_azimuthal = params['Data']['bunch_size_azimuthal'],
-        proper_motions = params['Data']['proper_motions'],
-        proper_motions_method = params['Data']['proper_motions_method'],
-        proper_motions_seed = params['Data']['proper_motions_seed'],
-        dipole = params['Data']['dipole'],
-        multipole = params['Data']['multipole'],
-        proper_motion_errors = params['Data']['proper_motion_errors'],
-        proper_motion_errors_method = params['Data']['proper_motion_errors_method'],
-        proper_motion_errors_std = params['Data']['proper_motion_errors_std'],
-        proper_motion_errors_corr = params['Data']['proper_motion_errors_corr'],
-        basis = params['Data']['basis']
+        params = params['Data']
     )
 
     astrometric_model = S.model(
