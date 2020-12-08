@@ -273,7 +273,11 @@ class AstrometricDataframe:
                     )
                 )
 
-        self.basis = {(l, m, Q): VSHs(l, m, Q) for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
+        self.basis = {
+            (l, m, Q): VSHs(l, m, Q)
+            for l in range(1, self.Lmax+1)
+            for m in range(-l, l+1) for Q in ['E', 'B']
+        }
 
         self.which_basis = "vsh"
     
@@ -395,7 +399,10 @@ class AstrometricDataframe:
             invL
         )
 
-        self.basis = {key: orthogonal_basis_values[i] for i, key in enumerate(self.names)}
+        self.basis = {
+            key: orthogonal_basis_values[i]
+            for i, key in enumerate(self.names)
+        }
 
         self.which_basis = "orthogonal"
 
