@@ -120,11 +120,22 @@ def assert_config_params(params):
         assert params['Data']['proper_motion_errors_corr'] > -1. and params['Data']['proper_motion_errors_corr'] < 1., sys.exit("proper_motion_errors_corr takes values in the interval (-1, 1)")
 
     # proper_motion_noise should be a non-negative number
-    assert isinstance(params['Data']['proper_motion_noise'], float) or isinstance(params['Data']['proper_motion_noise'], int), sys.exit("proper_motion_noise takes numerical values")
-    assert params['Data']['proper_motion_noise'] >= 0., sys.exit("proper_motion_noise takes non-negative values")
+    if 'proper_motion_noise' in params['Data']:
+        assert isinstance(
+            params['Data']['proper_motion_noise'],
+            (int, float)
+        ), sys.exit("proper_motion_noise takes numerical values")
+
+        assert (
+            params['Data']['proper_motion_noise'] >= 0.
+        ), sys.exit("proper_motion_noise takes non-negative values")
 
     # proper_motion_noise_seed should be an int
-    assert isinstance(params['Data']['proper_motion_noise_seed'], int), sys.exit("proper_motion_noise_seed takes integer values")
+    if 'proper_motion_noise_seed' in params['Data']:
+        assert isinstance(
+            params['Data']['proper_motion_noise_seed'],
+            int
+        ), sys.exit("proper_motion_noise_seed takes integer values")
 
     # dimensionless_proper_motion_threshold should be positive
     if 'dimensionless_proper_motion_threshold' in params['Data']:

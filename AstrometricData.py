@@ -216,9 +216,16 @@ class AstrometricDataframe:
             std: float,
             random_seed: int
         ):
+        print("yes", std, random_seed)
+
         if random_seed > 0: np.random.seed(random_seed)
 
-        proper_motion_noise = np.random.normal(loc=0., scale=std, size=self.proper_motions.shape)
+        proper_motion_noise = np.random.normal(
+            loc=0.,
+            scale=std,
+            size=self.proper_motions.shape
+        )
+        
         self.proper_motions += proper_motion_noise
 
     def generate_VSHs(self):
@@ -369,7 +376,6 @@ class AstrometricDataframe:
 def load_astrometric_data(
         ADf: AstrometricDataframe,
         params: dict,
-        N_obj: int,
         positions: int,
         positions_method: str,
         positions_seed: int,
@@ -384,8 +390,6 @@ def load_astrometric_data(
         proper_motion_errors_method: str,
         proper_motion_errors_std: float,
         proper_motion_errors_corr: float,
-        proper_motion_noise: float,
-        proper_motion_noise_seed: int,
         basis: str
     ):
     ADf.Lmax = params['Lmax']
@@ -424,7 +428,7 @@ def load_astrometric_data(
         dataset = None
 
     if dataset is None:
-        ADf.N_obj = N_obj
+        ADf.N_obj = params['N_obj']
     else:
         ADf.N_obj = dataset.shape[0]
 
@@ -440,7 +444,9 @@ def load_astrometric_data(
     elif positions == 5:
         ADf.load_TD_positions(dataset)
 
-    ADf.positions_Cartesian = CT.geographic_to_Cartesian_point(ADf.positions)
+    ADf.positions_Cartesian = CT.geographic_to_Cartesian_point(
+        ADf.positions
+    )
 
     if proper_motions == 1:
         ADf.generate_proper_motions(
@@ -465,10 +471,16 @@ def load_astrometric_data(
     elif proper_motion_errors == 5:
         ADf.load_TD_proper_motion_errors(dataset)
 
-    # ADf.add_proper_motion_noise(
-    #     std=proper_motion_noise,
-    #     random_seed=proper_motion_noise_seed
-    # )
+    if 'proper_motion_noise' in params:
+        if 'proper_motion_noise_seed' in params:
+            noise_seed = params['proper_motion_noise_seed']
+        else:
+            noise_seed = 0
+
+        ADf.add_proper_motion_noise(
+            std=params['proper_motion_noise'],
+            random_seed=noise_seed
+        )
 
     try:
         ADf.R_threshold = params['dimensionless_proper_motion_threshold']

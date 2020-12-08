@@ -28,9 +28,6 @@ proper_motion_errors_method = flat
 proper_motion_errors_std = 0.1
 proper_motion_errors_corr = 0.
 
-proper_motion_noise = 0.1
-proper_motion_noise_seed = 3
-
 basis = vsh
 
 

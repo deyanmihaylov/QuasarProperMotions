@@ -36,7 +36,6 @@ def main():
     AD.load_astrometric_data(
         data,
         params = params['Data'],
-        N_obj = params['Data']['N_obj'],
         positions = params['Data']['positions'],
         positions_method = params['Data']['positions_method'],
         positions_seed = params['Data']['positions_seed'],
@@ -51,8 +50,6 @@ def main():
         proper_motion_errors_method = params['Data']['proper_motion_errors_method'],
         proper_motion_errors_std = params['Data']['proper_motion_errors_std'],
         proper_motion_errors_corr = params['Data']['proper_motion_errors_corr'],
-        proper_motion_noise = params['Data']['proper_motion_noise'],
-        proper_motion_noise_seed = params['Data']['proper_motion_noise_seed'],
         basis = params['Data']['basis']
     )
 
