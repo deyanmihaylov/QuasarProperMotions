@@ -167,14 +167,17 @@ class AstrometricDataframe:
         elif method == "adaptive":
             scale = std * np.abs(self.proper_motions)
 
-        proper_motion_errors = scale*np.ones(self.proper_motions.shape)
+        proper_motion_errors = scale * np.ones(self.proper_motions.shape)
 
         # Scale the pm_ra_err by sin(theta) = cos(dec)
         proper_motion_errors[:,0] = proper_motion_errors[:,0] / np.cos(self.positions[:,1])
 
         proper_motion_errors_corr = corr * np.ones(self.N_obj)
 
-        covariance = U.covariant_matrix(proper_motion_errors, proper_motion_errors_corr)
+        covariance = U.covariant_matrix(
+            proper_motion_errors,
+            proper_motion_errors_corr
+        )
 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
@@ -190,7 +193,10 @@ class AstrometricDataframe:
 
         proper_motions_err_corr = dataset[['pmra_pmdec_corr']].values
 
-        covariance = U.covariant_matrix(proper_motions_errors, proper_motions_err_corr)
+        covariance = U.covariant_matrix(
+            proper_motions_errors,
+            proper_motions_err_corr
+        )
 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
@@ -207,7 +213,10 @@ class AstrometricDataframe:
 
         proper_motions_err_corr = np.zeros(self.N_obj)
 
-        covariance = U.covariant_matrix(proper_motions_errors, proper_motions_err_corr)
+        covariance = U.covariant_matrix(
+            proper_motions_errors,
+            proper_motions_err_corr
+        )
 
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
@@ -236,12 +245,20 @@ class AstrometricDataframe:
             if Q == "E":
                 return CT.Cartesian_to_geographic_vector(
                     self.positions_Cartesian,
-                    VSH.RealVectorSphericalHarmonicE(l, m, self.positions_Cartesian)
+                    VSH.RealVectorSphericalHarmonicE(
+                        l,
+                        m,
+                        self.positions_Cartesian
+                    )
                 )
             elif Q == "B":
                 return CT.Cartesian_to_geographic_vector(
                     self.positions_Cartesian,
-                    VSH.RealVectorSphericalHarmonicB(l, m, self.positions_Cartesian)
+                    VSH.RealVectorSphericalHarmonicB(
+                        l,
+                        m,
+                        self.positions_Cartesian
+                    )
                 )
 
         self.basis = {(l, m, Q): VSHs(l, m, Q) for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
