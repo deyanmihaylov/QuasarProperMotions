@@ -35,7 +35,11 @@ class AstrometricDataframe:
         self.overlap_matrix_Cholesky = np.array([])
 
     def generate_names(self):
-        self.names = {(l, m, Q): f"Y^{Q}_{l},{m}" for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
+        self.names = {
+            (l, m, Q): f"Y^{Q}_{l},{m}"
+            for l in range(1, self.Lmax+1)
+            for m in range(-l, l+1) for Q in ['E', 'B']
+        }
 
     def generate_positions(
             self,
@@ -127,13 +131,21 @@ class AstrometricDataframe:
         if method == "zero":
             self.proper_motions = np.zeros((self.N_obj, 2))
         elif method == "dipole":
-            almQ = {(l, m, Q): 0. for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
+            almQ = {
+                (l, m, Q): 0.
+                for l in range(1, self.Lmax+1)
+                for m in range(-l, l+1) for Q in ['E', 'B']
+            }
 
             almQ[(1, 0, 'E')] = dipole
 
             self.proper_motions = M.generate_model(almQ, self.basis)
         elif method == "multipole":
-            almQ = {(l, m, Q): np.random.normal(0, multipole[l]) for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
+            almQ = {
+                (l, m, Q): np.random.normal(0, multipole[l])
+                for l in range(1, self.Lmax+1)
+                for m in range(-l, l+1) for Q in ['E', 'B']
+            }
 
             self.proper_motions = M.generate_model(almQ, self.basis)
 
