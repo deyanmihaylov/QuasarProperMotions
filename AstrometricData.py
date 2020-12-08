@@ -250,7 +250,7 @@ class AstrometricDataframe:
         Define the dimensionless proper motion for each object as
         R = proper_motion_vector^T . inverse_error_matrix . proper_motion_vector
 
-        We will remove outliers with R greater than a given threshold (e.g 7.33)
+        We will remove outliers with R greater than a given threshold
 
         INPUTS
         ------
@@ -267,7 +267,7 @@ class AstrometricDataframe:
             )
 
             remove_mask = np.asarray(R > self.R_threshold)
-            remove_indices = drop_mask.nonzero()[0]
+            remove_indices = remove_mask.nonzero()[0]
 
             self.positions = np.delete(
                 self.positions,
@@ -281,24 +281,18 @@ class AstrometricDataframe:
                 axis=0
             )
 
-            self.proper_motion_errors = np.delete(
-                self.proper_motion_errors,
-                remove_indices,
-                axis=0
-            )
-
             self.inv_proper_motion_error_matrix = np.delete(
                 self.inv_proper_motion_error_matrix,
                 remove_indices,
                 axis=0
             )
 
-            N_removed_outliers = drop_indices.shape[0]
+            N_removed_outliers = remove_indices.shape[0]
 
             if N_removed_outliers == 1:
                 print(f"Removed 1 outlier.")
             else:
-                print(f"Removed {drop_indices.shape[0]} outliers.")
+                print(f"Removed {N_removed_outliers} outliers.")
 
     def compute_overlap_matrix(
             self,
@@ -481,7 +475,7 @@ def load_astrometric_data(
     except:
         ADf.R_threshold = None
 
-    ADf.drop_outliers()
+    ADf.remove_outliers()
 
     ADf.generate_VSHs()
 
