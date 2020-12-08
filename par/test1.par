@@ -78,7 +78,7 @@ proper_motion_errors_corr = 0.5
 # proper_motion_noise_seed = 5
 
 # threshold for magnitude of dimensionless proper motion vectors
-# dimensionless_proper_motion_threshold = 40
+dimensionless_proper_motion_threshold = 3
 
 # Vector spherical harmonics basis: "vsh" or "orthogonal"
 basis = vsh

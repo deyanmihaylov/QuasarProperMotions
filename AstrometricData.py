@@ -282,7 +282,8 @@ class AstrometricDataframe:
         self.which_basis = "vsh"
     
     def remove_outliers(
-            self
+            self,
+            R_threshold: float
         ):
         """
         Remove outliers from dataset
@@ -298,7 +299,7 @@ class AstrometricDataframe:
             remove outliers with R>R_threshold
         """
 
-        if self.R_threshold is not None:
+        if R_threshold is not None:
             R = np.sqrt(np.einsum(
                 '...i, ...ij, ...j -> ...',
                 self.proper_motions,
@@ -306,11 +307,17 @@ class AstrometricDataframe:
                 self.proper_motions)
             )
 
-            remove_mask = np.asarray(R > self.R_threshold)
+            remove_mask = np.asarray(R > R_threshold)
             remove_indices = remove_mask.nonzero()[0]
 
             self.positions = np.delete(
                 self.positions,
+                remove_indices,
+                axis=0
+            )
+
+            self.positions_Cartesian = np.delete(
+                self.positions_Cartesian,
                 remove_indices,
                 axis=0
             )
@@ -507,12 +514,14 @@ def load_astrometric_data(
             random_seed=noise_seed
         )
 
-    try:
-        ADf.R_threshold = params['dimensionless_proper_motion_threshold']
-    except:
-        ADf.R_threshold = None
+    if 'dimensionless_proper_motion_threshold' in params:
+        R_threshold = params['dimensionless_proper_motion_threshold']
+    else:
+        R_threshold = None
 
-    ADf.remove_outliers()
+    ADf.remove_outliers(
+        R_threshold
+    )
 
     ADf.generate_VSHs()
 
