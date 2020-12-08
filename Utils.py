@@ -126,6 +126,18 @@ def assert_config_params(params):
     # proper_motion_noise_seed should be an int
     assert isinstance(params['Data']['proper_motion_noise_seed'], int), sys.exit("proper_motion_noise_seed takes integer values")
 
+    # dimensionless_proper_motion_threshold should be positive
+    if 'dimensionless_proper_motion_threshold' in params['Data']:
+        assert isinstance(
+            params['Data']['dimensionless_proper_motion_threshold'],
+            float
+        ) or isinstance(
+            params['Data']['dimensionless_proper_motion_threshold'],
+            int
+        ), sys.exit("dimensionless_proper_motion_threshold takes numerical values")
+
+        assert params['Data']['dimensionless_proper_motion_threshold'] > 0., sys.exit("dimensionless_proper_motion_threshold takes positive values")
+
     # vsh_basis should be one of ["vsh", "orthogonal"]
     assert params['Data']['basis'] in ["vsh", "orthogonal"], sys.exit("vsh_basis takes values \"vsh\" or \"orthogonal\"")
 

@@ -35,7 +35,7 @@ def main():
 
     AD.load_astrometric_data(
         data,
-        Lmax = params['Data']['Lmax'],
+        params = params['Data'],
         N_obj = params['Data']['N_obj'],
         positions = params['Data']['positions'],
         positions_method = params['Data']['positions_method'],

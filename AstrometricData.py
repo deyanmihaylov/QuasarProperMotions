@@ -114,20 +114,6 @@ class AstrometricDataframe:
         self.positions = np.transpose([ra, dec])
         self.positions = U.deg_to_rad(self.positions)
 
-    def generate_VSHs(self):
-        """
-        Precompute VSH functions at QSO locations
-        """
-        def VSHs(l, m, Q):
-            if Q == "E":
-                return CT.Cartesian_to_geographic_vector(self.positions_Cartesian, VSH.RealVectorSphericalHarmonicE(l, m, self.positions_Cartesian))
-            elif Q == "B":
-                return CT.Cartesian_to_geographic_vector(self.positions_Cartesian, VSH.RealVectorSphericalHarmonicB(l, m, self.positions_Cartesian))
-
-        self.basis = {(l, m, Q): VSHs(l, m, Q) for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
-
-        self.which_basis = "vsh"
-
     def generate_proper_motions(
             self,
             method: str,
@@ -235,6 +221,85 @@ class AstrometricDataframe:
         proper_motion_noise = np.random.normal(loc=0., scale=std, size=self.proper_motions.shape)
         self.proper_motions += proper_motion_noise
 
+    def generate_VSHs(self):
+        """
+        Precompute VSH functions at QSO locations
+        """
+        def VSHs(l, m, Q):
+            if Q == "E":
+                return CT.Cartesian_to_geographic_vector(
+                    self.positions_Cartesian,
+                    VSH.RealVectorSphericalHarmonicE(l, m, self.positions_Cartesian)
+                )
+            elif Q == "B":
+                return CT.Cartesian_to_geographic_vector(
+                    self.positions_Cartesian,
+                    VSH.RealVectorSphericalHarmonicB(l, m, self.positions_Cartesian)
+                )
+
+        self.basis = {(l, m, Q): VSHs(l, m, Q) for l in range(1, self.Lmax+1) for m in range(-l, l+1) for Q in ['E', 'B']}
+
+        self.which_basis = "vsh"
+    
+    def remove_outliers(
+            self
+        ):
+        """
+        Remove outliers from dataset
+
+        Define the dimensionless proper motion for each object as
+        R = proper_motion_vector^T . inverse_error_matrix . proper_motion_vector
+
+        We will remove outliers with R greater than a given threshold (e.g 7.33)
+
+        INPUTS
+        ------
+        R_threshold: float
+            remove outliers with R>R_threshold
+        """
+
+        if self.R_threshold is not None:
+            R = np.sqrt(np.einsum(
+                '...i, ...ij, ...j -> ...',
+                self.proper_motions,
+                self.inv_proper_motion_error_matrix,
+                self.proper_motions)
+            )
+
+            remove_mask = np.asarray(R > self.R_threshold)
+            remove_indices = drop_mask.nonzero()[0]
+
+            self.positions = np.delete(
+                self.positions,
+                remove_indices,
+                axis=0
+            )
+
+            self.proper_motions = np.delete(
+                self.proper_motions,
+                remove_indices,
+                axis=0
+            )
+
+            self.proper_motion_errors = np.delete(
+                self.proper_motion_errors,
+                remove_indices,
+                axis=0
+            )
+
+            self.inv_proper_motion_error_matrix = np.delete(
+                self.inv_proper_motion_error_matrix,
+                remove_indices,
+                axis=0
+            )
+
+            N_removed_outliers = drop_indices.shape[0]
+
+            if N_removed_outliers == 1:
+                print(f"Removed 1 outlier.")
+            else:
+                print(f"Removed {drop_indices.shape[0]} outliers.")
+
     def compute_overlap_matrix(
             self,
             weighted_overlaps=True
@@ -249,7 +314,9 @@ class AstrometricDataframe:
 
         overlap_matrix_size = 2 * self.Lmax * (self.Lmax+2)
 
-        self.overlap_matrix = np.zeros((overlap_matrix_size, overlap_matrix_size))
+        self.overlap_matrix = np.zeros(
+            (overlap_matrix_size, overlap_matrix_size)
+        )
 
         if weighted_overlaps == False:
             metric = np.zeros((self.N_obj, 2, 2))
@@ -260,11 +327,24 @@ class AstrometricDataframe:
 
         for ((i, vsh_i), (j, vsh_j)) in itertools.product(enumerate(basis_values), repeat=2):
             if weighted_overlaps == True:
-                self.overlap_matrix[i,j] = prefactor * np.einsum("...i,...ij,...j->...", vsh_i, self.inv_proper_motion_error_matrix, vsh_j).sum()
+                self.overlap_matrix[i,j] = prefactor * np.einsum(
+                    "...i,...ij,...j->...",
+                    vsh_i,
+                    self.inv_proper_motion_error_matrix,
+                    vsh_j
+                ).sum()
             else:
-                self.overlap_matrix[i,j] = prefactor * np.einsum("...i,...ij,...j->...", vsh_i, metric, vsh_i).sum()
+                self.overlap_matrix[i,j] = prefactor * np.einsum(
+                    "...i,...ij,...j->...",
+                    vsh_i,
+                    metric,
+                    vsh_i
+                ).sum()
 
-        self.overlap_matrix = U.normalize_matrix(self.overlap_matrix, L=self.Lmax)
+        self.overlap_matrix = U.normalize_matrix(
+            self.overlap_matrix,
+            L=self.Lmax
+        )
 
     def change_basis(
             self
@@ -279,61 +359,22 @@ class AstrometricDataframe:
 
         vsh_basis_values = np.array(list(self.basis.values()))
 
-        orthogonal_basis_values = np.einsum('i...j,ik->k...j', vsh_basis_values, invL)
+        orthogonal_basis_values = np.einsum(
+            "i...j,ik->k...j",
+            vsh_basis_values,
+            invL
+        )
 
         self.basis = {key: orthogonal_basis_values[i] for i, key in enumerate(self.names)}
 
         self.which_basis = "orthogonal"
 
         self.compute_overlap_matrix()
-	
-	
-    def drop_outliers(
-            self,
-            threshold=None
-        ):
-        """
-        Remove outliers from dataset
-
-        Define the dimensionless proper motion for each object as
-        R = proper_motion_vector^T . inverse_error_matrix . proper_motion_vector
-
-        We will remove outliers with R greater than a given threshold (e.g 7.33)
-
-        INPUTS
-        ------
-        threshold: float
-            remove outliers with R>threshold
-        """
-
-        if threshold is not None:
-
-            R = np.sqrt(np.einsum('...i,...ij,...j->...',
-                                    self.proper_motions, 
-                                    self.inv_proper_motion_error_matrix,
-                                    self.proper_motions))
-
-            indices_to_remove = np.where(R>threshold)[0]
-
-            self.num_outliers_removed = len(indices_to_remove)
-            print("Removing {} outliers.".format(self.num_outliers_removed))
-
-	    # remove the offending rows from positions, proper_motions and...
-	    # ... inv_proper_motion_error_matrix data sets. 
-	    # IS THERE ANYWHERE ELSE WE NEED TO DELETE ROWS?
-            self.positions = np.delete(self.positions,
-                                        indices_to_remove, axis=0)
-
-            self.proper_motions = np.delete(self.proper_motions,
-                                        indices_to_remove, axis=0)
-
-            self.inv_proper_motion_error_matrix = np.delete(self.inv_proper_motion_error_matrix,
-                                        indices_to_remove, axis=0)
 
 
 def load_astrometric_data(
         ADf: AstrometricDataframe,
-        Lmax: int,
+        params: dict,
         N_obj: int,
         positions: int,
         positions_method: str,
@@ -351,11 +392,9 @@ def load_astrometric_data(
         proper_motion_errors_corr: float,
         proper_motion_noise: float,
         proper_motion_noise_seed: int,
-        basis: str,
-	nrows=None
+        basis: str
     ):
-
-    ADf.Lmax = Lmax
+    ADf.Lmax = params['Lmax']
 
     ADf.generate_names()
 
@@ -366,7 +405,13 @@ def load_astrometric_data(
         5: {"cat": "TD", "file_name": "data/TD6.dat"}
     }
 
-    which_dataset = set([positions, proper_motions, proper_motion_errors]).intersection(set(dataset_dict.keys()))
+    which_dataset = set(
+        [
+            positions,
+            proper_motions,
+            proper_motion_errors
+        ]
+        ).intersection(set(dataset_dict.keys()))
 
     if len(which_dataset) > 1:
         sys.exit("Conflicting datasets cannot be combined.")
@@ -374,9 +419,13 @@ def load_astrometric_data(
         chosen_dataset = next(iter(which_dataset))
 
         if dataset_dict[chosen_dataset]['cat'] == "Gaia":
-            dataset = import_Gaia_dataset(dataset_dict[chosen_dataset]['file_name'], nrows=nrows)
+            dataset = import_Gaia_dataset(
+                dataset_dict[chosen_dataset]['file_name']
+            )
         elif dataset_dict[chosen_dataset]['cat'] == "TD":
-            dataset = import_TD_dataset(dataset_dict[chosen_dataset]['file_name'])
+            dataset = import_TD_dataset(
+                dataset_dict[chosen_dataset]['file_name']
+            )
     else:
         dataset = None
 
@@ -398,8 +447,6 @@ def load_astrometric_data(
         ADf.load_TD_positions(dataset)
 
     ADf.positions_Cartesian = CT.geographic_to_Cartesian_point(ADf.positions)
-
-    ADf.generate_VSHs()
 
     if proper_motions == 1:
         ADf.generate_proper_motions(
@@ -429,6 +476,15 @@ def load_astrometric_data(
     #     random_seed=proper_motion_noise_seed
     # )
 
+    try:
+        ADf.R_threshold = params['dimensionless_proper_motion_threshold']
+    except:
+        ADf.R_threshold = None
+
+    ADf.drop_outliers()
+
+    ADf.generate_VSHs()
+
     ADf.compute_overlap_matrix()
 
     if basis == "orthogonal":
@@ -436,8 +492,7 @@ def load_astrometric_data(
         ADf.compute_overlap_matrix()
 
 def import_Gaia_dataset(
-        path,
-	nrows=None
+        path    
     ):
     """
     Import Gaia dataset
@@ -465,9 +520,8 @@ def import_Gaia_dataset(
         error_bad_lines=True,
         warn_bad_lines=True,
         delim_whitespace=False,
-        low_memory=True,
-        memory_map=False,
-	nrows=nrows
+        low_memory=False,
+        memory_map=False
     )
 
     dropna_columns = [
