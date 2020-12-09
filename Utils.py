@@ -233,7 +233,10 @@ def deg_to_rad(
     """
     return np.deg2rad(degree_vals)
 
-def normalize_matrix(matrix, L=None):
+def normalize_matrix(
+        matrix,
+        L=None
+    ):
     """
     Normalize the overlap matrix so that the diagonals are of order 1e0.
 
@@ -322,5 +325,3 @@ def export_data(
 
     limit_file_name = os.path.join(output, 'limit.dat')
     np.savetxt(limit_file_name, np.array([limit]))
-
-

@@ -84,7 +84,10 @@ def check_output_dir(
 
     return True
 
-def record_config_params(params, user_specified_output_file = None):
+def record_config_params(
+        params,
+        user_specified_output_file = None
+    ):
     """
     Record the config parameters in a file.
     """
