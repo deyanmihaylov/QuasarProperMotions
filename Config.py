@@ -2,7 +2,9 @@ import configparser
 import os
 import sys
 
-def set_params(file_name):
+def set_params(
+        file_name
+    ):
     """
     Set default and user-supplied parameters.
     """
@@ -18,7 +20,9 @@ def set_params(file_name):
 
     return config_parsed
 
-def set_default_params(config):
+def set_default_params(
+        config
+    ):
     """
     Parse the default parameter file.
     """
@@ -38,7 +42,10 @@ def set_default_params(config):
 
         return True
 
-def set_user_params(config, file_name):
+def set_user_params(
+        config,
+        file_name
+    ):
     """
     Parse the user-supplied parameter file.
     """
@@ -51,7 +58,9 @@ def set_user_params(config, file_name):
     if not par_file_parse_merge:
         sys.exit(f"Reading file '{file_name}' has failed.")
 
-def eval_config_types(config):
+def eval_config_types(
+        config
+    ):
     """
     Evaluate types of config params.
     """

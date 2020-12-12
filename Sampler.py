@@ -11,10 +11,11 @@ def R_values(
         model
     ):
     """
-    Compute R values from data, model, and the inverse of the covariant matrix
+    Compute R values from data, model, and the inverse of the 
+    covariant matrix
     """
     M = data - model
-    R_values = np.sqrt(np.einsum('...i,...ij,...j->...', M, invcovs, M))
+    R_values = np.sqrt(np.einsum("...i,...ij,...j->...", M, invcovs, M))
 
     return R_values
 
@@ -27,7 +28,8 @@ def logL_quadratic(R):
 def logL_permissive(R):
     """
     The permissive log-likelihood 
-    As used in Darling et al. 2018 and coming from Sivia and Skilling p.168
+    As used in Darling et al. 2018 and coming from Sivia and Skilling,
+    p.168
     """
     half_R_squared = 0.5 * (R**2)
     return np.log((1.-np.exp(-half_R_squared)) / half_R_squared)
@@ -36,14 +38,16 @@ from scipy.special import erf
 def logL_2Dpermissive(R):
     """
     The modified permissive log-likelihood for 2D data
-    A generalisation of the Sivia and Skilling likelihood (p.168) for 2D data
+    A generalisation of the Sivia and Skilling likelihood (p.168) for 
+    2D data
     """
     return np.log( (np.sqrt(np.pi/2)*erf(R/np.sqrt(2)) - R*np.exp(-R**2/2)) / (R**3) )
 
 from scipy.special import logsumexp
 def logL_goodandbad(R, beta, gamma):
     """
-    Following the notation of Sivia and Skilling, this is "the good and bad data model".
+    Following the notation of Sivia and Skilling, this is "the good 
+    and bad data model".
     
     Some fraction beta of the data is assumed to come from a
     normal distribution with errors larger by a factor of gamma.
@@ -68,7 +72,7 @@ class model(cpnest.model.Model):
             prior_bounds: float,
             beta = 0.01,
             gamma = 2.0,
-        ):
+        ) -> None:
         """
         Initialise the model class
 
