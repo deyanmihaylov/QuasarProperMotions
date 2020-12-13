@@ -2,9 +2,11 @@ import configparser
 import os
 import sys
 
+from typing import Type
+
 def set_params(
-        file_name
-    ):
+        file_name: str
+    ) -> dict:
     """
     Set default and user-supplied parameters.
     """
@@ -21,8 +23,8 @@ def set_params(
     return config_parsed
 
 def set_default_params(
-        config
-    ):
+        config: Type[configparser.ConfigParser]
+    ) -> None:
     """
     Parse the default parameter file.
     """
@@ -40,12 +42,10 @@ def set_default_params(
         except:
             sys.exit("Problem reading default parameter file.")
 
-        return True
-
 def set_user_params(
-        config,
-        file_name
-    ):
+        config: Type[configparser.ConfigParser],
+        file_name: str
+    ) -> None:
     """
     Parse the user-supplied parameter file.
     """
@@ -59,8 +59,8 @@ def set_user_params(
         sys.exit(f"Reading file '{file_name}' has failed.")
 
 def eval_config_types(
-        config
-    ):
+        config: Type[configparser.ConfigParser]
+    ) -> dict:
     """
     Evaluate types of config params.
     """
@@ -96,7 +96,7 @@ def check_output_dir(
 def record_config_params(
         params,
         user_specified_output_file = None
-    ):
+    ) -> None:
     """
     Record the config parameters in a file.
     """
