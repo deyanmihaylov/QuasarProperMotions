@@ -94,7 +94,7 @@ def check_output_dir(
     return True
 
 def record_config_params(
-        params,
+        params: dict,
         user_specified_output_file = None
     ) -> None:
     """
