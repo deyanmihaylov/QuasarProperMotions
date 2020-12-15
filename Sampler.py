@@ -135,8 +135,11 @@ class model(cpnest.model.Model):
         The log-prior function
         """
 
-        log_prior = self.beta_prior.logpdf(params['log10_beta'])
-        log_prior += self.gamma_prior.logpdf(params['log10_gamma'])
+        if self.logL_method is "goodandbad":
+            log_prior = self.beta_prior.logpdf(params['log10_beta'])
+            log_prior += self.gamma_prior.logpdf(params['log10_gamma'])
+        else:
+            log_prior = 0.
 
         return log_prior
 
