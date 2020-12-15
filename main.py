@@ -45,9 +45,7 @@ def main():
     astrometric_model = S.model(
         data,
         logL_method = params['MCMC']['logL_method'],
-        prior_bounds = params['MCMC']['prior_bounds'],
-        beta = params['MCMC']['beta'],
-        gamma = params['MCMC']['gamma']
+        prior_bounds = params['MCMC']['prior_bounds']
     )
 
     nest = cpnest.CPNest(

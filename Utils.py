@@ -144,15 +144,15 @@ def assert_config_params(
     ), sys.exit("proper_motions takes integer values")
 
     assert (
-        params['Data']['proper_motions'] >= 1 
-        and 
+        params['Data']['proper_motions'] >= 1
+        and
         params['Data']['proper_motions'] <= 5
     ), sys.exit("proper_motions takes an integer value between 1 and 5")
 
     # proper_motions_method should be one of ["zero", "dipole", "multipole"]
     assert (
-        params['Data']['proper_motions_method'] 
-        in 
+        params['Data']['proper_motions_method']
+        in
         ["zero", "dipole", "multipole"]
     ), sys.exit("proper_motions_method takes values \"zero\", \"dipole\" or \"multipole\"")
 
@@ -205,8 +205,8 @@ def assert_config_params(
     if params['Data']['proper_motion_errors'] == 1:
         # proper_motion_errors_method should be one of ["flat", "adaptive"]
         assert (
-            params['Data']['proper_motion_errors_method'] 
-            in 
+            params['Data']['proper_motion_errors_method']
+            in
             ["flat", "adaptive"]
         ), sys.exit("proper_motion_errors_method takes values \"flat\", \"adaptive\"")
 
@@ -227,8 +227,8 @@ def assert_config_params(
         ), sys.exit("proper_motion_errors_corr takes numerical values")
 
         assert (
-            params['Data']['proper_motion_errors_corr'] > -1. 
-            and 
+            params['Data']['proper_motion_errors_corr'] > -1.
+            and
             params['Data']['proper_motion_errors_corr'] < 1.
         ), sys.exit("proper_motion_errors_corr takes values in the interval (-1, 1)")
 
@@ -268,8 +268,8 @@ def assert_config_params(
 
     # ll_method should be one of ["permissive", "quadratic"]
     assert (
-        params['MCMC']['logL_method'] in ["permissive", "quadratic"]
-    ), sys.exit("llmethod takes values \"permissive\" or \"quadratic\"")
+        params['MCMC']['logL_method'] in ["quadratic", "permissive", "2Dpermissive", "goodandbad"]
+    ), sys.exit("llmethod takes values \"quadratic\" or \"permissive\" or \"2Dpermissive\" or \"goodandbad\"")
 
     # nthreads should be a positive integer
     assert isinstance(
@@ -320,8 +320,8 @@ def assert_config_params(
     ), sys.exit("limit takes numerical values")
 
     assert (
-        params['Post_processing']['limit'] >= 0. 
-        and 
+        params['Post_processing']['limit'] >= 0.
+        and
         params['Post_processing']['limit'] <= 100.
     ), sys.exit("limit takes values between 0 and 100")
 
@@ -424,7 +424,7 @@ def export_data(
         limit: float,
         output: str
     ):
-    
+
     positions_file_name = os.path.join(output, 'positions.dat')
     np.savetxt(positions_file_name, ADf.positions)
 

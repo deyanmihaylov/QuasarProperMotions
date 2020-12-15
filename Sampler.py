@@ -1,4 +1,7 @@
 import numpy as np
+
+from scipy.stats import norm
+
 import cpnest
 import cpnest.model
 
@@ -11,7 +14,7 @@ def R_values(
         model
     ):
     """
-    Compute R values from data, model, and the inverse of the 
+    Compute R values from data, model, and the inverse of the
     covariant matrix
     """
     M = data - model
@@ -27,7 +30,7 @@ def logL_quadratic(R):
 
 def logL_permissive(R):
     """
-    The permissive log-likelihood 
+    The permissive log-likelihood
     As used in Darling et al. 2018 and coming from Sivia and Skilling,
     p.168
     """
@@ -38,7 +41,7 @@ from scipy.special import erf
 def logL_2Dpermissive(R):
     """
     The modified permissive log-likelihood for 2D data
-    A generalisation of the Sivia and Skilling likelihood (p.168) for 
+    A generalisation of the Sivia and Skilling likelihood (p.168) for
     2D data
     """
     return np.log( (np.sqrt(np.pi/2)*erf(R/np.sqrt(2)) - R*np.exp(-R**2/2)) / (R**3) )
@@ -46,9 +49,9 @@ def logL_2Dpermissive(R):
 from scipy.special import logsumexp
 def logL_goodandbad(R, beta, gamma):
     """
-    Following the notation of Sivia and Skilling, this is "the good 
+    Following the notation of Sivia and Skilling, this is "the good
     and bad data model".
-    
+
     Some fraction beta of the data is assumed to come from a
     normal distribution with errors larger by a factor of gamma.
     """
@@ -56,7 +59,7 @@ def logL_goodandbad(R, beta, gamma):
     # enforce conditions 0<beta<1 and 1<gamma
     my_beta = np.clip(beta,0,1)
     my_gamma = np.clip(gamma,1,10)
-        
+
     return logsumexp([ -0.5*(R/my_gamma)**2+np.log(my_beta/my_gamma**2) , -0.5*R**2+np.log(1-my_beta) ], axis=0)
 
 
@@ -69,9 +72,7 @@ class model(cpnest.model.Model):
             self,
             ADf: AD.AstrometricDataframe,
             logL_method: str,
-            prior_bounds: float,
-            beta = 0.01,
-            gamma = 2.0,
+            prior_bounds: float
         ) -> None:
         """
         Initialise the model class
@@ -111,11 +112,34 @@ class model(cpnest.model.Model):
 
         self.bounds = [[-prior_bounds, prior_bounds] for name in self.names]
 
-        self.beta = beta
-        self.gamma = gamma
+        if logL_method is "goodandbad":
+            # This likelihood model use 2 extra parameters:
+            #   - beta = the fraction of outliers (~3.165%)
+            #   - gamma = outlier severity (errors larger by factor ~1.6596)
+            # For both beta and gamma we use log_10 as the free parameter.
+            self.names += ['log10_beta', 'log10_gamma']
+            self.bounds += [[-1.78, -1.20], [-0.08, 0.52]] # (+/- 6 sigma)
 
-        # TO DO:
-        # print("Searching over the following parameters:\n", '\n'.join(self.names))
+            # For both log_10(beta) and log_10(gamma) we use a normal prior
+            # with mean value chosen by visual inspection of the data and
+            # standard deviation width of +/- 0.05.
+            self.beta_prior = norm(np.log10(0.03165), 0.05)
+            self.gamma_prior = norm(np.log10(1.6596), 0.05)
+
+
+    def log_prior(
+            self,
+            params: dict
+        ) -> float:
+        """
+        The log-prior function
+        """
+
+        log_prior = self.beta_prior.logpdf(params['log10_beta'])
+        log_prior += self.gamma_prior.logpdf(params['log10_gamma'])
+
+        return log_prior
+
 
     def log_likelihood(
             self,
@@ -132,7 +156,8 @@ class model(cpnest.model.Model):
         R = np.maximum(R, self.tol)
 
         if self.logL_method == "goodandbad":
-            log_likelihood = np.sum(self.logL(R, self.beta, self.gamma))
+            log_likelihood = np.sum(self.logL(R, 10.0**almQ['log10_beta'],
+                                                10.0**almQ['log10_gamma']))
         else:
             log_likelihood = np.sum(self.logL(R))
 
