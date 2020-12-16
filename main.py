@@ -54,7 +54,7 @@ def main():
         nthreads = params['MCMC']['nthreads'],
         nlive = params['MCMC']['nlive'],
         maxmcmc = params['MCMC']['maxmcmc'],
-        resume = False,
+        resume = True,
         verbose = params['General']['verbose']
     )
 
