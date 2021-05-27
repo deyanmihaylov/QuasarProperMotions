@@ -2,6 +2,8 @@ import numpy as np
 import cpnest
 import cpnest.model
 
+from scipy.special import erf, logsumexp
+
 import AstrometricData as AD
 import Model as M
 
@@ -32,7 +34,6 @@ def logL_permissive(R):
     half_R_squared = 0.5 * (R**2)
     return np.log((1.-np.exp(-half_R_squared)) / half_R_squared)
 
-from scipy.special import erf
 def logL_2Dpermissive(R):
     """
     The modified permissive log-likelihood for 2D data
@@ -40,7 +41,6 @@ def logL_2Dpermissive(R):
     """
     return np.log( (np.sqrt(np.pi/2)*erf(R/np.sqrt(2)) - R*np.exp(-R**2/2)) / (R**3) )
 
-from scipy.special import logsumexp
 def logL_goodandbad(R, beta, gamma):
     """
     Following the notation of Sivia and Skilling, this is "the good and bad data model".
@@ -53,7 +53,10 @@ def logL_goodandbad(R, beta, gamma):
     my_beta = np.clip(beta,0,1)
     my_gamma = np.clip(gamma,1,10)
         
-    return logsumexp([ -0.5*(R/my_gamma)**2+np.log(my_beta/my_gamma**2) , -0.5*R**2+np.log(1-my_beta) ], axis=0)
+    return logsumexp(
+        [ -0.5*(R/my_gamma)**2+np.log(my_beta/my_gamma**2) , -0.5*R**2+np.log(1-my_beta) ],
+        axis=0,
+    )
 
 
 class model(cpnest.model.Model):
@@ -83,17 +86,6 @@ class model(cpnest.model.Model):
         """
         self.tol = 1.0e-5
 
-        self.names = list(ADf.names.values())
-
-        self.proper_motions = ADf.proper_motions
-        self.inv_proper_motion_error_matrix = ADf.inv_proper_motion_error_matrix
-
-        self.basis = {ADf.names[key]: ADf.basis[key] for key in ADf.names.keys()}
-        self.which_basis = ADf.which_basis
-        self.overlap_matrix_Cholesky = ADf.overlap_matrix_Cholesky
-
-        self.logL_method = logL_method
-
         if logL_method == "permissive":
             self.logL = logL_permissive
         elif logL_method == "2Dpermissive":
@@ -105,10 +97,22 @@ class model(cpnest.model.Model):
         else:
             print("Oh dear. This doesn't look good.")
 
+        self.logL_method = logL_method
+
+        self.names = list(ADf.names.values())
+
+        self.proper_motions = ADf.proper_motions
+        self.inv_proper_motion_error_matrix = ADf.inv_proper_motion_error_matrix
+
+        self.basis = {ADf.names[key]: ADf.basis[key] for key in ADf.names.keys()}
+        self.which_basis = ADf.which_basis
+        self.overlap_matrix_Cholesky = ADf.overlap_matrix_Cholesky
+
         self.bounds = [[-prior_bounds, prior_bounds] for name in self.names]
 
-        self.beta = beta
-        self.gamma = gamma
+        if logL_method == "goodandbad":
+            self.names.append(['beta', 'gamma'])
+            self.bounds.append([[0, 1], [1, 10]])
 
         # TO DO:
         # print("Searching over the following parameters:\n", '\n'.join(self.names))
@@ -128,7 +132,7 @@ class model(cpnest.model.Model):
         R = np.maximum(R, self.tol)
 
         if self.logL_method == "goodandbad":
-            log_likelihood = np.sum(self.logL(R, self.beta, self.gamma))
+            log_likelihood = np.sum(self.logL(R, almQ['beta'], almQ['gamma']))
         else:
             log_likelihood = np.sum(self.logL(R))
 
