@@ -69,9 +69,9 @@ def eval_config_types(config):
 
     return config_parsed
 
-def check_output_dir(
-        dir_name: str
-    ) -> bool:
+def check_and_create_dir(
+    dir_name: str
+) -> bool:
     """
     Check if output directory exists, and create it if it doesn't.
     """

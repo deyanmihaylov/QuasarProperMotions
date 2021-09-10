@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import cpnest
 import cpnest.model
@@ -8,10 +9,10 @@ import AstrometricData as AD
 import Model as M
 
 def R_values(
-        data,
-        invcovs,
-        model
-    ):
+    data: np.array,
+    invcovs: np.array,
+    model: np.array,
+) -> np.array:
     """
     Compute R values from data, model, and the inverse of the covariant matrix
     """
@@ -49,7 +50,7 @@ def logL_goodandbad(R, beta, gamma):
     normal distribution with errors larger by a factor of gamma.
     """
 
-    # enforce conditions 0<beta<1 and 1<gamma
+    # enforce conditions 0 < beta < 1 and 1 < gamma
     my_beta = np.clip(beta,0,1)
     my_gamma = np.clip(gamma,1,10)
         
@@ -65,13 +66,10 @@ class model(cpnest.model.Model):
     """
 
     def __init__(
-            self,
-            ADf: AD.AstrometricDataframe,
-            logL_method: str,
-            prior_bounds: float,
-            beta = 0.01,
-            gamma = 2.0,
-        ):
+        self,
+        ADf: AD.AstrometricDataframe,
+        params: dict,
+    ):
         """
         Initialise the model class
 
@@ -80,11 +78,19 @@ class model(cpnest.model.Model):
         prior_bound: float
             the range of coefficients to search over [mas/yr]
         logL_method: str
-            which likelihood function to use [either "permissive", "quadratic", "2Dpermissive", "goodandbad"]
+            which likelihood function to use, one of
+            ["permissive", "quadratic", "2Dpermissive", "goodandbad"]
         beta, gamma: float
-            If using logL_method="goodandbad" then must provide beta in range (0,1) and gamma>1.
+            If using logL_method is "goodandbad" then
+            must provide beta in range (0,1) and gamma > 1
         """
+
         self.tol = 1.0e-5
+
+        self.names = list(ADf.almQ_names.values())
+
+        logL_method = params['logL_method']
+        prior_bounds = params['prior_bounds']
 
         if logL_method == "permissive":
             self.logL = logL_permissive
@@ -96,31 +102,29 @@ class model(cpnest.model.Model):
             self.logL = logL_goodandbad
         else:
             print("Oh dear. This doesn't look good.")
-
+            sys.exit()
+        
         self.logL_method = logL_method
-
-        self.names = list(ADf.names.values())
 
         self.proper_motions = ADf.proper_motions
         self.inv_proper_motion_error_matrix = ADf.inv_proper_motion_error_matrix
 
-        self.basis = {ADf.names[key]: ADf.basis[key] for key in ADf.names.keys()}
+        self.basis = {ADf.almQ_names[key]: ADf.basis[key] for key in ADf.basis.keys()}
         self.which_basis = ADf.which_basis
         self.overlap_matrix_Cholesky = ADf.overlap_matrix_Cholesky
 
         self.bounds = [[-prior_bounds, prior_bounds] for name in self.names]
 
         if logL_method == "goodandbad":
-            self.names.append(['beta', 'gamma'])
-            self.bounds.append([[0, 1], [1, 10]])
+            self.names.extend(['beta', 'gamma'])
+            self.bounds.extend([[0, 1], [1, 10]])
 
-        # TO DO:
-        # print("Searching over the following parameters:\n", '\n'.join(self.names))
+        print("Searching over the following parameters:", ', '.join(self.names))
 
     def log_likelihood(
-            self,
-            almQ: dict
-        ) -> float:
+        self,
+        almQ: dict,
+    ) -> float:
         """
         The log-likelihood function
         """

@@ -26,76 +26,105 @@ class AstrometricDataframe:
 
         self.inv_proper_motion_error_matrix = np.array([])
 
+        self.almQ_names = dict()
+        self.YlmQ_names = dict()
+
         self.basis = dict()
         self.which_basis = None
-
-        self.names = dict()
 
         self.overlap_matrix = np.array([])
         self.overlap_matrix_Cholesky = np.array([])
 
-    def generate_names(self):
-        self.names = {
+    def generate_names(
+        self,
+    ):
+        self.almQ_names = {
+            (l, m, Q): f"a^{Q}_{l},{m}"
+            for l in range(1, self.Lmax+1)
+            for m in range(-l, l+1) for Q in ['E', 'B']
+        }
+
+        self.YlmQ_names = {
             (l, m, Q): f"Y^{Q}_{l},{m}"
             for l in range(1, self.Lmax+1)
             for m in range(-l, l+1) for Q in ['E', 'B']
         }
 
     def generate_positions(
-            self,
-            method: str,
-            bunch_size_polar: float,
-            bunch_size_azimuthal: float,
-            random_seed: int
-        ):
+        self,
+        method: str,
+        bunch_size_polar: float,
+        bunch_size_azimuthal: float,
+        random_seed: int
+    ):
         """
         Generate random positions
 
         INPUTS
         ------
         method: string
-            switches between a uniform distribution and a bunched (biased) distribution
+            switches between a uniform distribution
+            and a bunched (biased) distribution
 
         bunch_size_polar: float
-            controls the distribution in the polar direction; 0. activates the uniform regime, while a small number (e.g. 0.1) is severely non-uniform
+            controls the distribution in the polar direction;
+            0. activates the uniform regime,
+            while a small number (e.g. 0.1) is severely non-uniform
 
         bunch_size_azimuthal: float
-            controls the distribution in the azimuthal direction; 0. activates the uniform regime, while a small number (e.g. 0.1) is severely non-uniform
+            controls the distribution in the azimuthal direction;
+            0. activates the uniform regime,
+            while a small number (e.g. 0.1) is severely non-uniform
 
         seed: int
             random seed
         """
-        if random_seed > 0: np.random.seed(random_seed)
 
-        if method == "uniform" or (method == "bunched" and bunch_size_polar==0.):
+        U.logger("Generating QSO positions")
+
+        if random_seed > 0:
+            U.logger(f"Using random seed {random_seed}")
+            np.random.seed(random_seed)
+
+        if method == "uniform" or (method == "bunched" and bunch_size_polar == 0.):
+            U.logger("Using method \"uniform\" for the declination")
             dec = 0.5*np.pi - np.arccos(np.random.uniform(-1, 1, size=self.N_obj))
         elif method == "bunched" and bunch_size_polar > 0.:
+            U.logger("Using method \"bunched\" for the declination")
             dec = 0.5*np.pi - np.arccos(truncnorm.rvs(-1./bunch_size_polar, 1./bunch_size_polar, scale=bunch_size_polar, size=self.N_obj))
 
-        if method == "uniform" or (method == "bunched" and bunch_size_azimuthal==0.):
+        if method == "uniform" or (method == "bunched" and bunch_size_azimuthal == 0.):
+            U.logger("Using method \"uniform\" for the right ascension")
             ra = 2 * np.pi * np.random.uniform(0, 1, size=self.N_obj)
         elif method == "bunched" and bunch_size_azimuthal > 0.:
+            U.logger("Using method \"bunched\" for the right ascension")
             ra = 2 * np.pi * (truncnorm.rvs(-0.5/bunch_size_azimuthal, 0.5/bunch_size_azimuthal, scale=bunch_size_azimuthal, size=self.N_obj)+0.5)
 
         self.positions = np.array(list(zip(ra, dec)))
 
     def load_Gaia_positions(
-            self,
-            dataset: pd.DataFrame
-        ):
+        self,
+        dataset: pd.DataFrame
+    ):
         """
         Load the positions from Gaia file
         """
+
+        U.logger("Loading Gaia QSO positions")
+
         self.positions = dataset[['ra', 'dec']].values
         self.positions = U.deg_to_rad(self.positions)
 
     def load_TD_positions(
-            self,
-            dataset: pd.DataFrame
-        ):
+        self,
+        dataset: pd.DataFrame
+    ):
         """
         Load the positions from Truebenbach-Darling file
         """
+
+        U.logger("Loading Truebenbach & Darling QSO positions")
+
         hours = 360. / 24.
         mins = hours / 60.
         secs = mins / 60.
@@ -119,70 +148,103 @@ class AstrometricDataframe:
         self.positions = U.deg_to_rad(self.positions)
 
     def generate_proper_motions(
-            self,
-            method: str,
-            dipole: float,
-            multipole: list,
-            random_seed: int
-        ):
+        self,
+        method: str,
+        dipole: float,
+        multipole: list,
+        injection: dict,
+        random_seed: int,
+    ):
+        U.logger("Generating QSO proper motions")
 
-        if random_seed > 0: np.random.seed(random_seed)
+        if random_seed > 0:
+            U.logger(f"Using random seed {random_seed}")
+            np.random.seed(random_seed)
 
-        if method == "zero":
+        if len(injection) == 0:
+            U.logger("Injecting no proper motions")
             self.proper_motions = np.zeros((self.N_obj, 2))
-        elif method == "dipole":
-            almQ = {
-                (l, m, Q): 0.
-                for l in range(1, self.Lmax+1)
-                for m in range(-l, l+1) for Q in ['E', 'B']
-            }
+        else:
+            U.logger("Injecting multipoles with amplitudes:")
 
-            almQ[(1, 0, 'E')] = dipole
+            almQ = {}
+
+            for l in range(1, self.Lmax+1):
+                for m in range(-l, l+1):
+                    for Q in ['E', 'B']:
+                        key = f"{l},{m},{Q}"
+
+                        if key in injection.keys():
+                            almQ[(l, m, Q)] = injection[key]
+                        else:
+                            almQ[(l, m, Q)] = 0
+
+            # almQ = {
+            #     (l, m, Q): np.random.normal(0, multipole[l])
+            #     for l in range(1, self.Lmax+1)
+            #     for m in range(-l, l+1) for Q in ['E', 'B']
+            # }
 
             self.proper_motions = M.generate_model(almQ, self.basis)
-        elif method == "multipole":
-            almQ = {
-                (l, m, Q): np.random.normal(0, multipole[l])
-                for l in range(1, self.Lmax+1)
-                for m in range(-l, l+1) for Q in ['E', 'B']
-            }
+        
+        # if method == "zero":
+            
+        # elif method == "dipole":
+        #     U.logger(f"Injecting dipole with amplitude {dipole}")
 
-            self.proper_motions = M.generate_model(almQ, self.basis)
+        #     almQ = {
+        #         (l, m, Q): 0.
+        #         for l in range(1, self.Lmax+1)
+        #         for m in range(-l, l+1) for Q in ['E', 'B']
+        #     }
 
+        #     almQ[(1, 0, 'E')] = dipole
+
+        #     self.proper_motions = M.generate_model(almQ, self.basis)
+        # elif method == "multipole":
+    
     def load_Gaia_proper_motions(
-            self,
-            dataset: pd.DataFrame
-        ):
+        self,
+        dataset: pd.DataFrame,
+    ):
         """
         Load the proper motions from Gaia file
         """
+
+        U.logger("Loading Gaia QSO proper motions")
+        
         self.proper_motions = dataset[['pmra', 'pmdec']].values
 
     def load_TD_proper_motions(
-            self,
-            dataset: pd.DataFrame
-        ):
+        self,
+        dataset: pd.DataFrame,
+    ):
         """
         Load the proper motions from Truebenbach-Darling file
         """
 
+        U.logger("Loading Truebenbach & Darling QSO proper motions")
+
         self.proper_motions = dataset[['pmRA', 'pmDE']].values
 
     def generate_proper_motion_errors(
-            self,
-            method: str,
-            std: float,
-            corr: float
-        ):
+        self,
+        method: str,
+        std: float,
+        corr: float,
+    ):
+        U.logger("Generating QSO proper motion errors")
+
         if method == "flat":
+            U.logger("Using method \"flat\"")
             scale = std
         elif method == "adaptive":
+            U.logger("Using method \"adaptive\"")
             scale = std * np.abs(self.proper_motions)
 
         proper_motion_errors = scale * np.ones(self.proper_motions.shape)
-
         # Scale the pm_ra_err by sin(theta) = cos(dec)
-        proper_motion_errors[:,0] = proper_motion_errors[:,0] / np.cos(self.positions[:,1])
+        proper_motion_errors[:, 0] = proper_motion_errors[:, 0] / np.cos(self.positions[:, 1])
 
         proper_motion_errors_corr = corr * np.ones(self.N_obj)
 
@@ -195,11 +257,14 @@ class AstrometricDataframe:
 
     def load_Gaia_proper_motion_errors(
             self,
-            dataset: pd.DataFrame
+            dataset: pd.DataFrame,
         ):
         """
         Load the proper motion errors from Gaia file
         """
+
+        U.logger("Loading Gaia QSO proper motion errors")
+
         proper_motions_errors = dataset[['pmra_error', 'pmdec_error']].values
         proper_motions_errors[:,0] = proper_motions_errors[:,0] / np.cos(self.positions[:,1])
 
@@ -214,12 +279,15 @@ class AstrometricDataframe:
 
     def load_TD_proper_motion_errors(
             self,
-            dataset: pd.DataFrame
+            dataset: pd.DataFrame,
         ):
         """
         Load the proper motion errors from Truebenbach-Darling file
         TO DO: Use chi2 statistics for correlation
         """
+        
+        U.logger("Loading Truebenbach & Darling QSO proper motion errors")
+
         proper_motions_errors = dataset[['e_pmRA', 'e_pmDE']].values
         proper_motions_errors[:,0] = proper_motions_errors[:,0] / np.cos(self.positions[:,1])
 
@@ -235,11 +303,13 @@ class AstrometricDataframe:
     def add_proper_motion_noise(
             self,
             std: float,
-            random_seed: int
+            random_seed: int,
         ):
-        print("yes", std, random_seed)
+        U.logger("Adding proper motion noise")
 
-        if random_seed > 0: np.random.seed(random_seed)
+        if random_seed > 0:
+            U.logger(f"Using random seed {random_seed}")
+            np.random.seed(random_seed)
 
         proper_motion_noise = np.random.normal(
             loc=0.,
@@ -253,6 +323,9 @@ class AstrometricDataframe:
         """
         Precompute VSH functions at QSO locations
         """
+
+        U.logger("Generating Vector Spherical Harmonics basis")
+
         def VSHs(l, m, Q):
             if Q == "E":
                 return CT.Cartesian_to_geographic_vector(
@@ -283,7 +356,7 @@ class AstrometricDataframe:
     
     def remove_outliers(
             self,
-            R_threshold: float
+            R_threshold: float,
         ):
         """
         Remove outliers from dataset
@@ -337,13 +410,13 @@ class AstrometricDataframe:
             N_removed_outliers = remove_indices.shape[0]
 
             if N_removed_outliers == 1:
-                print(f"Removed 1 outlier.")
+                U.logger(f"Removing 1 outlier.")
             else:
-                print(f"Removed {N_removed_outliers} outliers.")
+                U.logger(f"Removing {N_removed_outliers} outliers.")
 
     def compute_overlap_matrix(
             self,
-            weighted_overlaps=True
+            weighted_overlaps=True,
         ):
         """
         Calculate the overlap matrix (and its Cholesky decomposition) between VSH basis functions
@@ -351,6 +424,9 @@ class AstrometricDataframe:
         weighted_overlaps: bool
             whether or not to use the error weighted overlap sums
         """
+
+        U.logger("Computing the overlap matrix")
+
         prefactor = 4. * np.pi / self.N_obj
 
         overlap_matrix_size = 2 * self.Lmax * (self.Lmax+2)
@@ -361,7 +437,7 @@ class AstrometricDataframe:
 
         if weighted_overlaps == False:
             metric = np.zeros((self.N_obj, 2, 2))
-            metric[:, 0, 0] = np.cos(self.positions[:,1].copy())**2.
+            metric[:, 0, 0] = np.cos(self.positions[:,1].copy())**2
             metric[:, 1, 1] = 1
 
         basis_values = np.array(list(self.basis.values()))
@@ -387,12 +463,12 @@ class AstrometricDataframe:
             L=self.Lmax
         )
 
-    def change_basis(
-            self
-        ):
+    def change_basis(self):
         """
         Method to change from VSH basis to orthogonal basis
         """
+
+        U.logger("Changing Vector Spherical Harmonics basis to orthogonal basis")
 
         self.overlap_matrix_Cholesky = cholesky(self.overlap_matrix)
 
@@ -406,19 +482,14 @@ class AstrometricDataframe:
             invL
         )
 
-        self.basis = {
-            key: orthogonal_basis_values[i]
-            for i, key in enumerate(self.names)
-        }
+        for i, key in enumerate(self.basis):
+            self.basis[key] = orthogonal_basis_values[i]
 
         self.which_basis = "orthogonal"
 
-        self.compute_overlap_matrix()
-
-
 def load_astrometric_data(
         ADf: AstrometricDataframe,
-        params: dict
+        params: dict,
     ):
     ADf.Lmax = params['Lmax']
 
@@ -441,7 +512,7 @@ def load_astrometric_data(
             proper_motions,
             proper_motion_errors
         ]
-        ).intersection(set(dataset_dict.keys()))
+    ).intersection(set(dataset_dict.keys()))
 
     if len(which_dataset) > 1:
         sys.exit("Conflicting datasets cannot be combined.")
@@ -480,11 +551,14 @@ def load_astrometric_data(
         ADf.positions
     )
 
+    ADf.generate_VSHs()
+
     if proper_motions == 1:
         ADf.generate_proper_motions(
             method = params['proper_motions_method'],
             dipole = params['dipole'],
             multipole = params['multipole'],
+            injection = params['injection'],
             random_seed = params['proper_motions_seed']
         )
     elif proper_motions in [2, 3, 4]:
@@ -523,8 +597,6 @@ def load_astrometric_data(
         R_threshold
     )
 
-    ADf.generate_VSHs()
-
     ADf.compute_overlap_matrix()
 
     if params['basis'] == "orthogonal":
@@ -532,8 +604,8 @@ def load_astrometric_data(
         ADf.compute_overlap_matrix()
 
 def import_Gaia_dataset(
-        path    
-    ):
+    path: str,    
+) -> pd.DataFrame:
     """
     Import Gaia dataset
     """
@@ -585,8 +657,8 @@ def import_Gaia_dataset(
     return dataset
 
 def import_TD_dataset(
-        path: str
-    ):
+    path: str,
+) -> pd.DataFrame:
     """
     Import TD dataset
     """

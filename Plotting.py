@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import corner
 from matplotlib.patches import Ellipse
 
 import AstrometricData as AD
@@ -13,19 +14,25 @@ def plot(
 
 	plot_positions(
 		positions = ADf.positions,
-		file_name = os.path.join(output, "positions.png")
+		file_name = os.path.join(output, "positions.pdf")
 	)
 
 	plot_proper_motions(
 		positions = ADf.positions,
 		proper_motions = ADf.proper_motions,
-		file_name = os.path.join(output, "proper_motions.png")
+		file_name = os.path.join(output, "proper_motions.pdf")
 	)
 
 	plot_overlap_matrix(
 		matrix = ADf.overlap_matrix,
-		names = ADf.names,
-		file_name = os.path.join(output, "overlap_matrix.png")
+		names = list(ADf.YlmQ_names.values()),
+		file_name = os.path.join(output, "overlap_matrix.pdf")
+	)
+
+	plot_corner(
+		np.loadtxt(os.path.join(output, 'posterior_samples.dat'))[:, 0:-2],
+		names = list(ADf.almQ_names.values()),
+		file_name = os.path.join(output, "corner.pdf")
 	)
 
 def plot_positions(
@@ -157,13 +164,13 @@ def plot_proper_motions(
     	)
 
     border_ellipse = Ellipse(
-	    					xy = (0., 0.),
-	    				  	width = 4.*np.sqrt(2),
-	    				  	height = 2.*np.sqrt(2), 
-	                      	edgecolor = 'black',
-	                      	fc = 'None',
-	                      	lw = 1.
-                    	)
+		xy = (0., 0.),
+		width = 4.*np.sqrt(2),
+		height = 2.*np.sqrt(2), 
+		edgecolor = 'black',
+		fc = 'None',
+		lw = 1.
+	)
 
     ax.add_patch(border_ellipse)
 
@@ -175,28 +182,43 @@ def plot_proper_motions(
 
 def plot_overlap_matrix(
 		matrix: np.ndarray,
-		names: dict,
+		names: list,
 		file_name: str
 	):
     """
     Plot an overlap matrix
     """
 
-    labels = list(names.values())
-    N_labels = len(labels)
+    N_labels = len(names)
 
     plt.figure(figsize=(12,10))
 
     plt.imshow(matrix)
 
-    plt.xticks(np.arange(N_labels), labels, rotation=90)
-    plt.yticks(np.arange(N_labels), labels)
+    plt.xticks(np.arange(N_labels), names, rotation=90)
+    plt.yticks(np.arange(N_labels), names)
 
     plt.colorbar()
 
     plt.tight_layout()
     plt.savefig(file_name, dpi=300)
     plt.clf()
+
+def plot_corner(
+	samples: np.array,
+	names: list,
+	file_name: str,
+):
+	if len(names) + 2 == samples.shape[1]:
+		names.extend(['beta', 'gamma'])
+		
+	corner.corner(
+        samples,
+        labels = names,
+    )
+	
+	plt.savefig(file_name)
+	plt.clf()
     
  #    def pm_hist(self, outfile):
  #        """

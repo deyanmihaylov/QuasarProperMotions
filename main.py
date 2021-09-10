@@ -30,7 +30,8 @@ def main():
 
     U.assert_config_params(params)
 
-    C.check_output_dir(params['General']['output_dir'])
+    C.check_and_create_dir(params['General']['output_dir'])
+    C.check_and_create_dir(os.path.join(params['General']['output_dir'], "log"))
 
     C.record_config_params(params)
 
@@ -43,15 +44,12 @@ def main():
 
     astrometric_model = S.model(
         data,
-        logL_method = params['MCMC']['logL_method'],
-        prior_bounds = params['MCMC']['prior_bounds'],
-        beta = params['MCMC']['beta'],
-        gamma = params['MCMC']['gamma']
+        params = params['MCMC']
     )
 
     nest = cpnest.CPNest(
         astrometric_model,
-        output = params['General']['output_dir'],
+        output = os.path.join(params['General']['output_dir'], "cpnest_output"),
         nthreads = params['MCMC']['nthreads'],
         nlive = params['MCMC']['nlive'],
         maxmcmc = params['MCMC']['maxmcmc'],
@@ -78,6 +76,8 @@ def main():
         newline='\n',
         delimiter=' '
     )
+
+    nest.plot()
 
     A_limit = PP.post_process_results(
         posterior_file = os.path.join(params['General']['output_dir'], 'posterior_samples.dat'),

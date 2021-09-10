@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 
 import Utils as U
 
@@ -100,19 +101,17 @@ def post_process_results(
 
     P_A_given_D = P_A_given_D / P_sum
 
-    import matplotlib.pyplot as plt
+    # plt.hist(P_A_given_D)
+    # plt.xlabel('A')
+    # plt.ylabel('P(A|D)')
+    # plt.title('Histogram of A (amplitude of the SGWB)')
+    # plt.yscale('log')
 
-    plt.hist(P_A_given_D)
-    plt.xlabel('A')
-    plt.ylabel('P(A|D)')
-    plt.title('Histogram of A (amplitude of the SGWB)')
-    plt.yscale('log')
+    # outfile = "./hist_A.png"
 
-    outfile = "./hist_A.png"
-
-    plt.tight_layout()
-    plt.savefig(outfile)
-    plt.clf()
+    # plt.tight_layout()
+    # plt.savefig(outfile)
+    # plt.clf()
 
     A_limit = np.percentile(P_A_given_D, limit)
 

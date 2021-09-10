@@ -2,75 +2,77 @@
 
 [General]
 
-output_dir = ../test12/
+output_dir = /work/dmihaylov/quasar_pm/test
 verbose = 2
 plotting = 1
 
 
 [Data]
 
-Lmax = 4
+Lmax = 1
 
-# N_obj = 100000
+N_obj = 10000
 
 # positions legend:
 # (1) - Mock data, requires N_obj and positions_method
-# (2) - Gaia dataset, type 2
-# (3) - Gaia dataset, type 3
-# (4) - Gaia dataset, type 2 and 3
+# (2) - Gaia Data Release 2, type 2
+# (3) - Gaia Data Release 2, type 3
+# (4) - Gaia Data Release 2, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-positions = 2
+positions = 1
 
-positions_seed = 2
+# positions_seed = 2
 
 # mock positions method:
 # "uniform", "bunched"
-positions_method = bunched
+positions_method = uniform
 
 # bunch_size_polar: horizontal
-bunch_size_polar = 0.0
+# bunch_size_polar = 0.0
 
 # bunch_size_azimuthal: vertical
-bunch_size_azimuthal = 0.0
+# bunch_size_azimuthal = 0.0
 
 # proper_motions legend:
 # (1) - Mock proper motions
-# (2) - Gaia dataset, type 2
-# (3) - Gaia dataset, type 3
-# (4) - Gaia dataset, type 2 and 3
+# (2) - Gaia Data Release 2, type 2
+# (3) - Gaia Data Release 2, type 3
+# (4) - Gaia Data Release 2, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-proper_motions = 2
+proper_motions = 1
 
-proper_motions_seed = 2
+# proper_motions_seed = 2
 
 # mock proper motions method:
 # "zero", "dipole", "multipole"
-proper_motions_method = dipole
+# proper_motions_method = dipole
 
 # dipole: strength of dipole
-dipole = 0.2
+# dipole = 0.05
 
 # multipole: list of standard deviations for each multipole order
-multipole = [0.2]
+# multipole = [0.2]
+
+injection = {"1,-1,E": 0.1,"1,0,E": 0.3,"1,1,E": 0.2}
 
 # proper motions errors legend:
 # (1) - Mock proper motion errors
-# (2) - Gaia dataset, type 2
-# (3) - Gaia dataset, type 3
-# (4) - Gaia dataset, type 2 and 3
+# (2) - Gaia Data Release 2, type 2
+# (3) - Gaia Data Release 2, type 3
+# (4) - Gaia Data Release 2, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-proper_motion_errors = 2
+proper_motion_errors = 1
 
 # mock proper motion errors method:
 # "flat", "adaptive"
 # "adaptive": proper_motion_errors_std is multiplied by the absolute value of each proper motion
-proper_motion_errors_method = flat
+# proper_motion_errors_method = flat
 
 # mock proper motion errors standard deviation:
-proper_motion_errors_std = 0.1
+# proper_motion_errors_std = 0.01
 
 # mock proper motion errors correlations:
-proper_motion_errors_corr = 0.5
+# proper_motion_errors_corr = 0.0
 
 # proper_motion_noise: standard deviation of the Gaussian noise to add to the proper motions
 # proper_motion_noise = 0.1
@@ -86,16 +88,13 @@ basis = vsh
 
 [MCMC]
 
-# Log-likelihood method: "permissive", "quadratic"
+# Log-likelihood method: "quadratic", "permissive", "2Dpermissive", "goodandbad"
 logL_method = permissive
 
 nthreads = 16
 nlive = 1024
-maxmcmc = 128
-prior_bounds = 0.05
-
-beta = 0.4
-gamma = 1.1
+maxmcmc = 256
+prior_bounds = 0.5
 
 
 [Post_processing]

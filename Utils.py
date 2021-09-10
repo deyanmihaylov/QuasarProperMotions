@@ -188,8 +188,8 @@ def assert_config_params(params):
         params['Data']['basis'] in ["vsh", "orthogonal"]
     ), sys.exit("vsh_basis takes values \"vsh\" or \"orthogonal\"")
 
-    # ll_method should be one of ["permissive", "quadratic"]
-    assert params['MCMC']['logL_method'] in ["permissive", "quadratic"], sys.exit("llmethod takes values \"permissive\" or \"quadratic\"")
+    # ll_method should be one of ["quadratic", "permissive", "2Dpermissive", "goodandbad"]
+    assert params['MCMC']['logL_method'] in ["quadratic", "permissive", "2Dpermissive", "goodandbad"], sys.exit("llmethod takes values \"quadratic\", \"permissive\", \"2Dpermissive\", or \"goodandbad\"")
 
     # nthreads should be a positive integer
     assert isinstance(params['MCMC']['nthreads'], int), sys.exit("nthreads takes integer values")
@@ -213,6 +213,11 @@ def assert_config_params(params):
     # limit should be a number between 0 and 100
     assert isinstance(params['Post_processing']['limit'], float) or isinstance(params['Post_processing']['limit'], int), sys.exit("limit takes numerical values")
     assert params['Post_processing']['limit'] >= 0. and params['Post_processing']['limit'] <= 100., sys.exit("limit takes values between 0 and 100")
+
+def logger(
+    message: str,
+):
+    print(message)
 
 def covariant_matrix(
         errors,
@@ -309,10 +314,10 @@ def generalized_chi_squared_limit(k, A, P, N=1000000):
     return limit
 
 def export_data(
-        ADf: AD.AstrometricDataframe,
-        limit: float,
-        output: str
-    ):
+    ADf: AD.AstrometricDataframe,
+    limit: float,
+    output: str
+):
     
     positions_file_name = os.path.join(output, 'positions.dat')
     np.savetxt(positions_file_name, ADf.positions)
