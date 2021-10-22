@@ -121,21 +121,21 @@ def assert_config_params(params):
     assert params['Data']['proper_motions'] >= 1 and params['Data']['proper_motions'] <= 5, sys.exit("proper_motions takes an integer value between 1 and 5")
 
     # proper_motions_method should be one of ["zero", "dipole", "multipole"]
-    assert params['Data']['proper_motions_method'] in ["zero", "dipole", "multipole"], sys.exit("proper_motions_method takes values \"zero\", \"dipole\" or \"multipole\"")
+    # assert params['Data']['proper_motions_method'] in ["zero", "dipole", "multipole"], sys.exit("proper_motions_method takes values \"zero\", \"dipole\" or \"multipole\"")
 
     # proper_motions_seed should be an int
     assert isinstance(params['Data']['proper_motions_seed'], int), sys.exit("proper_motions_seed takes integer values")
 
     # dipole should be a non-negative number (check only if proper_motions_method is "dipole")
-    if params['Data']['proper_motions_method'] == "dipole":
-        assert isinstance(params['Data']['dipole'], float) or isinstance(params['Data']['dipole'], int), sys.exit("dipole takes numerical values")
-        assert params['Data']['dipole'] >= 0., sys.exit("dipole takes non-negative values")
+    # if params['Data']['proper_motions_method'] == "dipole":
+    #     assert isinstance(params['Data']['dipole'], float) or isinstance(params['Data']['dipole'], int), sys.exit("dipole takes numerical values")
+    #     assert params['Data']['dipole'] >= 0., sys.exit("dipole takes non-negative values")
 
     # multipole should be a list of non-negative numbers with length equal to Lmax (check only if proper_motions_method is "multipole")
-    if params['Data']['proper_motions_method'] == "multipole":
-        assert isinstance(params['Data']['multipole'], list), sys.exit("multipole takes a list of numbers")
-        assert len(params['Data']['multipole']) == params['Data']['Lmax'], sys.exit("The size of multipole needs to match Lmax")
-        for x in params['Data']['multipole']: assert isinstance(x, float) or isinstance(x, int), sys.exit("multipole takes a list of numbers")
+    # if params['Data']['proper_motions_method'] == "multipole":
+    #     assert isinstance(params['Data']['multipole'], list), sys.exit("multipole takes a list of numbers")
+    #     assert len(params['Data']['multipole']) == params['Data']['Lmax'], sys.exit("The size of multipole needs to match Lmax")
+    #     for x in params['Data']['multipole']: assert isinstance(x, float) or isinstance(x, int), sys.exit("multipole takes a list of numbers")
 
     # proper_motion_errors should be an integer between 1 and 5
     assert isinstance(params['Data']['proper_motion_errors'], int), sys.exit("proper_motion_errors takes integer values")

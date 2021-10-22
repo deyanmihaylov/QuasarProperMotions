@@ -2,7 +2,7 @@
 
 [General]
 
-output_dir = /work/dmihaylov/quasar_pm/test
+output_dir = /work/dmihaylov/quasar_pm/test_noise
 verbose = 2
 plotting = 1
 
@@ -21,7 +21,7 @@ N_obj = 10000
 # (5) - Darling and Truebenbach dataset
 positions = 1
 
-# positions_seed = 2
+positions_seed = 1
 
 # mock positions method:
 # "uniform", "bunched"
@@ -41,19 +41,10 @@ positions_method = uniform
 # (5) - Darling and Truebenbach dataset
 proper_motions = 1
 
-# proper_motions_seed = 2
+proper_motions_seed = 1
 
-# mock proper motions method:
-# "zero", "dipole", "multipole"
-# proper_motions_method = dipole
-
-# dipole: strength of dipole
-# dipole = 0.05
-
-# multipole: list of standard deviations for each multipole order
-# multipole = [0.2]
-
-injection = {"1,-1,E": 0.1,"1,0,E": 0.3,"1,1,E": 0.2}
+# mock proper motions:
+# injection = {"1,-1,E": 0.1,"1,0,E": 0.3,"1,1,E": 0.2}
 
 # proper motions errors legend:
 # (1) - Mock proper motion errors
@@ -75,9 +66,9 @@ proper_motion_errors = 1
 # proper_motion_errors_corr = 0.0
 
 # proper_motion_noise: standard deviation of the Gaussian noise to add to the proper motions
-# proper_motion_noise = 0.1
+proper_motion_noise = 0.1
 
-# proper_motion_noise_seed = 5
+proper_motion_noise_seed = 1
 
 # threshold for magnitude of dimensionless proper motion vectors
 # dimensionless_proper_motion_threshold = 3

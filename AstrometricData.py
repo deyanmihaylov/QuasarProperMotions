@@ -149,9 +149,6 @@ class AstrometricDataframe:
 
     def generate_proper_motions(
         self,
-        method: str,
-        dipole: float,
-        multipole: list,
         injection: dict,
         random_seed: int,
     ):
@@ -176,32 +173,11 @@ class AstrometricDataframe:
 
                         if key in injection.keys():
                             almQ[(l, m, Q)] = injection[key]
+                            U.logger(f"{key}: {injection[key]}")
                         else:
                             almQ[(l, m, Q)] = 0
 
-            # almQ = {
-            #     (l, m, Q): np.random.normal(0, multipole[l])
-            #     for l in range(1, self.Lmax+1)
-            #     for m in range(-l, l+1) for Q in ['E', 'B']
-            # }
-
             self.proper_motions = M.generate_model(almQ, self.basis)
-        
-        # if method == "zero":
-            
-        # elif method == "dipole":
-        #     U.logger(f"Injecting dipole with amplitude {dipole}")
-
-        #     almQ = {
-        #         (l, m, Q): 0.
-        #         for l in range(1, self.Lmax+1)
-        #         for m in range(-l, l+1) for Q in ['E', 'B']
-        #     }
-
-        #     almQ[(1, 0, 'E')] = dipole
-
-        #     self.proper_motions = M.generate_model(almQ, self.basis)
-        # elif method == "multipole":
     
     def load_Gaia_proper_motions(
         self,
@@ -555,9 +531,6 @@ def load_astrometric_data(
 
     if proper_motions == 1:
         ADf.generate_proper_motions(
-            method = params['proper_motions_method'],
-            dipole = params['dipole'],
-            multipole = params['multipole'],
             injection = params['injection'],
             random_seed = params['proper_motions_seed']
         )

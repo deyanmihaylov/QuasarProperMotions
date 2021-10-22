@@ -19,9 +19,7 @@ bunch_size_azimuthal = 0.0
 
 proper_motions = 2
 proper_motions_seed = 2
-proper_motions_method = dipole
-dipole = 0.2
-multipole = [0.2]
+injection = {}
 
 proper_motion_errors = 2
 proper_motion_errors_method = flat
