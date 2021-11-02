@@ -17,13 +17,14 @@ def main():
     parser = argparse.ArgumentParser(
         description = "Quasar proper motions code"
     )
-    
+
     parser.add_argument(
         "parameter_file",
         metavar = "Parameter file",
         type = str,
         help = ".par file"
     )
+
     args = parser.parse_args()
 
     params = C.set_params(args.parameter_file)
@@ -53,7 +54,7 @@ def main():
         nthreads = params['MCMC']['nthreads'],
         nlive = params['MCMC']['nlive'],
         maxmcmc = params['MCMC']['maxmcmc'],
-        resume = False,
+        resume = True,
         verbose = params['General']['verbose']
     )
 

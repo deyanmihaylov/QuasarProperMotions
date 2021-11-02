@@ -338,7 +338,7 @@ class AstrometricDataframe:
         Remove outliers from dataset
 
         Define the dimensionless proper motion for each object as
-        R = proper_motion_vector^T . inverse_error_matrix . proper_motion_vector
+        R = proper_motions^T . inverse_error_matrix . proper_motions
 
         We will remove outliers with R greater than a given threshold
 
@@ -395,7 +395,8 @@ class AstrometricDataframe:
             weighted_overlaps=True,
         ):
         """
-        Calculate the overlap matrix (and its Cholesky decomposition) between VSH basis functions
+        Calculate the overlap matrix (and its Cholesky decomposition) 
+        between VSH basis functions
 
         weighted_overlaps: bool
             whether or not to use the error weighted overlap sums

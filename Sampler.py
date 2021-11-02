@@ -1,5 +1,8 @@
 import sys
 import numpy as np
+
+from scipy.stats import norm
+
 import cpnest
 import cpnest.model
 
@@ -14,10 +17,11 @@ def R_values(
     model: np.array,
 ) -> np.array:
     """
-    Compute R values from data, model, and the inverse of the covariant matrix
+    Compute R values from data, model, and the inverse of the
+    covariant matrix
     """
     M = data - model
-    R_values = np.sqrt(np.einsum('...i,...ij,...j->...', M, invcovs, M))
+    R_values = np.sqrt(np.einsum("...i,...ij,...j->...", M, invcovs, M))
 
     return R_values
 
@@ -29,8 +33,9 @@ def logL_quadratic(R):
 
 def logL_permissive(R):
     """
-    The permissive log-likelihood 
-    As used in Darling et al. 2018 and coming from Sivia and Skilling p.168
+    The permissive log-likelihood
+    As used in Darling et al. 2018 and coming from Sivia and Skilling,
+    p.168
     """
     half_R_squared = 0.5 * (R**2)
     return np.log((1.-np.exp(-half_R_squared)) / half_R_squared)
@@ -38,14 +43,16 @@ def logL_permissive(R):
 def logL_2Dpermissive(R):
     """
     The modified permissive log-likelihood for 2D data
-    A generalisation of the Sivia and Skilling likelihood (p.168) for 2D data
+    A generalisation of the Sivia and Skilling likelihood (p.168) for
+    2D data
     """
     return np.log( (np.sqrt(np.pi/2)*erf(R/np.sqrt(2)) - R*np.exp(-R**2/2)) / (R**3) )
 
 def logL_goodandbad(R, beta, gamma):
     """
-    Following the notation of Sivia and Skilling, this is "the good and bad data model".
-    
+    Following the notation of Sivia and Skilling, this is "the good
+    and bad data model".
+
     Some fraction beta of the data is assumed to come from a
     normal distribution with errors larger by a factor of gamma.
     """
@@ -117,9 +124,25 @@ class model(cpnest.model.Model):
 
         if logL_method == "goodandbad":
             self.names.extend(['beta', 'gamma'])
-            self.bounds.extend([[0, 1], [1, 10]])
+            self.bounds.extend([[-1.78, -1.20], [-0.08, 0.52]])
 
         print("Searching over the following parameters:", ', '.join(self.names))
+
+    def log_prior(
+            self,
+            params: dict
+        ) -> float:
+        """
+        The log-prior function
+        """
+
+        if self.logL_method is "goodandbad":
+            log_prior = self.beta_prior.logpdf(params['log10_beta'])
+            log_prior += self.gamma_prior.logpdf(params['log10_gamma'])
+        else:
+            log_prior = 0.
+
+        return log_prior
 
     def log_likelihood(
         self,
@@ -136,7 +159,7 @@ class model(cpnest.model.Model):
         R = np.maximum(R, self.tol)
 
         if self.logL_method == "goodandbad":
-            log_likelihood = np.sum(self.logL(R, almQ['beta'], almQ['gamma']))
+            log_likelihood = np.sum(self.logL(R, 10**almQ['beta'], 10**almQ['gamma']))
         else:
             log_likelihood = np.sum(self.logL(R))
 
