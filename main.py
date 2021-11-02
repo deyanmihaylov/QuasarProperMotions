@@ -6,7 +6,7 @@ import Config as C
 import Utils as U
 import AstrometricData as AD
 import Sampler as S
-import PostProcessing as PP
+import PostProcess as PP
 import Plotting as P
 
 # will be made obsolete
@@ -81,11 +81,8 @@ def main():
 
     A_limit = PP.post_process_results(
         posterior_file = os.path.join(params['General']['output_dir'], 'posterior_samples.dat'),
-        which_basis = astrometric_model.which_basis,
         Lmax = params['Data']['Lmax'],
-        L = astrometric_model.overlap_matrix_Cholesky,
-        pol = params['Post_processing']['pol'],
-        limit = params['Post_processing']['limit']
+        outdir = params['General']['output_dir'],
     )
 
     U.export_data(

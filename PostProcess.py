@@ -95,12 +95,13 @@ def compute_A_posterior(
     P_A_given_D = np.array([np.sum(np.exp(- N*np.log(A) - Q/(2.*(A**2.)))) for A in A_prior])
     P_A_given_D = P_A_given_D / np.trapz(P_A_given_D, A_prior)
 
-    return P_A_given_D
+    return A_prior, P_A_given_D
 
 def post_process_results(
         posterior_file: str,
         Lmax: int,
-    ) -> float:
+        outdir: str,
+    ) -> None:
     """
     Post process the results from the nested sampling
 
@@ -122,108 +123,29 @@ def post_process_results(
 
     # do the GR background first
     if Lmax >= 2:
-        Cs_GR_E = flatten([[C_l(l, "GR", "E")] * (2*l+1) for l in range(1, Lmax+1)])
-        Cs_GR_B = flatten([[C_l(l, "GR", "B")] * (2*l+1) for l in range(1, Lmax+1)])
-        
-        Cs_GR = flatten([[Cs_GR_E[i], Cs_GR_B[i]] for i in range(0, Lmax*(Lmax+2))])
-        
-        diag_of_M = [0 if Cs_GR[i] == 0 else 1/Cs_GR[i] for i in range(0, len(Cs_GR))]
-        M = np.diag(diag_of_M)
-
-        Q = np.einsum('...i,ij,...j->...', almQ_posterior_samples, M, almQ_posterior_samples)
-
-        A_prior = np.linspace(0., np.sqrt(Q.max()), num=1000)
-        A_prior = np.delete(A_prior, 0)
-
-        P_A_given_D = np.array([np.sum(np.exp(- N_cols*np.log(A) - Q/(2.*(A**2.)))) for A in A_prior])
-        P_A_given_D = P_A_given_D / np.trapz(P_A_given_D, A_prior)
-
-        A_posterior = compute_A_posterior("GR", Lmax, almQ_posterior_samples)
+        A_prior_GR, A_posterior_GR = compute_A_posterior("GR", Lmax, almQ_posterior_samples)
 
         plt.figure(figsize=(8,6))
-        plt.plot(A_prior, P_A_given_D)
-        plt.vlines(0.005318, 1e-12, 1e3)
+        plt.plot(A_prior_GR, A_posterior_GR)
         plt.xlabel('A')
         plt.ylabel('P(A|D)')
         plt.xlim((0,np.sqrt(Q.max())))
-        plt.ylim((1e-12,1e3))
-        plt.title('Amplitude of the SGWB')
+        plt.ylim((1e-12, 1e3))
+        plt.title('GR Amplitude of the SGWB')
         plt.yscale('log')
+        plt.savefig(os.path.join(outdir, "GR_result.png"), dpi=400)
 
-        plt.show()
+    A_prior_S, A_posterior_S = compute_A_posterior("S", Lmax, almQ_posterior_samples)
 
-        print(P_A_given_D-A_posterior)
-        exit()
-
-    # plt.hist(P_A_given_D)
-    # plt.xlabel('A')
-    # plt.ylabel('P(A|D)')
-    # plt.title('Histogram of A (amplitude of the SGWB)')
-    # plt.yscale('log')
-
-    # outfile = "./hist_A.png"
-
-    # plt.tight_layout()
-    # plt.savefig(outfile)
-    # plt.clf()
-
-    A_limit = np.percentile(P_A_given_D, limit)
-
-    return A_limit
-
-# def post_process_results_old(
-#         posterior_file: str,
-#         which_basis: str,
-#         Lmax: int,
-#         L: np.ndarray,
-#         pol: str,
-#         limit: float
-#     ) -> float:
-#     """
-#     Post process CPNest results
-
-#     INPUTS
-#     ------
-#     post_process_results: str
-#         the path to the posterior.dat file produced by CPNest
-#     mod_basis: bool
-#         whether the modified basis of functions is used
-
-#     """
-#     with open(posterior_file) as f:
-#         coeff_names = f.readline().split()[1:-2]
-
-#     N_cols = 2 * Lmax * (Lmax+2)
-
-#     almQ_posterior_data = np.loadtxt(posterior_file)
-#     almQ_posterior_samples = almQ_posterior_data[:, 0:N_cols]
-
-#     if pol == "GR":
-#         assert Lmax>=2
-#         diag_of_M = [[0. if C_l_GR(l) == 0 else 1./C_l_GR(l)] * 2*(2*l+1) for l in range(1, Lmax+1)]
-#     elif pol == "B":
-#         diag_of_M = [[0. if C_l_B(l) == 0 else 1./C_l_B(l), 0.] * (2*l+1) for l in range(1, Lmax+1)]
-
-#     diag_of_M_flat = [coeff for coeffs in diag_of_M for coeff in coeffs]
-#     M = np.diag(diag_of_M_flat)
-
-#     Q = np.einsum('...i,ij,...j->...', almQ_posterior_samples, M, almQ_posterior_samples)
-
-#     Q_limit = np.percentile(Q, limit)
-
-#     if which_basis == "vsh":
-#         chi_squared_limit = U.chi_squared_limit(len(coeff_names), limit)
-
-#         A_limit = np.sqrt(Q_limit/chi_squared_limit)
-
-#     elif which_basis == "orthogonal":
-#         X = np.einsum("li,lk,kj->ij", L, M, L)
-
-#         generalized_chi_squared_limit = U.generalized_chi_squared_limit(len(coeff_names), X, limit)
-
-#         A_limit = np.sqrt(Q_limit/generalized_chi_squared_limit)
-
-#     return A_limit
+    plt.figure(figsize=(8,6))
+    plt.plot(A_prior_GR, A_posterior_GR)
+    plt.xlabel('A')
+    plt.ylabel('P(A|D)')
+    plt.xlim((0,np.sqrt(Q.max())))
+    plt.ylim((1e-12, 1e3))
+    plt.title('GR Amplitude of the SGWB')
+    plt.yscale('log')
+    plt.savefig(os.path.join(outdir, "S_result.png"), dpi=400)
 
 
 if __name__ == "__main__":
