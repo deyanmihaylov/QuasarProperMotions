@@ -42,121 +42,188 @@ def is_pathname_valid(
     else:
         return True
 
+def assert_param_group_exists(
+    params:dict,
+    group_name: str,
+) -> None:
+    assert (
+        group_name in params
+    ), sys.exit(f"'{group_name}' parameters group is missing")
+
+def assert_param_exists(
+    params: dict,
+    group_name: str,
+    param_name: str,
+) -> None:
+    assert (
+        param_name in params[group_name]
+    ), sys.exit(f"'{param_name}' parameter is missing")
+
+def assert_valid_path(
+    params: dict,
+    group_name: str,
+    param_name: str,
+) -> None:
+    assert (
+        is_pathname_valid(params[group_name][param_name]) == True
+    ), sys.exit(f"'{param_name}' needs to be a valid path")
+
+def assert_int(
+    params: dict,
+    group_name: str,
+    param_name: str,
+) -> None:
+    assert isinstance(
+        params[group_name][param_name],
+        int
+    ), sys.exit(f"'{param_name}' takes integer values")
+
+def assert_numerical(
+    params: dict,
+    group_name: str,
+    param_name: str,
+) -> None:
+    assert isinstance(
+        params[group_name][param_name],
+        float
+    ), sys.exit(f"'{param_name}' takes numerical values")
+
+def assert_non_negative(
+    params: dict,
+    group_name: str,
+    param_name: str,
+) -> None:
+    assert (
+        params[group_name][param_name] >= 0
+    ), sys.exit(f"'{param_name}' takes non-negative values")
+
+def assert_positive(
+    params: dict,
+    group_name: str,
+    param_name: str,
+) -> None:
+    assert (
+        params[group_name][param_name] > 0
+    ), sys.exit(f"'{param_name}' takes positive values")
+
+def assert_greater_than_or_equal(
+    params: dict,
+    group_name: str,
+    param_name: str,
+    val: float,
+) -> None:
+    assert (
+        params[group_name][param_name] >= val
+    ), sys.exit(f"'{param_name}' takes values greater than or equal to {val}")
+
+def assert_greater_than(
+    params: dict,
+    group_name: str,
+    param_name: str,
+    val: float,
+) -> None:
+    assert (
+        params[group_name][param_name] > val
+    ), sys.exit(f"'{param_name}' takes values greater than {val}")
+
+def assert_less_than_or_equal(
+    params: dict,
+    group_name: str,
+    param_name: str,
+    val: float,
+) -> None:
+    assert (
+        params[group_name][param_name] <= val
+    ), sys.exit(f"'{param_name}' takes values less than or equal to {val}")
+
+def assert_less_than(
+    params: dict,
+    group_name: str,
+    param_name: str,
+    val: float,
+) -> None:
+    assert (
+        params[group_name][param_name] < val
+    ), sys.exit(f"'{param_name}' takes values less than {val}")
+
+def assert_in_list(
+    params: dict,
+    group_name: str,
+    param_name: str,
+    val_list: list,
+) -> None:
+    assert (
+        params[group_name][param_name] in val_list
+    ), sys.exit(f"'{param_name}' takes one of [{', '.join(val_list)}] as value")
+
 def assert_config_params(
-        params: dict
-    ) -> None:
+    params: dict,
+) -> None:
     """
     Perform checks that parameters are valid.
     """
+    
+    # General parameters
+    assert_param_group_exists(params, 'General')
 
     # output_dir should be a valid path in the user's OS
-    assert (
-        is_pathname_valid(params['General']['output_dir']) == True
-    ), sys.exit("output_dir needs to be a valid path")
+    assert_param_exists(params, 'General', 'output_dir')
+    assert_valid_path(params, 'General', 'output_dir')
 
     # verbose should be a non-negative integer
-    assert isinstance(
-        params['General']['verbose'],
-        int
-    ), sys.exit("verbose takes integer values")
-
-    assert (
-        params['General']['verbose'] >= 0
-    ), sys.exit("verbose takes non-negative values")
+    assert_param_exists(params, 'General', 'verbose')
+    assert_int(params, 'General', 'verbose')
+    assert_non_negative(params, 'General', 'verbose')
 
     # plotting should be a non-negative integer
-    assert isinstance(
-        params['General']['plotting'],
-        int
-    ), sys.exit("plotting takes integer values")
+    assert_param_exists(params, 'General', 'plotting')
+    assert_int(params, 'General', 'plotting')
+    assert_non_negative(params, 'General', 'plotting')
 
-    assert (
-        params['General']['plotting'] >= 0
-    ), sys.exit("plotting takes non-negative values")
+    # Data parameters
+    assert_param_group_exists(params, 'Data')
 
     # Lmax should be a positive integer
-    assert isinstance(
-        params['Data']['Lmax'],
-        int
-    ), sys.exit("Lmax takes integer values")
-
-    assert (
-        params['Data']['Lmax'] >= 1
-    ), sys.exit("Lmax takes non-negative values")
-
-    # N_obj should be a positive integer
-    assert isinstance(
-        params['Data']['N_obj'],
-        int
-    ), sys.exit("N_obj takes integer values")
-
-    assert (
-        params['Data']['N_obj'] >= 1
-    ), sys.exit("N_obj takes non-negative integer values")
+    assert_param_exists(params, 'Data', 'Lmax')
+    assert_int(params, 'Data', 'Lmax')
+    assert_non_negative(params, 'Data', 'Lmax')
 
     # positions should be an integer between 1 and 5
-    assert isinstance(
-        params['Data']['positions'],
-        int
-    ), sys.exit("positions takes integer values")
+    assert_param_exists(params, 'Data', 'positions')
+    assert_int(params, 'Data', 'positions')
+    assert_greater_than_or_equal(params, 'Data', 'positions', 1)
+    assert_less_than_or_equal(params, 'Data', 'positions', 5)
 
-    assert (
-        params['Data']['positions'] >= 1
-        and
-        params['Data']['positions'] <= 5
-    ), sys.exit("positions takes an integer value between 1 and 5")
+    if params['Data']['positions'] == 1:
+        # N_obj should be a positive integer
+        assert_param_exists(params, 'Data', 'N_obj')
+        assert_int(params, 'Data', 'N_obj')
+        assert_greater_than_or_equal(params, 'Data', 'N_obj', 1)
 
-    # positions_method should be one of ["uniform", "bunched"]
-    assert (
-        params['Data']['positions_method'] in ["uniform", "bunched"]
-    ), sys.exit("positions_method takes values \"uniform\" or \"bunched\"")
+        # positions_method should be one of ["uniform", "bunched"]
+        assert_param_exists(params, 'Data', 'positions_method')
+        assert_in_list(params, 'Data', 'positions_method', ["uniform", "bunched"])
 
-    # positions_seed should be an int
-    assert isinstance(
-        params['Data']['positions_seed'],
-        int
-    ), sys.exit("positions_seed takes integer values")
+        # positions_seed should be an int
+        assert_int(params, 'Data', 'positions_seed')
 
-    # bunch_size_polar should be a non-negative number
-    assert isinstance(
-        params['Data']['bunch_size_polar'],
-        (int, float)
-    ), sys.exit("bunch_size_polar takes numerical values")
+        # bunch_size_polar should be a non-negative number
+        assert_numerical(params, 'Data', 'bunch_size_polar')
+        assert_non_negative(params, 'Data', 'bunch_size_polar')
 
-    assert (
-        params['Data']['bunch_size_polar'] >= 0.
-    ), sys.exit("bunch_size_polar takes non-negative values")
-
-    # bunch_size_azimuthal should be a non-negative number
-    assert isinstance(
-        params['Data']['bunch_size_azimuthal'],
-        (int, float)
-    ), sys.exit("bunch_size_azimuthal takes numerical values")
-
-    assert (
-        params['Data']['bunch_size_azimuthal'] >= 0.
-    ), sys.exit("bunch_size_azimuthal takes non-negative values")
+        # bunch_size_azimuthal should be a non-negative number
+        assert_numerical(params, 'Data', 'bunch_size_azimuthal')
+        assert_non_negative(params, 'Data', 'bunch_size_azimuthal')
 
     # proper_motions should be an integer between 1 and 5
-    assert isinstance(
-        params['Data']['proper_motions'],
-        int
-    ), sys.exit("proper_motions takes integer values")
+    assert_param_exists(params, 'Data', 'proper_motions')
+    assert_int(params, 'Data', 'proper_motions')
+    assert_greater_than_or_equal(params, 'Data', 'proper_motions', 1)
+    assert_less_than_or_equal(params, 'Data', 'proper_motions', 5)
 
-    assert (
-        params['Data']['proper_motions'] >= 1
-        and
-        params['Data']['proper_motions'] <= 5
-    ), sys.exit("proper_motions takes an integer value between 1 and 5")
-
-    # proper_motions_method should be one of ["zero", "dipole", "multipole"]
-    # assert params['Data']['proper_motions_method'] in ["zero", "dipole", "multipole"], sys.exit("proper_motions_method takes values \"zero\", \"dipole\" or \"multipole\"")
-
-    # proper_motions_seed should be an int
-    assert isinstance(
-        params['Data']['proper_motions_seed'],
-        int
-    ), sys.exit("proper_motions_seed takes integer values")
+    if params['Data']['proper_motions'] == 1:
+        # proper_motions_seed should be an int
+        assert_int(params, 'Data', 'proper_motions_seed')
 
     # dipole should be a non-negative number (check only if proper_motions_method is "dipole")
     # if params['Data']['proper_motions_method'] == "dipole":
@@ -170,112 +237,64 @@ def assert_config_params(
     #     for x in params['Data']['multipole']: assert isinstance(x, float) or isinstance(x, int), sys.exit("multipole takes a list of numbers")
 
     # proper_motion_errors should be an integer between 1 and 5
-    assert isinstance(
-        params['Data']['proper_motion_errors'],
-        int
-    ), sys.exit("proper_motion_errors takes integer values")
-
-    assert (
-        params['Data']['proper_motion_errors'] >= 1
-        and
-        params['Data']['proper_motion_errors'] <= 5
-    ), sys.exit("proper_motion_errors takes an integer value between 1 and 5")
+    assert_param_exists(params, 'Data', 'proper_motion_errors')
+    assert_int(params, 'Data', 'proper_motion_errors')
+    assert_greater_than_or_equal(params, 'Data', 'proper_motion_errors', 1)
+    assert_less_than_or_equal(params, 'Data', 'proper_motion_errors', 5)
 
     if params['Data']['proper_motion_errors'] == 1:
         # proper_motion_errors_method should be one of ["flat", "adaptive"]
-        assert (
-            params['Data']['proper_motion_errors_method']
-            in
-            ["flat", "adaptive"]
-        ), sys.exit("proper_motion_errors_method takes values \"flat\", \"adaptive\"")
+        # assert (
+        #     params['Data']['proper_motion_errors_method']
+        #     in
+        #     ["flat", "adaptive"]
+        # ), sys.exit("proper_motion_errors_method takes values \"flat\", \"adaptive\"")
 
         # proper_motion_errors_std should be a positive number
-        assert isinstance(
-            params['Data']['proper_motion_errors_std'],
-            (int, float)
-        ), sys.exit("proper_motion_errors_std takes numerical values")
-
-        assert (
-            params['Data']['proper_motion_errors_std'] > 0.
-        ), sys.exit("proper_motion_errors_std takes positive values")
+        assert_numerical(params, 'Data', 'proper_motion_errors_std')
+        assert_positive(params, 'Data', 'proper_motion_errors_std')
 
         # proper_motion_errors_corr should be a number in the interval (-1, 1)
-        assert isinstance(
-            params['Data']['proper_motion_errors_corr'],
-            (int, float)
-        ), sys.exit("proper_motion_errors_corr takes numerical values")
-
-        assert (
-            params['Data']['proper_motion_errors_corr'] > -1.
-            and
-            params['Data']['proper_motion_errors_corr'] < 1.
-        ), sys.exit("proper_motion_errors_corr takes values in the interval (-1, 1)")
+        assert_numerical(params, 'Data', 'proper_motion_errors_corr')
+        assert_greater_than(params, 'Data', 'proper_motion_errors_corr', -1)
+        assert_less_than(params, 'Data', 'proper_motion_errors_corr', 1)
 
     # proper_motion_noise should be a non-negative number
     if 'proper_motion_noise' in params['Data']:
-        assert isinstance(
-            params['Data']['proper_motion_noise'],
-            (int, float)
-        ), sys.exit("proper_motion_noise takes numerical values")
-
-        assert (
-            params['Data']['proper_motion_noise'] >= 0.
-        ), sys.exit("proper_motion_noise takes non-negative values")
+        assert_numerical(params, 'Data', 'proper_motion_noise')
+        assert_non_negative(params, 'Data', 'proper_motion_noise')
 
     # proper_motion_noise_seed should be an int
     if 'proper_motion_noise_seed' in params['Data']:
-        assert isinstance(
-            params['Data']['proper_motion_noise_seed'],
-            int
-        ), sys.exit("proper_motion_noise_seed takes integer values")
+        assert_int(params, 'Data', 'proper_motion_noise_seed')
 
     # dimensionless_proper_motion_threshold should be positive
     if 'dimensionless_proper_motion_threshold' in params['Data']:
-        assert isinstance(
-            params['Data']['dimensionless_proper_motion_threshold'],
-            (int, float)
-        ), sys.exit("dimensionless_proper_motion_threshold takes numerical values")
-
-        assert (
-            params['Data']['dimensionless_proper_motion_threshold'] > 0.
-        ), sys.exit("dimensionless_proper_motion_threshold takes positive values")
+        assert_numerical(params, 'Data', 'dimensionless_proper_motion_threshold')
+        assert_positive(params, 'Data', 'dimensionless_proper_motion_threshold')
 
     # vsh_basis should be one of ["vsh", "orthogonal"]
-    assert (
-        params['Data']['basis'] in ["vsh", "orthogonal"]
-    ), sys.exit("vsh_basis takes values \"vsh\" or \"orthogonal\"")
+    assert_in_list(params, 'Data', 'basis', ["vsh", "orthogonal"])
 
-    # ll_method should be one of ["quadratic", "permissive", "2Dpermissive", "goodandbad"]
-    assert params['MCMC']['logL_method'] in ["quadratic", "permissive", "2Dpermissive", "goodandbad"], sys.exit("llmethod takes values \"quadratic\", \"permissive\", \"2Dpermissive\", or \"goodandbad\"")
+    # MCMC parameters
+    assert_param_group_exists(params, 'MCMC')
+
+    # logL_method should be one of ["quadratic", "permissive", "2Dpermissive", "goodandbad"]
+    assert_in_list(params, 'MCMC', 'logL_method',
+        ["quadratic", "permissive", "2Dpermissive", "goodandbad"]
+    )
 
     # nthreads should be a positive integer
-    assert isinstance(
-        params['MCMC']['nthreads'],
-        int
-    ), sys.exit("nthreads takes integer values")
-
-    assert (
-        params['MCMC']['nthreads'] >= 1
-    ), sys.exit("nthreads takes positive values")
+    assert_int(params, 'MCMC', 'nthreads')
+    assert_positive(params, 'MCMC', 'nthreads')
 
     # nlive should be a positive integer
-    assert isinstance(
-        params['MCMC']['nlive'],
-        int
-    ), sys.exit("nlive takes integer values")
-
-    assert (
-        params['MCMC']['nlive'] >= 1
-    ), sys.exit("nlive takes positive values")
+    assert_int(params, 'MCMC', 'nlive')
+    assert_positive(params, 'MCMC', 'nlive')
 
     # maxmcmc should be a positive integer
-    assert (
-        isinstance(params['MCMC']['maxmcmc'], int)
-    ), sys.exit("maxmcmc takes integer values")
-
-    assert (
-        params['MCMC']['maxmcmc'] >= 1
-    ), sys.exit("maxmcmc takes non-negative values")
+    assert_int(params, 'MCMC', 'maxmcmc')
+    assert_positive(params, 'MCMC', 'maxmcmc')
 
     # prior_bounds should be a positive number
     assert isinstance(
@@ -286,21 +305,24 @@ def assert_config_params(
         params['MCMC']['prior_bounds'] > 0.
     ), sys.exit("prior_bounds takes positive values")
 
+    # Post_processing parameters
+    assert_param_group_exists(params, 'Post_processing')
+
     # pol should be one of ["GR", "B"]
-    assert (
-        params['Post_processing']['pol'] in ["GR", "B"]
-    ), sys.exit("pol takes values \"GR\" or \"B\"")
+    # assert (
+    #     params['Post_processing']['pol'] in ["GR", "B"]
+    # ), sys.exit("pol takes values \"GR\" or \"B\"")
 
     # limit should be a number between 0 and 100
-    assert isinstance(
-        params['Post_processing']['limit'], (int, float)
-    ), sys.exit("limit takes numerical values")
+    # assert isinstance(
+    #     params['Post_processing']['limit'], (int, float)
+    # ), sys.exit("limit takes numerical values")
 
-    assert (
-        params['Post_processing']['limit'] >= 0.
-        and
-        params['Post_processing']['limit'] <= 100.
-    ), sys.exit("limit takes values between 0 and 100")
+    # assert (
+    #     params['Post_processing']['limit'] >= 0.
+    #     and
+    #     params['Post_processing']['limit'] <= 100.
+    # ), sys.exit("limit takes values between 0 and 100")
 
 def logger(
     message: str,
