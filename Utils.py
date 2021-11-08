@@ -2,6 +2,8 @@ import os
 import sys
 import numpy as np
 import errno
+import ast
+
 from scipy.stats import chi2
 from scipy.optimize import broyden1
 
@@ -171,14 +173,11 @@ def assert_config_params(
     assert_valid_path(params, 'General', 'output_dir')
 
     # verbose should be a non-negative integer
-    assert_param_exists(params, 'General', 'verbose')
-    assert_int(params, 'General', 'verbose')
-    assert_non_negative(params, 'General', 'verbose')
-
-    # plotting should be a non-negative integer
-    assert_param_exists(params, 'General', 'plotting')
-    assert_int(params, 'General', 'plotting')
-    assert_non_negative(params, 'General', 'plotting')
+    if 'verbose' in params['General']:
+        assert_int(params, 'General', 'verbose')
+        assert_non_negative(params, 'General', 'verbose')
+    else:
+        params['General']['verbose'] = 0
 
     # Data parameters
     assert_param_group_exists(params, 'Data')
@@ -200,20 +199,41 @@ def assert_config_params(
         assert_int(params, 'Data', 'N_obj')
         assert_greater_than_or_equal(params, 'Data', 'N_obj', 1)
 
-        # positions_method should be one of ["uniform", "bunched"]
-        assert_param_exists(params, 'Data', 'positions_method')
-        assert_in_list(params, 'Data', 'positions_method', ["uniform", "bunched"])
-
         # positions_seed should be an int
-        assert_int(params, 'Data', 'positions_seed')
+        if 'positions_seed' in params['Data']:
+            assert_int(params, 'Data', 'positions_seed')
+        else:
+            params['Data']['positions_seed'] = None
+
+        # positions_method_polar should be one of ["uniform", "bunched"]
+        if 'positions_method_polar' in params['Data']:
+            assert_in_list(params, 'Data', 'positions_method_polar',
+                ["uniform", "bunched"]
+            )
+        else:
+            params['Data']['positions_method_polar'] = "uniform"
+
+        # positions_method_azimuthal should be one of ["uniform", "bunched"]
+        if 'positions_method_azimuthal' in params['Data']:
+            assert_in_list(params, 'Data', 'positions_method_azimuthal',
+                ["uniform", "bunched"]
+            )
+        else:
+            params['Data']['positions_method_azimuthal'] = "uniform"
 
         # bunch_size_polar should be a non-negative number
-        assert_numerical(params, 'Data', 'bunch_size_polar')
-        assert_non_negative(params, 'Data', 'bunch_size_polar')
-
+        if 'bunch_size_polar' in params['Data']:
+            assert_numerical(params, 'Data', 'bunch_size_polar')
+            assert_non_negative(params, 'Data', 'bunch_size_polar')
+        else:
+            params['Data']['bunch_size_polar'] = None
+            
         # bunch_size_azimuthal should be a non-negative number
-        assert_numerical(params, 'Data', 'bunch_size_azimuthal')
-        assert_non_negative(params, 'Data', 'bunch_size_azimuthal')
+        if 'bunch_size_azimuthal' in params['Data']:
+            assert_numerical(params, 'Data', 'bunch_size_azimuthal')
+            assert_non_negative(params, 'Data', 'bunch_size_azimuthal')
+        else:
+            params['Data']['bunch_size_azimuthal'] = None
 
     # proper_motions should be an integer between 1 and 5
     assert_param_exists(params, 'Data', 'proper_motions')
@@ -223,18 +243,31 @@ def assert_config_params(
 
     if params['Data']['proper_motions'] == 1:
         # proper_motions_seed should be an int
-        assert_int(params, 'Data', 'proper_motions_seed')
+        if 'proper_motions_seed' in params['Data']:
+            assert_int(params, 'Data', 'proper_motions_seed')
+        else:
+            params['Data']['proper_motions_seed'] = None
 
-    # dipole should be a non-negative number (check only if proper_motions_method is "dipole")
-    # if params['Data']['proper_motions_method'] == "dipole":
-    #     assert isinstance(params['Data']['dipole'], float) or isinstance(params['Data']['dipole'], int), sys.exit("dipole takes numerical values")
-    #     assert params['Data']['dipole'] >= 0., sys.exit("dipole takes non-negative values")
+        # injection should be a dict
+        if 'injection' in params['Data']:
+            try:
+                assert isinstance(
+                    params['Data']['injection'],
+                    dict
+                ), sys.exit(f"'injection' takes a dictionary as value")
+            except (SyntaxError, ValueError, AssertionError):
+                sys.exit(f"'injection' dictionary could not be parsed")
+    
+    # proper_motion_noise should be a non-negative number
+    if 'proper_motion_noise' in params['Data']:
+        assert_numerical(params, 'Data', 'proper_motion_noise')
+        assert_non_negative(params, 'Data', 'proper_motion_noise')
 
-    # multipole should be a list of non-negative numbers with length equal to Lmax (check only if proper_motions_method is "multipole")
-    # if params['Data']['proper_motions_method'] == "multipole":
-    #     assert isinstance(params['Data']['multipole'], list), sys.exit("multipole takes a list of numbers")
-    #     assert len(params['Data']['multipole']) == params['Data']['Lmax'], sys.exit("The size of multipole needs to match Lmax")
-    #     for x in params['Data']['multipole']: assert isinstance(x, float) or isinstance(x, int), sys.exit("multipole takes a list of numbers")
+        # proper_motion_noise_seed should be an int
+        if 'proper_motion_noise_seed' in params['Data']:
+            assert_int(params, 'Data', 'proper_motion_noise_seed')
+        else:
+            params['Data']['proper_motion_noise_seed'] = None
 
     # proper_motion_errors should be an integer between 1 and 5
     assert_param_exists(params, 'Data', 'proper_motion_errors')
@@ -244,37 +277,38 @@ def assert_config_params(
 
     if params['Data']['proper_motion_errors'] == 1:
         # proper_motion_errors_method should be one of ["flat", "adaptive"]
-        # assert (
-        #     params['Data']['proper_motion_errors_method']
-        #     in
-        #     ["flat", "adaptive"]
-        # ), sys.exit("proper_motion_errors_method takes values \"flat\", \"adaptive\"")
+        if 'proper_motion_errors_method' in params['Data']:
+            assert_in_list(params, 'Data', 'proper_motion_errors_method',
+                ["flat", "adaptive"]
+            )
+        else:
+            params['Data']['proper_motion_errors_method'] = "flat"
 
         # proper_motion_errors_std should be a positive number
+        assert_param_exists(params, 'Data', 'proper_motion_errors_std')
         assert_numerical(params, 'Data', 'proper_motion_errors_std')
         assert_positive(params, 'Data', 'proper_motion_errors_std')
 
         # proper_motion_errors_corr should be a number in the interval (-1, 1)
-        assert_numerical(params, 'Data', 'proper_motion_errors_corr')
-        assert_greater_than(params, 'Data', 'proper_motion_errors_corr', -1)
-        assert_less_than(params, 'Data', 'proper_motion_errors_corr', 1)
-
-    # proper_motion_noise should be a non-negative number
-    if 'proper_motion_noise' in params['Data']:
-        assert_numerical(params, 'Data', 'proper_motion_noise')
-        assert_non_negative(params, 'Data', 'proper_motion_noise')
-
-    # proper_motion_noise_seed should be an int
-    if 'proper_motion_noise_seed' in params['Data']:
-        assert_int(params, 'Data', 'proper_motion_noise_seed')
+        if 'proper_motion_errors_corr' in params['Data']:
+            assert_numerical(params, 'Data', 'proper_motion_errors_corr')
+            assert_greater_than(params, 'Data', 'proper_motion_errors_corr', -1)
+            assert_less_than(params, 'Data', 'proper_motion_errors_corr', 1)
+        else:
+            params['Data']['proper_motion_errors_corr'] = 0
 
     # dimensionless_proper_motion_threshold should be positive
     if 'dimensionless_proper_motion_threshold' in params['Data']:
         assert_numerical(params, 'Data', 'dimensionless_proper_motion_threshold')
         assert_positive(params, 'Data', 'dimensionless_proper_motion_threshold')
+    else:
+        params['Data']['dimensionless_proper_motion_threshold'] = None
 
     # vsh_basis should be one of ["vsh", "orthogonal"]
-    assert_in_list(params, 'Data', 'basis', ["vsh", "orthogonal"])
+    if 'basis' in params['Data']:
+        assert_in_list(params, 'Data', 'basis', ["vsh", "orthogonal"])
+    else:
+        params['Data']['basis'] = "vsh"
 
     # MCMC parameters
     assert_param_group_exists(params, 'MCMC')
@@ -304,25 +338,6 @@ def assert_config_params(
     assert (
         params['MCMC']['prior_bounds'] > 0.
     ), sys.exit("prior_bounds takes positive values")
-
-    # Post_processing parameters
-    assert_param_group_exists(params, 'Post_processing')
-
-    # pol should be one of ["GR", "B"]
-    # assert (
-    #     params['Post_processing']['pol'] in ["GR", "B"]
-    # ), sys.exit("pol takes values \"GR\" or \"B\"")
-
-    # limit should be a number between 0 and 100
-    # assert isinstance(
-    #     params['Post_processing']['limit'], (int, float)
-    # ), sys.exit("limit takes numerical values")
-
-    # assert (
-    #     params['Post_processing']['limit'] >= 0.
-    #     and
-    #     params['Post_processing']['limit'] <= 100.
-    # ), sys.exit("limit takes values between 0 and 100")
 
 def logger(
     message: str,
@@ -367,61 +382,61 @@ def normalize_matrix(
 
     return norm_matrix
 
-def chi_squared_limit(k, P):
-    """
-    Find the P-percent certainty limit of the chi-squared distribution
+# def chi_squared_limit(k, P):
+#     """
+#     Find the P-percent certainty limit of the chi-squared distribution
 
-    INPUTS
-    ------
-    k: int
-        number of dimensions of the distribution
+#     INPUTS
+#     ------
+#     k: int
+#         number of dimensions of the distribution
 
-    P: float
-        certainty of the distrubtion, in percents
+#     P: float
+#         certainty of the distrubtion, in percents
 
-    RETURNS
-    -------
-    limit: float
-        limit of the distribution
-    """
-    def CDF(x):
-        return chi2.cdf(x, k) - P/100.
+#     RETURNS
+#     -------
+#     limit: float
+#         limit of the distribution
+#     """
+#     def CDF(x):
+#         return chi2.cdf(x, k) - P/100.
 
-    limit = broyden1(CDF, k, f_tol=1e-10)
+#     limit = broyden1(CDF, k, f_tol=1e-10)
 
-    return limit
+#     return limit
 
-def generalized_chi_squared_limit(k, A, P, N=1000000):
-    """
-    Find the P-percent certainty limit of the generalized chi-squared distribution
+# def generalized_chi_squared_limit(k, A, P, N=1000000):
+#     """
+#     Find the P-percent certainty limit of the generalized chi-squared distribution
 
-    INPUTS
-    ------
-    k: int
-        number of dimensions of the distribution
+#     INPUTS
+#     ------
+#     k: int
+#         number of dimensions of the distribution
 
-    A: np.array shape=(k,k)
+#     A: np.array shape=(k,k)
 
-    P: float
-        certainty of the distrubtion, in percents
+#     P: float
+#         certainty of the distrubtion, in percents
 
-    N: int
-        number of random draws
+#     N: int
+#         number of random draws
 
-    RETURNS
-    -------
-    limit: float
-        limit of the distribution
+#     RETURNS
+#     -------
+#     limit: float
+#         limit of the distribution
 
-    TO DO: rewrite this with a CDF instead of this brute force
-    """
-    z = np.random.normal(size=(N,k))
+#     TO DO: rewrite this with a CDF instead of this brute force
+#     """
+#     z = np.random.normal(size=(N,k))
 
-    samples = np.einsum("...i,...ij,...j->...", z, A, z)
+#     samples = np.einsum("...i,...ij,...j->...", z, A, z)
 
-    limit = np.percentile(samples, P)
+#     limit = np.percentile(samples, P)
 
-    return limit
+#     return limit
 
 def export_data(
     ADf: AD.AstrometricDataframe,

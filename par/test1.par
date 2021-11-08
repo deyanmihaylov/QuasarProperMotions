@@ -2,9 +2,8 @@
 
 [General]
 
-output_dir = /work/dmihaylov/quasar_pm/test_noise
+output_dir = /work/dmihaylov/quasar_pm/test6
 verbose = 2
-plotting = 1
 
 
 [Data]
@@ -25,7 +24,8 @@ positions_seed = 1
 
 # mock positions method:
 # "uniform", "bunched"
-positions_method = uniform
+positions_method_polar = uniform
+positions_method_azimuthal = uniform
 
 # bunch_size_polar: horizontal
 # bunch_size_polar = 0.0
@@ -44,7 +44,12 @@ proper_motions = 1
 proper_motions_seed = 1
 
 # mock proper motions:
-# injection = {"1,-1,E": 0.1,"1,0,E": 0.3,"1,1,E": 0.2}
+injection = {"1,-1,E": 0.1,"1,0,E": 0.3,"1,1,E": 0.2}
+
+# proper_motion_noise: standard deviation of the Gaussian noise to add to the proper motions
+#proper_motion_noise = 0.1
+
+proper_motion_noise_seed = 1
 
 # proper motions errors legend:
 # (1) - Mock proper motion errors
@@ -60,15 +65,10 @@ proper_motion_errors = 1
 # proper_motion_errors_method = flat
 
 # mock proper motion errors standard deviation:
-# proper_motion_errors_std = 0.01
+proper_motion_errors_std = 0.01
 
 # mock proper motion errors correlations:
 # proper_motion_errors_corr = 0.0
-
-# proper_motion_noise: standard deviation of the Gaussian noise to add to the proper motions
-proper_motion_noise = 0.1
-
-proper_motion_noise_seed = 1
 
 # threshold for magnitude of dimensionless proper motion vectors
 # dimensionless_proper_motion_threshold = 3
@@ -86,14 +86,3 @@ nthreads = 16
 nlive = 1024
 maxmcmc = 256
 prior_bounds = 0.5
-
-
-[Post_processing]
-
-# pol: specifies what polarization correlation coefficients to use to convert the results into a limit on the amplitude
-# "GR": use all l >= 1 with values as described in Mihaylov et. al.
-# "B": use l = 1
-pol = B
-
-# limit: specifies the %-limit for the bound
-limit = 90

@@ -52,10 +52,11 @@ class AstrometricDataframe:
 
     def generate_positions(
         self,
-        method: str,
+        random_seed: int,
+        method_polar: str,
+        method_azimuthal: str,
         bunch_size_polar: float,
         bunch_size_azimuthal: float,
-        random_seed: int
     ):
         """
         Generate random positions
@@ -82,21 +83,21 @@ class AstrometricDataframe:
 
         U.logger("Generating QSO positions")
 
-        if random_seed > 0:
+        if random_seed is not None and random_seed > 0:
             U.logger(f"Using random seed {random_seed}")
             np.random.seed(random_seed)
 
-        if method == "uniform" or (method == "bunched" and bunch_size_polar == 0.):
+        if method_polar == "uniform" or (method_polar == "bunched" and bunch_size_polar == 0.):
             U.logger("Using method \"uniform\" for the declination")
             dec = 0.5*np.pi - np.arccos(np.random.uniform(-1, 1, size=self.N_obj))
-        elif method == "bunched" and bunch_size_polar > 0.:
+        elif method_polar == "bunched" and bunch_size_polar > 0.:
             U.logger("Using method \"bunched\" for the declination")
             dec = 0.5*np.pi - np.arccos(truncnorm.rvs(-1./bunch_size_polar, 1./bunch_size_polar, scale=bunch_size_polar, size=self.N_obj))
 
-        if method == "uniform" or (method == "bunched" and bunch_size_azimuthal == 0.):
+        if method_azimuthal == "uniform" or (method_azimuthal == "bunched" and bunch_size_azimuthal == 0.):
             U.logger("Using method \"uniform\" for the right ascension")
             ra = 2 * np.pi * np.random.uniform(0, 1, size=self.N_obj)
-        elif method == "bunched" and bunch_size_azimuthal > 0.:
+        elif method_azimuthal == "bunched" and bunch_size_azimuthal > 0.:
             U.logger("Using method \"bunched\" for the right ascension")
             ra = 2 * np.pi * (truncnorm.rvs(-0.5/bunch_size_azimuthal, 0.5/bunch_size_azimuthal, scale=bunch_size_azimuthal, size=self.N_obj)+0.5)
 
@@ -283,14 +284,14 @@ class AstrometricDataframe:
         ):
         U.logger("Adding proper motion noise")
 
-        if random_seed > 0:
+        if random_seed is not None and random_seed > 0:
             U.logger(f"Using random seed {random_seed}")
             np.random.seed(random_seed)
 
         proper_motion_noise = np.random.normal(
-            loc=0.,
-            scale=std,
-            size=self.proper_motions.shape
+            loc = 0.,
+            scale = std,
+            size = self.proper_motions.shape,
         )
         
         self.proper_motions += proper_motion_noise
@@ -465,9 +466,9 @@ class AstrometricDataframe:
         self.which_basis = "orthogonal"
 
 def load_astrometric_data(
-        ADf: AstrometricDataframe,
-        params: dict,
-    ):
+    ADf: AstrometricDataframe,
+    params: dict,
+) -> None:
     ADf.Lmax = params['Lmax']
 
     ADf.generate_names()
@@ -511,13 +512,14 @@ def load_astrometric_data(
         ADf.N_obj = params['N_obj']
     else:
         ADf.N_obj = dataset.shape[0]
-    
+    print(params['bunch_size_polar'])
     if positions == 1:
         ADf.generate_positions(
-            method = params['positions_method'],
+            random_seed = params['positions_seed'],
+            method_polar = params['positions_method_polar'],
+            method_azimuthal = params['positions_method_azimuthal'],
             bunch_size_polar = params['bunch_size_polar'],
             bunch_size_azimuthal = params['bunch_size_azimuthal'],
-            random_seed = params['positions_seed']
         )
     elif positions in [2, 3, 4]:
         ADf.load_Gaia_positions(dataset)
@@ -544,7 +546,7 @@ def load_astrometric_data(
         ADf.generate_proper_motion_errors(
             method = params['proper_motion_errors_method'],
             std = params['proper_motion_errors_std'],
-            corr = params['proper_motion_errors_corr']
+            corr = params['proper_motion_errors_corr'],
         )
     elif proper_motion_errors in [2, 3, 4]:
         ADf.load_Gaia_proper_motion_errors(dataset)
@@ -552,23 +554,13 @@ def load_astrometric_data(
         ADf.load_TD_proper_motion_errors(dataset)
 
     if 'proper_motion_noise' in params:
-        if 'proper_motion_noise_seed' in params:
-            noise_seed = params['proper_motion_noise_seed']
-        else:
-            noise_seed = 0
-
         ADf.add_proper_motion_noise(
-            std=params['proper_motion_noise'],
-            random_seed=noise_seed
+            std = params['proper_motion_noise'],
+            random_seed = params['proper_motion_noise_seed'],
         )
 
-    if 'dimensionless_proper_motion_threshold' in params:
-        R_threshold = params['dimensionless_proper_motion_threshold']
-    else:
-        R_threshold = None
-
     ADf.remove_outliers(
-        R_threshold
+        params['dimensionless_proper_motion_threshold']
     )
 
     ADf.compute_overlap_matrix()

@@ -5,8 +5,8 @@ import sys
 from typing import Type
 
 def set_params(
-        file_name: str
-    ) -> dict:
+    file_name: str,
+) -> dict:
     """
     Set default and user-supplied parameters.
     """
@@ -14,7 +14,7 @@ def set_params(
     config = configparser.ConfigParser()
     config.optionxform = str # make the parser case sentitive
 
-    set_default_params(config)
+    # set_default_params(config)
 
     set_user_params(config, file_name)
 
@@ -22,30 +22,10 @@ def set_params(
 
     return config_parsed
 
-def set_default_params(
-        config: Type[configparser.ConfigParser]
-    ) -> None:
-    """
-    Parse the default parameter file.
-    """
-
-    if '__file__' not in globals():
-        sys.exit("Global variable __file__ is not set. Default values for parameters cannot be set.")
-    else:
-        code_env = os.path.realpath(__file__)
-        code_dir = os.path.dirname(code_env)
-
-        default_file_name = os.path.join(code_dir, "par/default.par")
-
-        try:
-            config.read(default_file_name)
-        except:
-            sys.exit("Problem reading default parameter file.")
-
 def set_user_params(
-        config: Type[configparser.ConfigParser],
-        file_name: str
-    ) -> None:
+    config: Type[configparser.ConfigParser],
+    file_name: str,
+) -> None:
     """
     Parse the user-supplied parameter file.
     """
@@ -59,8 +39,8 @@ def set_user_params(
         sys.exit(f"Reading file '{file_name}' has failed.")
 
 def eval_config_types(
-        config: Type[configparser.ConfigParser]
-    ) -> dict:
+    config: Type[configparser.ConfigParser],
+) -> dict:
     """
     Evaluate types of config params.
     """
@@ -94,21 +74,26 @@ def check_and_create_dir(
     return True
 
 def record_config_params(
-        params: dict,
-        user_specified_output_file = None
-    ) -> None:
+    params: dict,
+) -> None:
     """
     Record the config parameters in a file.
     """
     
+    output_params = dict()
+    for group_name in params:
+        output_params[group_name] = {
+            k: v for k, v in params[group_name].items() if v is not None
+        }
+
     config = configparser.ConfigParser()
     config.optionxform = str
-    config.read_dict(params)
+    config.read_dict(output_params)
 
-    if user_specified_output_file:
-        output_file_name = user_specified_output_file
-    else:
-        output_file_name = os.path.join(config['General']['output_dir'], "config.par")
+    output_file_name = os.path.join(
+        config['General']['output_dir'],
+        "config.par",
+    )
 
     with open(output_file_name, 'w') as config_file:
         config.write(config_file)

@@ -37,10 +37,10 @@ def main():
     C.record_config_params(params)
 
     data = AD.AstrometricDataframe()
-
+    
     AD.load_astrometric_data(
         data,
-        params = params['Data']
+        params = params['Data'],
     )
 
     astrometric_model = S.model(
