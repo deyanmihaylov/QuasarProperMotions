@@ -512,7 +512,7 @@ def load_astrometric_data(
         ADf.N_obj = params['N_obj']
     else:
         ADf.N_obj = dataset.shape[0]
-    print(params['bunch_size_polar'])
+    
     if positions == 1:
         ADf.generate_positions(
             random_seed = params['positions_seed'],
