@@ -26,15 +26,22 @@ def download_Gaia_data(
 
 if __name__ == "__main__":
     queries = [
-        "SELECT * FROM gaiadr2.gaia_source AS gaia WHERE gaia.frame_rotator_object_type = 2",
-        "SELECT * FROM gaiadr2.gaia_source AS gaia WHERE gaia.frame_rotator_object_type = 3",
-        "SELECT * FROM gaiadr2.gaia_source AS gaia WHERE gaia.frame_rotator_object_type = 2 OR gaia.frame_rotator_object_type = 3"
+        "SELECT * FROM gaiadr2.gaia_source AS gaia WHERE \
+            gaia.frame_rotator_object_type = 2",
+        "SELECT * FROM gaiadr2.gaia_source AS gaia WHERE \
+            gaia.frame_rotator_object_type = 3",
+        "SELECT * FROM gaiadr2.gaia_source AS gaia WHERE \
+            gaia.frame_rotator_object_type = 2 OR \
+            gaia.frame_rotator_object_type = 3",
+        "SELECT * FROM gaiaedr3.gaia_source AS edr3 WHERE \
+            edr3.source_id IN (SELECT source_id FROM gaiaedr3.agn_cross_id)",
     ]
 
     file_names = [
         "type2.csv",
         "type3.csv",
-        "type2and3.csv"
+        "type2and3.csv",
+        "edr3.csv",
     ]
 
     for query, file_name in zip(queries, file_names):
