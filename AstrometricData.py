@@ -87,19 +87,44 @@ class AstrometricDataframe:
             U.logger(f"Using random seed {random_seed}")
             np.random.seed(random_seed)
 
-        if method_polar == "uniform" or (method_polar == "bunched" and bunch_size_polar == 0.):
+        if (
+            method_polar == "uniform"
+            or (method_polar == "bunched" and bunch_size_polar == 0)
+        ):
             U.logger("Using method \"uniform\" for the declination")
-            dec = 0.5*np.pi - np.arccos(np.random.uniform(-1, 1, size=self.N_obj))
-        elif method_polar == "bunched" and bunch_size_polar > 0.:
+            dec = (
+                0.5 * np.pi
+                - np.arccos(np.random.uniform(-1, 1, size=self.N_obj))
+            )
+        elif method_polar == "bunched" and bunch_size_polar > 0:
             U.logger("Using method \"bunched\" for the declination")
-            dec = 0.5*np.pi - np.arccos(truncnorm.rvs(-1./bunch_size_polar, 1./bunch_size_polar, scale=bunch_size_polar, size=self.N_obj))
+            dec = (
+                0.5 * np.pi
+                - np.arccos(truncnorm.rvs(
+                    -1/bunch_size_polar,
+                    1/bunch_size_polar,
+                    scale=bunch_size_polar,
+                    size=self.N_obj)
+                )
+            )
 
-        if method_azimuthal == "uniform" or (method_azimuthal == "bunched" and bunch_size_azimuthal == 0.):
+        if (
+            method_azimuthal == "uniform"
+            or (method_azimuthal == "bunched" and bunch_size_azimuthal == 0)
+        ):
             U.logger("Using method \"uniform\" for the right ascension")
             ra = 2 * np.pi * np.random.uniform(0, 1, size=self.N_obj)
-        elif method_azimuthal == "bunched" and bunch_size_azimuthal > 0.:
+        elif method_azimuthal == "bunched" and bunch_size_azimuthal > 0:
             U.logger("Using method \"bunched\" for the right ascension")
-            ra = 2 * np.pi * (truncnorm.rvs(-0.5/bunch_size_azimuthal, 0.5/bunch_size_azimuthal, scale=bunch_size_azimuthal, size=self.N_obj)+0.5)
+            ra = (
+                2 * np.pi * (truncnorm.rvs(
+                    -0.5/bunch_size_azimuthal,
+                    0.5/bunch_size_azimuthal,
+                    scale=bunch_size_azimuthal,
+                    size=self.N_obj
+                )
+                + 0.5)
+            )
 
         self.positions = np.array(list(zip(ra, dec)))
 
@@ -221,7 +246,9 @@ class AstrometricDataframe:
 
         proper_motion_errors = scale * np.ones(self.proper_motions.shape)
         # Scale the pm_ra_err by sin(theta) = cos(dec)
-        proper_motion_errors[:, 0] = proper_motion_errors[:, 0] / np.cos(self.positions[:, 1])
+        proper_motion_errors[:, 0] = (
+            proper_motion_errors[:, 0] / np.cos(self.positions[:, 1])
+        )
 
         proper_motion_errors_corr = corr * np.ones(self.N_obj)
 
@@ -420,7 +447,10 @@ class AstrometricDataframe:
 
         basis_values = np.array(list(self.basis.values()))
 
-        for ((i, vsh_i), (j, vsh_j)) in itertools.product(enumerate(basis_values), repeat=2):
+        for ((i, vsh_i), (j, vsh_j)) in itertools.product(
+            enumerate(basis_values),
+            repeat=2
+        ):
             if weighted_overlaps == True:
                 self.overlap_matrix[i,j] = prefactor * np.einsum(
                     "...i,...ij,...j->...",
@@ -446,7 +476,8 @@ class AstrometricDataframe:
         Method to change from VSH basis to orthogonal basis
         """
 
-        U.logger("Changing Vector Spherical Harmonics basis to orthogonal basis")
+        U.logger("Changing Vector Spherical Harmonics basis to \
+            orthogonal basis")
 
         self.overlap_matrix_Cholesky = cholesky(self.overlap_matrix)
 
