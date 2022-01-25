@@ -80,23 +80,23 @@ def main():
 
     nest.plot()
 
-    A_limit = PP.post_process_results(
+    PP.post_process_results(
         posterior_file = os.path.join(params['General']['output_dir'], 'posterior_samples.dat'),
         Lmax = params['Data']['Lmax'],
         outdir = params['General']['output_dir'],
     )
 
-    U.export_data(
-        data,
-        A_limit,
-        output = params['General']['output_dir']
-    )
+    # U.export_data(
+    #     data,
+    #     A_limit,
+    #     output = params['General']['output_dir']
+    # )
 
-    if params['General']['plotting'] == True:
-        P.plot(
-            data,
-            output = params['General']['output_dir']
-        )
+    # if params['General']['plotting'] == True:
+    #     P.plot(
+    #         data,
+    #         output = params['General']['output_dir']
+    #     )
 
 if __name__ == '__main__':
     main()
