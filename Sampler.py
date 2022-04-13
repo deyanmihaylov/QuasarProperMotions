@@ -25,13 +25,17 @@ def R_values(
 
     return R_values
 
-def logL_quadratic(R):
+def logL_quadratic(
+    R: np.array,
+) -> np.array:
     """
     The normal log-likelihood
     """
     return -0.5 * (R**2)
 
-def logL_permissive(R):
+def logL_permissive(
+    R: np.array,
+) -> np.array:
     """
     The permissive log-likelihood
     As used in Darling et al. 2018 and coming from Sivia and Skilling,
@@ -40,15 +44,26 @@ def logL_permissive(R):
     half_R_squared = 0.5 * (R**2)
     return np.log((1.-np.exp(-half_R_squared)) / half_R_squared)
 
-def logL_2Dpermissive(R):
+def logL_2Dpermissive(
+    R: np.array,
+) -> np.array:
     """
     The modified permissive log-likelihood for 2D data
     A generalisation of the Sivia and Skilling likelihood (p.168) for
     2D data
     """
-    return np.log( (np.sqrt(np.pi/2)*erf(R/np.sqrt(2)) - R*np.exp(-R**2/2)) / (R**3) )
+    return (
+        np.log(
+            (np.sqrt(np.pi/2) * erf(R/np.sqrt(2))
+            - R * np.exp(-R**2/2)) / (R**3)
+        )
+    )
 
-def logL_goodandbad(R, beta, gamma):
+def logL_goodandbad(
+    R: np.array,
+    beta: float,
+    gamma: float,
+) -> np.array:
     """
     Following the notation of Sivia and Skilling, this is "the good
     and bad data model".
@@ -58,11 +73,14 @@ def logL_goodandbad(R, beta, gamma):
     """
 
     # enforce conditions 0 < beta < 1 and 1 < gamma
-    my_beta = np.clip(beta,0,1)
-    my_gamma = np.clip(gamma,1,10)
+    my_beta = np.clip(beta, 0, 1)
+    my_gamma = np.clip(gamma, 1, 10)
         
     return logsumexp(
-        [ -0.5*(R/my_gamma)**2+np.log(my_beta/my_gamma**2) , -0.5*R**2+np.log(1-my_beta) ],
+        [
+            -0.5*(R/my_gamma)**2+np.log(my_beta/my_gamma**2),
+            -0.5*R**2+np.log(1-my_beta)
+        ],
         axis=0,
     )
 
@@ -129,9 +147,9 @@ class model(cpnest.model.Model):
         print("Searching over the following parameters:", ', '.join(self.names))
 
     def log_prior(
-            self,
-            params: dict
-        ) -> float:
+        self,
+        params: dict
+    ) -> float:
         """
         The log-prior function
         """
