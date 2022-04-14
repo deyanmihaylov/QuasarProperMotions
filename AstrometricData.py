@@ -270,7 +270,10 @@ class AstrometricDataframe:
         U.logger("Loading Gaia QSO proper motion errors")
 
         proper_motions_errors = dataset[['pmra_error', 'pmdec_error']].values
-        proper_motions_errors[:,0] = proper_motions_errors[:,0] / np.cos(self.positions[:,1])
+        proper_motions_errors[:,0] = np.true_divide(
+            proper_motions_errors[:,0],
+            np.cos(self.positions[:,1])
+        )
 
         proper_motions_err_corr = dataset[['pmra_pmdec_corr']].values
 
@@ -293,7 +296,10 @@ class AstrometricDataframe:
         U.logger("Loading Truebenbach & Darling QSO proper motion errors")
 
         proper_motions_errors = dataset[['e_pmRA', 'e_pmDE']].values
-        proper_motions_errors[:,0] = proper_motions_errors[:,0] / np.cos(self.positions[:,1])
+        proper_motions_errors[:,0] = np.true_divide(
+            proper_motions_errors[:,0],
+            np.cos(self.positions[:,1])
+        )
 
         proper_motions_err_corr = np.zeros(self.N_obj)
 
@@ -600,9 +606,7 @@ def load_astrometric_data(
         ADf.change_basis()
         ADf.compute_overlap_matrix()
 
-def import_Gaia_dataset(
-    path: str,    
-) -> pd.DataFrame:
+def import_Gaia_dataset(path: str) -> pd.DataFrame:
     """
     Import Gaia dataset
     """
@@ -653,9 +657,7 @@ def import_Gaia_dataset(
 
     return dataset
 
-def import_TD_dataset(
-    path: str,
-) -> pd.DataFrame:
+def import_TD_dataset(path: str) -> pd.DataFrame:
     """
     Import TD dataset
     """
