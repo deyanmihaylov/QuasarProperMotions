@@ -1,24 +1,21 @@
 import configparser
-import os
+from pathlib import Path
 import sys
 
 from typing import Type
 
-def set_params(
-    file_name: str,
-) -> dict:
+import Utils as U
+
+def set_params(file_name: str) -> dict:
     """
     Set default and user-supplied parameters.
     """
-
     config = configparser.ConfigParser()
     config.optionxform = str # make the parser case sentitive
 
-    # set_default_params(config)
-
     set_user_params(config, file_name)
-
     config_parsed = eval_config_types(config)
+    U.assert_config_params(config_parsed)
 
     return config_parsed
 
@@ -38,44 +35,29 @@ def set_user_params(
     if not par_file_parse_merge:
         sys.exit(f"Reading file '{file_name}' has failed.")
 
-def eval_config_types(
-    config: Type[configparser.ConfigParser],
-) -> dict:
+def eval_config_types(config: Type[configparser.ConfigParser]) -> dict:
     """
     Evaluate types of config params.
     """
 
-    config_parsed = dict()
+    config_parsed = {}
 
     for section in config.sections():
-        config_parsed[section] = dict()
+        config_parsed[section] = {}
 
         for key in config[section]:
             try:
-                config_parsed[section][key] = eval(config.get(section, key))
+                config_parsed[section][key] = eval(
+                    config.get(section, key)
+                )
             except:
-                config_parsed[section][key] = eval('"' + config.get(section, key) + '"')
+                config_parsed[section][key] = eval(
+                    '"' + config.get(section, key) + '"'
+                )
 
     return config_parsed
 
-def check_and_create_dir(
-    dir_name: str,
-) -> bool:
-    """
-    Check if output directory exists, and create it if it doesn't.
-    """
-
-    if not os.path.isdir(dir_name):
-        try:
-            os.makedirs(dir_name, exist_ok=True)
-        except OSError:
-            sys.exit("Output directory could not be created. Error: '{OSError}'")
-
-    return True
-
-def record_config_params(
-    params: dict,
-) -> None:
+def record_config_params(params: dict) -> None:
     """
     Record the config parameters in a file.
     """
@@ -90,10 +72,22 @@ def record_config_params(
     config.optionxform = str
     config.read_dict(output_params)
 
-    output_file_name = os.path.join(
-        config['General']['output_dir'],
-        "config.par",
-    )
+    output_file_name = Path(config['General']['output_dir'], "config.par")
 
     with open(output_file_name, 'w') as config_file:
         config.write(config_file)
+
+def prepare_output_dir(path_to_dir: str) -> None:
+    check_and_create_dir(path_to_dir)
+    check_and_create_dir(Path(path_to_dir, "log"))
+
+def check_and_create_dir(path: str) -> None:
+    """
+    Check if output directory exists, and create it if it doesn't.
+    """
+    new_dir = Path(path).resolve()
+
+    try:
+        new_dir.mkdir(parents=True, exist_ok=True)
+    except FileExistsError as e:
+        sys.exit(f"Output directory could not be created. Error: '{e}'")
