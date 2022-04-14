@@ -45,7 +45,7 @@ def main():
 
     astrometric_model = S.model(
         data,
-        params = params['MCMC']
+        params = params['MCMC'],
     )
 
     nest = cpnest.CPNest(
@@ -55,7 +55,7 @@ def main():
         nlive = params['MCMC']['nlive'],
         maxmcmc = params['MCMC']['maxmcmc'],
         resume = True,
-        verbose = params['General']['verbose']
+        verbose = params['General']['verbose'],
     )
 
     nest.run()
@@ -66,7 +66,7 @@ def main():
         nested_samples.ravel(),
         header=' '.join(nested_samples.dtype.names),
         newline='\n',
-        delimiter=' '
+        delimiter=' ',
     )
 
     posterior_samples = nest.get_posterior_samples(filename=None)
@@ -75,7 +75,7 @@ def main():
         posterior_samples.ravel(),
         header=' '.join(posterior_samples.dtype.names),
         newline='\n',
-        delimiter=' '
+        delimiter=' ',
     )
 
     nest.plot()

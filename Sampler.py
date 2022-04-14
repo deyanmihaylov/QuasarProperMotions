@@ -141,8 +141,11 @@ class model(cpnest.model.Model):
         self.bounds = [[-prior_bounds, prior_bounds] for name in self.names]
 
         if logL_method == "goodandbad":
-            self.names.extend(['beta', 'gamma'])
+            self.names.extend(['log10_beta', 'log10_gamma'])
             self.bounds.extend([[-1.78, -1.20], [-0.08, 0.52]])
+
+            self.beta_prior = norm(np.log10(0.03165), 0.05)
+            self.gamma_prior = norm(np.log10(1.6596), 0.05)
 
         print("Searching over the following parameters:", ', '.join(self.names))
 

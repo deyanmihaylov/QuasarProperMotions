@@ -662,13 +662,9 @@ def import_TD_dataset(
 
     col_names = [
         'Name',
-        'RAh',
-        'RAm',
-        'RAs',
+        'RAh', 'RAm', 'RAs',
         'e_RAs',
-        'DEd',
-        'DEm',
-        'DEs',
+        'DEd', 'DEm', 'DEs',
         'e_DEs',
         'pmRA',
         'e_pmRA',
@@ -692,17 +688,13 @@ def import_TD_dataset(
         names=col_names,
         widths=None,
         comment = '#',
-        infer_nrows=500
+        infer_nrows=500,
     )
 
     dropna_columns = [
-        'RAh',
-        'RAm',
-        'RAs',
+        'RAh', 'RAm', 'RAs',
         'e_RAs',
-        'DEd',
-        'DEm',
-        'DEs',
+        'DEd', 'DEm', 'DEs',
         'e_DEs',
         'pmRA',
         'e_pmRA',
@@ -719,7 +711,7 @@ def import_TD_dataset(
         how='any',
         thresh=None,
         subset=dropna_columns,
-        inplace=True
+        inplace=True,
     )
 
     return dataset

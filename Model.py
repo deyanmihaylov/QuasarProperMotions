@@ -18,7 +18,7 @@ def generate_model(
     """
     model = np.sum(
         [almQ[key] * basis[key] for key in basis.keys()],
-        axis=0
+        axis=0,
     )
 
     return model
