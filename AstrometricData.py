@@ -35,9 +35,7 @@ class AstrometricDataframe:
         self.overlap_matrix = np.array([])
         self.overlap_matrix_Cholesky = np.array([])
 
-    def generate_names(
-        self,
-    ):
+    def generate_names(self) -> None:
         self.almQ_names = {
             (l, m, Q): f"a^{Q}_{l},{m}"
             for l in range(1, self.Lmax+1)
@@ -57,7 +55,7 @@ class AstrometricDataframe:
         method_azimuthal: str,
         bunch_size_polar: float,
         bunch_size_azimuthal: float,
-    ):
+    ) -> None:
         """
         Generate random positions
 
@@ -130,8 +128,8 @@ class AstrometricDataframe:
 
     def load_Gaia_positions(
         self,
-        dataset: pd.DataFrame
-    ):
+        dataset: pd.DataFrame,
+    ) -> None:
         """
         Load the positions from Gaia file
         """
@@ -143,8 +141,8 @@ class AstrometricDataframe:
 
     def load_TD_positions(
         self,
-        dataset: pd.DataFrame
-    ):
+        dataset: pd.DataFrame,
+    ) -> None:
         """
         Load the positions from Truebenbach-Darling file
         """
@@ -177,7 +175,7 @@ class AstrometricDataframe:
         self,
         injection: dict,
         random_seed: int,
-    ):
+    ) -> None:
         U.logger("Generating QSO proper motions")
 
         if random_seed > 0:
@@ -208,7 +206,7 @@ class AstrometricDataframe:
     def load_Gaia_proper_motions(
         self,
         dataset: pd.DataFrame,
-    ):
+    ) -> None:
         """
         Load the proper motions from Gaia file
         """
@@ -220,7 +218,7 @@ class AstrometricDataframe:
     def load_TD_proper_motions(
         self,
         dataset: pd.DataFrame,
-    ):
+    ) -> None:
         """
         Load the proper motions from Truebenbach-Darling file
         """
@@ -234,7 +232,7 @@ class AstrometricDataframe:
         method: str,
         std: float,
         corr: float,
-    ):
+    ) -> None:
         U.logger("Generating QSO proper motion errors")
 
         if method == "flat":
@@ -262,7 +260,7 @@ class AstrometricDataframe:
     def load_Gaia_proper_motion_errors(
             self,
             dataset: pd.DataFrame,
-        ):
+        ) -> None:
         """
         Load the proper motion errors from Gaia file
         """
@@ -287,7 +285,7 @@ class AstrometricDataframe:
     def load_TD_proper_motion_errors(
             self,
             dataset: pd.DataFrame,
-        ):
+        ) -> None:
         """
         Load the proper motion errors from Truebenbach-Darling file
         TO DO: Use chi2 statistics for correlation
@@ -314,7 +312,7 @@ class AstrometricDataframe:
             self,
             std: float,
             random_seed: int,
-        ):
+        ) -> None:
         U.logger("Adding proper motion noise")
 
         if random_seed is not None and random_seed > 0:
@@ -329,7 +327,7 @@ class AstrometricDataframe:
         
         self.proper_motions += proper_motion_noise
 
-    def generate_VSHs(self):
+    def generate_VSHs(self) -> None:
         """
         Precompute VSH functions at QSO locations
         """
@@ -367,7 +365,7 @@ class AstrometricDataframe:
     def remove_outliers(
             self,
             R_threshold: float,
-        ):
+        ) -> None:
         """
         Remove outliers from dataset
 
@@ -396,25 +394,25 @@ class AstrometricDataframe:
             self.positions = np.delete(
                 self.positions,
                 remove_indices,
-                axis=0
+                axis=0,
             )
 
             self.positions_Cartesian = np.delete(
                 self.positions_Cartesian,
                 remove_indices,
-                axis=0
+                axis=0,
             )
 
             self.proper_motions = np.delete(
                 self.proper_motions,
                 remove_indices,
-                axis=0
+                axis=0,
             )
 
             self.inv_proper_motion_error_matrix = np.delete(
                 self.inv_proper_motion_error_matrix,
                 remove_indices,
-                axis=0
+                axis=0,
             )
 
             N_removed_outliers = remove_indices.shape[0]
@@ -426,8 +424,8 @@ class AstrometricDataframe:
 
     def compute_overlap_matrix(
             self,
-            weighted_overlaps=True,
-        ):
+            weighted_overlaps: bool = True,
+        ) -> None:
         """
         Calculate the overlap matrix (and its Cholesky decomposition) 
         between VSH basis functions
@@ -477,7 +475,7 @@ class AstrometricDataframe:
             L=self.Lmax
         )
 
-    def change_basis(self):
+    def change_basis(self) -> None:
         """
         Method to change from VSH basis to orthogonal basis
         """
