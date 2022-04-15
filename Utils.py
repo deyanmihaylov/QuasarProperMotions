@@ -355,9 +355,7 @@ def covariant_matrix(
     covariant_matrix[...,0,1] = covariant_matrix[...,1,0] = np.multiply(covariant_matrix[...,1,0], corr.flatten())
     return covariant_matrix
 
-def deg_to_rad(
-        degree_vals
-    ):
+def deg_to_rad(degree_vals):
     """
     Does what it says on the tin
     """
@@ -376,10 +374,9 @@ def normalize_matrix(
     if L is None:
         norm_exponent = 1
     else:
-        norm_exponent = 1. / (2.*L*(L+2))
+        norm_exponent = 1 / (2 * L * (L+2))
 
-    norm_matrix = (1. / np.linalg.det(matrix)**norm_exponent) * matrix
-
+    norm_matrix = (1 / np.linalg.det(matrix)**norm_exponent) * matrix
     return norm_matrix
 
 # def chi_squared_limit(k, P):
