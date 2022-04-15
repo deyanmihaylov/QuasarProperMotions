@@ -10,39 +10,32 @@ import PostProcess as PP
 import Plotting as P
 
 # will be made obsolete
-import os
+# import os
 import numpy as np
 
 def main():
     parser = argparse.ArgumentParser(
-        description = "Quasar proper motions code"
+        description = "Quasar proper motions code",
     )
 
     parser.add_argument(
         "parameter_file",
         metavar = "Parameter file",
         type = str,
-        help = ".par file"
+        help = ".par file",
     )
-
     args = parser.parse_args()
-
     params = C.set_params(args.parameter_file)
-
-    U.assert_config_params(params)
-
-    C.check_and_create_dir(params['General']['output_dir'])
-    C.check_and_create_dir(os.path.join(params['General']['output_dir'], "log"))
-
+    C.prepare_output_dir(params["General"]["output_dir"])
     C.record_config_params(params)
-
+    
     data = AD.AstrometricDataframe()
     
     AD.load_astrometric_data(
         data,
-        params = params['Data'],
+        params = params["Data"],
     )
-
+    
     astrometric_model = S.model(
         data,
         params = params['MCMC'],
