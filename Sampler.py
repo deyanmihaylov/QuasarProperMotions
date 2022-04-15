@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+from numba import jit
 
 from scipy.stats import norm
 
@@ -9,7 +10,10 @@ import cpnest.model
 from scipy.special import erf, logsumexp
 
 import AstrometricData as AD
-import Model as M
+import Utils as U
+# import Model as M
+
+from time import time as unix
 
 def R_values(
     data: np.array,
@@ -25,17 +29,15 @@ def R_values(
 
     return R_values
 
-def logL_quadratic(
-    R: np.array,
-) -> np.array:
+@jit(nopython=True, nogil=True, cache=True)
+def logL_quadratic(R: np.array) -> np.array:
     """
     The normal log-likelihood
     """
     return -0.5 * (R**2)
 
-def logL_permissive(
-    R: np.array,
-) -> np.array:
+@jit(nopython=True, nogil=True, cache=True)
+def logL_permissive(R: np.array) -> np.array:
     """
     The permissive log-likelihood
     As used in Darling et al. 2018 and coming from Sivia and Skilling,
@@ -44,9 +46,8 @@ def logL_permissive(
     half_R_squared = 0.5 * (R**2)
     return np.log((1.-np.exp(-half_R_squared)) / half_R_squared)
 
-def logL_2Dpermissive(
-    R: np.array,
-) -> np.array:
+@jit(nopython=True, nogil=True, cache=True)
+def logL_2Dpermissive(R: np.array) -> np.array:
     """
     The modified permissive log-likelihood for 2D data
     A generalisation of the Sivia and Skilling likelihood (p.168) for
@@ -59,11 +60,8 @@ def logL_2Dpermissive(
         )
     )
 
-def logL_goodandbad(
-    R: np.array,
-    beta: float,
-    gamma: float,
-) -> np.array:
+@jit(nopython=True, nogil=True, cache=True)
+def logL_goodandbad(R: np.array, beta: float, gamma: float) -> np.array:
     """
     Following the notation of Sivia and Skilling, this is "the good
     and bad data model".
@@ -71,7 +69,6 @@ def logL_goodandbad(
     Some fraction beta of the data is assumed to come from a
     normal distribution with errors larger by a factor of gamma.
     """
-
     # enforce conditions 0 < beta < 1 and 1 < gamma
     my_beta = np.clip(beta, 0, 1)
     my_gamma = np.clip(gamma, 1, 10)
@@ -84,6 +81,12 @@ def logL_goodandbad(
         axis=0,
     )
 
+def generate_model(
+    almQ: np.ndarray,
+    basis: np.ndarray,
+) -> np.ndarray:
+    model = np.einsum("i,ijk->jk", almQ, basis)
+    return model
 
 class model(cpnest.model.Model):
     """
@@ -112,10 +115,15 @@ class model(cpnest.model.Model):
 
         self.tol = 1.0e-5
 
+        self.lmQ_ordered = ADf.lmQ_ordered
         self.names = list(ADf.almQ_names.values())
 
-        logL_method = params['logL_method']
-        prior_bounds = params['prior_bounds']
+        self.names_ordered = [
+            ADf.almQ_names[lmQ] for lmQ in ADf.lmQ_ordered
+        ]
+
+        logL_method = params["logL_method"]
+        prior_bounds = params["prior_bounds"]
 
         if logL_method == "permissive":
             self.logL = logL_permissive
@@ -126,15 +134,19 @@ class model(cpnest.model.Model):
         elif logL_method == "goodandbad":
             self.logL = logL_goodandbad
         else:
-            print("Oh dear. This doesn't look good.")
-            sys.exit()
+            sys.exit("Oh dear. This doesn't look good.")
         
         self.logL_method = logL_method
 
         self.proper_motions = ADf.proper_motions
         self.inv_proper_motion_error_matrix = ADf.inv_proper_motion_error_matrix
 
-        self.basis = {ADf.almQ_names[key]: ADf.basis[key] for key in ADf.basis.keys()}
+        # self.basis = {ADf.almQ_names[key]: ADf.basis[key] for key in ADf.basis.keys()}
+
+        self.basis_ordered = np.array([
+            ADf.basis[lmQ] for lmQ in ADf.lmQ_ordered
+        ])
+
         self.which_basis = ADf.which_basis
         self.overlap_matrix_Cholesky = ADf.overlap_matrix_Cholesky
 
@@ -147,11 +159,12 @@ class model(cpnest.model.Model):
             self.beta_prior = norm(np.log10(0.03165), 0.05)
             self.gamma_prior = norm(np.log10(1.6596), 0.05)
 
-        print("Searching over the following parameters:", ', '.join(self.names))
+        U.logger("Searching over the following parameters:")
+        U.logger(", ".join(self.names_ordered))
 
     def log_prior(
         self,
-        params: dict
+        params: dict,
     ) -> float:
         """
         The log-prior function
@@ -161,7 +174,7 @@ class model(cpnest.model.Model):
             log_prior = self.beta_prior.logpdf(params['log10_beta'])
             log_prior += self.gamma_prior.logpdf(params['log10_gamma'])
         else:
-            log_prior = 0.
+            log_prior = 0
 
         return log_prior
 
@@ -172,15 +185,21 @@ class model(cpnest.model.Model):
         """
         The log-likelihood function
         """
+        almQ_ordered = np.array([almQ[name] for name in self.names_ordered])
+        model = generate_model(almQ_ordered, self.basis_ordered)
 
-        model = M.generate_model(almQ, self.basis)
-
-        R = R_values(self.proper_motions, self.inv_proper_motion_error_matrix, model)
+        R = R_values(
+            self.proper_motions,
+            self.inv_proper_motion_error_matrix,
+            model,
+        )
 
         R = np.maximum(R, self.tol)
 
         if self.logL_method == "goodandbad":
-            log_likelihood = np.sum(self.logL(R, 10**almQ['beta'], 10**almQ['gamma']))
+            beta = almQ["beta"]
+            gamma = almQ["gamma"]
+            log_likelihood = np.sum(self.logL(R, 10**beta, 10**gamma))
         else:
             log_likelihood = np.sum(self.logL(R))
 
