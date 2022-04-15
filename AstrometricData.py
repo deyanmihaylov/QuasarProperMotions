@@ -36,6 +36,7 @@ class AstrometricDataframe:
         self.overlap_matrix_Cholesky = np.array([])
 
     def generate_names(self) -> None:
+        U.logger("Generating names")
         self.almQ_names = {
             (l, m, Q): f"a^{Q}_{l},{m}"
             for l in range(1, self.Lmax+1)
@@ -47,6 +48,12 @@ class AstrometricDataframe:
             for l in range(1, self.Lmax+1)
             for m in range(-l, l+1) for Q in ['E', 'B']
         }
+
+        self.lmQ_ordered = [
+            (l, m, Q)
+            for l in range(1, self.Lmax+1)
+            for m in range(-l, l+1) for Q in ['E', 'B']
+        ]
 
     def generate_positions(
         self,
@@ -78,7 +85,6 @@ class AstrometricDataframe:
         seed: int
             random seed
         """
-
         U.logger("Generating QSO positions")
 
         if random_seed is not None and random_seed > 0:
@@ -258,9 +264,9 @@ class AstrometricDataframe:
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
     def load_Gaia_proper_motion_errors(
-            self,
-            dataset: pd.DataFrame,
-        ) -> None:
+        self,
+        dataset: pd.DataFrame,
+    ) -> None:
         """
         Load the proper motion errors from Gaia file
         """
@@ -283,9 +289,9 @@ class AstrometricDataframe:
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
     def load_TD_proper_motion_errors(
-            self,
-            dataset: pd.DataFrame,
-        ) -> None:
+        self,
+        dataset: pd.DataFrame,
+    ) -> None:
         """
         Load the proper motion errors from Truebenbach-Darling file
         TO DO: Use chi2 statistics for correlation
@@ -309,10 +315,10 @@ class AstrometricDataframe:
         self.inv_proper_motion_error_matrix = np.linalg.inv(covariance)
 
     def add_proper_motion_noise(
-            self,
-            std: float,
-            random_seed: int,
-        ) -> None:
+        self,
+        std: float,
+        random_seed: int,
+    ) -> None:
         U.logger("Adding proper motion noise")
 
         if random_seed is not None and random_seed > 0:
@@ -327,6 +333,26 @@ class AstrometricDataframe:
         
         self.proper_motions += proper_motion_noise
 
+    def _compute_VSHs(self, l: int, m: int, Q: str) -> np.ndarray:
+        if Q == "E":
+            return CT.Cartesian_to_geographic_vector(
+                self.positions_Cartesian,
+                VSH.RealVectorSphericalHarmonicE(
+                    l,
+                    m,
+                    self.positions_Cartesian
+                )
+            )
+        elif Q == "B":
+            return CT.Cartesian_to_geographic_vector(
+                self.positions_Cartesian,
+                VSH.RealVectorSphericalHarmonicB(
+                    l,
+                    m,
+                    self.positions_Cartesian
+                )
+            )
+
     def generate_VSHs(self) -> None:
         """
         Precompute VSH functions at QSO locations
@@ -334,38 +360,18 @@ class AstrometricDataframe:
 
         U.logger("Generating Vector Spherical Harmonics basis")
 
-        def VSHs(l, m, Q):
-            if Q == "E":
-                return CT.Cartesian_to_geographic_vector(
-                    self.positions_Cartesian,
-                    VSH.RealVectorSphericalHarmonicE(
-                        l,
-                        m,
-                        self.positions_Cartesian
-                    )
-                )
-            elif Q == "B":
-                return CT.Cartesian_to_geographic_vector(
-                    self.positions_Cartesian,
-                    VSH.RealVectorSphericalHarmonicB(
-                        l,
-                        m,
-                        self.positions_Cartesian
-                    )
-                )
-
         self.basis = {
-            (l, m, Q): VSHs(l, m, Q)
+            (l, m, Q): self._compute_VSHs(l, m, Q)
             for l in range(1, self.Lmax+1)
             for m in range(-l, l+1) for Q in ['E', 'B']
         }
-
+        
         self.which_basis = "vsh"
     
     def remove_outliers(
-            self,
-            R_threshold: float,
-        ) -> None:
+        self,
+        R_threshold: float,
+    ) -> None:
         """
         Remove outliers from dataset
 
@@ -423,9 +429,9 @@ class AstrometricDataframe:
                 U.logger(f"Removing {N_removed_outliers} outliers.")
 
     def compute_overlap_matrix(
-            self,
-            weighted_overlaps: bool = True,
-        ) -> None:
+        self,
+        weighted_overlaps: bool = True,
+    ) -> None:
         """
         Calculate the overlap matrix (and its Cholesky decomposition) 
         between VSH basis functions
@@ -436,7 +442,7 @@ class AstrometricDataframe:
 
         U.logger("Computing the overlap matrix")
 
-        prefactor = 4. * np.pi / self.N_obj
+        prefactor = 4 * np.pi / self.N_obj
 
         overlap_matrix_size = 2 * self.Lmax * (self.Lmax+2)
 
@@ -453,7 +459,7 @@ class AstrometricDataframe:
 
         for ((i, vsh_i), (j, vsh_j)) in itertools.product(
             enumerate(basis_values),
-            repeat=2
+            repeat=2,
         ):
             if weighted_overlaps == True:
                 self.overlap_matrix[i,j] = prefactor * np.einsum(
@@ -472,7 +478,7 @@ class AstrometricDataframe:
 
         self.overlap_matrix = U.normalize_matrix(
             self.overlap_matrix,
-            L=self.Lmax
+            L=self.Lmax,
         )
 
     def change_basis(self) -> None:
@@ -504,13 +510,13 @@ def load_astrometric_data(
     ADf: AstrometricDataframe,
     params: dict,
 ) -> None:
-    ADf.Lmax = params['Lmax']
+    ADf.Lmax = params["Lmax"]
 
     ADf.generate_names()
 
-    positions = params['positions']
-    proper_motions = params['proper_motions']
-    proper_motion_errors = params['proper_motion_errors']
+    positions = params["positions"]
+    proper_motions = params["proper_motions"]
+    proper_motion_errors = params["proper_motion_errors"]
 
     dataset_dict = {
         2: {"cat": "Gaia", "file_name": "data/type2.csv"},
@@ -519,13 +525,11 @@ def load_astrometric_data(
         5: {"cat": "TD", "file_name": "data/TD6.dat"}
     }
 
-    which_dataset = set(
-        [
-            positions,
-            proper_motions,
-            proper_motion_errors
-        ]
-    ).intersection(set(dataset_dict.keys()))
+    which_dataset = set([
+        positions,
+        proper_motions,
+        proper_motion_errors,
+    ]).intersection(set(dataset_dict.keys()))
 
     if len(which_dataset) > 1:
         sys.exit("Conflicting datasets cannot be combined.")
@@ -564,7 +568,7 @@ def load_astrometric_data(
     ADf.positions_Cartesian = CT.geographic_to_Cartesian_point(
         ADf.positions
     )
-
+    
     ADf.generate_VSHs()
 
     if proper_motions == 1:
