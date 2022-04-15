@@ -452,7 +452,7 @@ class AstrometricDataframe:
 
         if weighted_overlaps == False:
             metric = np.zeros((self.N_obj, 2, 2))
-            metric[:, 0, 0] = np.cos(self.positions[:,1].copy())**2
+            metric[:, 0, 0] = np.cos(self.positions[:, 1].copy())**2
             metric[:, 1, 1] = 1
 
         basis_values = np.array(list(self.basis.values()))
