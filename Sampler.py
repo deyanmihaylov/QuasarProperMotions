@@ -85,6 +85,17 @@ def generate_model(
     almQ: np.ndarray,
     basis: np.ndarray,
 ) -> np.ndarray:
+    """
+    Generate model of proper motions from an array of almQ
+    coefficients and some spherical harmonics basis
+
+    INPUTS
+    ------
+    almQ: np.ndarray
+    	Array containing the vector spherical harmonics coefficients
+    basis: np.ndarray
+    	Array containing the vector spherical harmonics
+    """
     model = np.einsum("i,ijk->jk", almQ, basis)
     return model
 
