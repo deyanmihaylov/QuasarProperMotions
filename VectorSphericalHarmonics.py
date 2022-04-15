@@ -27,7 +27,11 @@ import numpy as np
 from scipy.special import lpmv
 from math import factorial
 
-def NormalisedAssociatedLegendrePolynomial(l, m, x):
+def NormalisedAssociatedLegendrePolynomial(
+    l,
+    m,
+    x,
+):
     """
     The Normalised Associated Legendre Polynomials
     P^m_l(x), where x = cos(theta).
@@ -51,7 +55,11 @@ def NormalisedAssociatedLegendrePolynomial(l, m, x):
             * np.sqrt( factorial(l-m)/factorial(l+m) ) ) 
     return norm * legendre
 
-def ScalarSphericalHarmonicY(l, m, n):
+def ScalarSphericalHarmonicY(
+    l,
+    m,
+    n,
+):
     """
     The Scalar Spherical Harmonics, Y^l_m(n)
     
@@ -75,7 +83,11 @@ def ScalarSphericalHarmonicY(l, m, n):
     
     return NormalisedAssociatedLegendrePolynomial(l, m, x) * np.exp((1j)*m*phi)
 
-def VectorSphericalHarmonicE(l, m, n):
+def VectorSphericalHarmonicE(
+    l,
+    m,
+    n,
+):
     """
     The Gradient Vector Spherical Harmonics, (YE)^l_m(n).
     
@@ -135,7 +147,11 @@ def VectorSphericalHarmonicE(l, m, n):
     
     return v_E
 
-def VectorSphericalHarmonicB(l, m, n):
+def VectorSphericalHarmonicB(
+    l,
+    m,
+    n,
+):
     """
     The Curl Vector Spherical Harmonics, (YB)^l_m(n).
     
@@ -195,7 +211,11 @@ def VectorSphericalHarmonicB(l, m, n):
     
     return v_B
 
-def RealVectorSphericalHarmonicE(l, m, n):
+def RealVectorSphericalHarmonicE(
+    l,
+    m,
+    n,
+):
     """
     The Real Gradient Vector Spherical Harmonics, (YE)^l_m(n).
     
@@ -220,7 +240,11 @@ def RealVectorSphericalHarmonicE(l, m, n):
     else:
         return np.sqrt(2) * ( (-1)**m ) * np.real( VectorSphericalHarmonicE(l, m, n ) )
 
-def RealVectorSphericalHarmonicB(l, m, n):
+def RealVectorSphericalHarmonicB(
+    l,
+    m,
+    n,
+):
     """
     The Real Curl Vector Spherical Harmonics, (YB)^l_m(n).
     
