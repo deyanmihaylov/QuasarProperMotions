@@ -14,8 +14,9 @@ def flatten(t: list) -> list:
 
 def C_l_GR(l: int) -> float:
     """
-    Implementing eq. (C2) from arXiv:1911.10356 (https://arxiv.org/abs/1911.10356)
-    multiplied by an overall factor of 4 * np.pi
+    Implementing eq. (C2) from arXiv:1911.10356
+    (https://arxiv.org/abs/1911.10356) multiplied by an overall factor
+    of 4 * np.pi
     
     Inputs:
         l: the mode number \ell
