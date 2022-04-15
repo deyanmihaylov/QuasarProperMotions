@@ -11,9 +11,6 @@ from scipy.special import erf, logsumexp
 
 import AstrometricData as AD
 import Utils as U
-# import Model as M
-
-from time import time as unix
 
 def R_values(
     data: np.array,
@@ -124,7 +121,7 @@ class model(cpnest.model.Model):
             must provide beta in range (0,1) and gamma > 1
         """
 
-        self.tol = 1.0e-5
+        self.tol = 1e-5
 
         self.lmQ_ordered = ADf.lmQ_ordered
         self.names = list(ADf.almQ_names.values())
@@ -151,8 +148,6 @@ class model(cpnest.model.Model):
 
         self.proper_motions = ADf.proper_motions
         self.inv_proper_motion_error_matrix = ADf.inv_proper_motion_error_matrix
-
-        # self.basis = {ADf.almQ_names[key]: ADf.basis[key] for key in ADf.basis.keys()}
 
         self.basis_ordered = np.array([
             ADf.basis[lmQ] for lmQ in ADf.lmQ_ordered
