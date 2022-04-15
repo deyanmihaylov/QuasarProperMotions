@@ -23,13 +23,9 @@
 #  grad = (DYDTH eth + DYDPH eph/Sin[th]);
 #  Return[Cross[n,grad]/Sqrt[l (l + 1)]];]
 
-
-
 import numpy as np
 from scipy.special import lpmv
 from math import factorial
-
-
 
 def NormalisedAssociatedLegendrePolynomial(l, m, x):
     """
@@ -55,8 +51,6 @@ def NormalisedAssociatedLegendrePolynomial(l, m, x):
             * np.sqrt( factorial(l-m)/factorial(l+m) ) ) 
     return norm * legendre
 
-
-
 def ScalarSphericalHarmonicY(l, m, n):
     """
     The Scalar Spherical Harmonics, Y^l_m(n)
@@ -80,9 +74,6 @@ def ScalarSphericalHarmonicY(l, m, n):
     x = np.cos(theta)
     
     return NormalisedAssociatedLegendrePolynomial(l, m, x) * np.exp((1j)*m*phi)
-
-
-
 
 def VectorSphericalHarmonicE(l, m, n):
     """
@@ -144,8 +135,6 @@ def VectorSphericalHarmonicE(l, m, n):
     
     return v_E
 
-
-
 def VectorSphericalHarmonicB(l, m, n):
     """
     The Curl Vector Spherical Harmonics, (YB)^l_m(n).
@@ -206,11 +195,6 @@ def VectorSphericalHarmonicB(l, m, n):
     
     return v_B
 
-
-
-
-
-
 def RealVectorSphericalHarmonicE(l, m, n):
     """
     The Real Gradient Vector Spherical Harmonics, (YE)^l_m(n).
@@ -236,8 +220,6 @@ def RealVectorSphericalHarmonicE(l, m, n):
     else:
         return np.sqrt(2) * ( (-1)**m ) * np.real( VectorSphericalHarmonicE(l, m, n ) )
 
-    
-    
 def RealVectorSphericalHarmonicB(l, m, n):
     """
     The Real Curl Vector Spherical Harmonics, (YB)^l_m(n).
