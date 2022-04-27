@@ -6,7 +6,8 @@ from scipy.linalg import cholesky
 import pandas as pd
 
 import CoordinateTransformations as CT
-import VectorSphericalHarmonics as VSH
+# import VectorSphericalHarmonics as VSH
+import vector_spherical_harmonics as vsh
 import Utils as U
 import Model as M
 
@@ -333,23 +334,43 @@ class AstrometricDataframe:
         
         self.proper_motions += proper_motion_noise
 
+    # def _compute_VSHs(self, l: int, m: int, Q: str) -> np.ndarray:
+    #     if Q == "E":
+    #         return CT.Cartesian_to_geographic_vector(
+    #             self.positions_Cartesian,
+    #             vsh.real_vector_spherical_harmonic_E(
+    #                 l,
+    #                 m,
+    #                 self.positions_Cartesian,
+    #             )
+    #         )
+    #     elif Q == "B":
+    #         return CT.Cartesian_to_geographic_vector(
+    #             self.positions_Cartesian,
+    #             vsh.real_vector_spherical_harmonic_B(
+    #                 l,
+    #                 m,
+    #                 self.positions_Cartesian,
+    #             )
+    #         )
+
     def _compute_VSHs(self, l: int, m: int, Q: str) -> np.ndarray:
-        if Q == "E":
+        if Q == 'E':
             return CT.Cartesian_to_geographic_vector(
                 self.positions_Cartesian,
-                VSH.RealVectorSphericalHarmonicE(
+                vsh.real_vector_spherical_harmonic_E(
                     l,
                     m,
-                    self.positions_Cartesian
+                    self.positions_Cartesian,
                 )
             )
-        elif Q == "B":
+        elif Q == 'B':
             return CT.Cartesian_to_geographic_vector(
                 self.positions_Cartesian,
-                VSH.RealVectorSphericalHarmonicB(
+                vsh.real_vector_spherical_harmonic_B(
                     l,
                     m,
-                    self.positions_Cartesian
+                    self.positions_Cartesian,
                 )
             )
 
@@ -357,7 +378,6 @@ class AstrometricDataframe:
         """
         Precompute VSH functions at QSO locations
         """
-
         U.logger("Generating Vector Spherical Harmonics basis")
 
         self.basis = {
