@@ -10,7 +10,7 @@ import PostProcess as PP
 import Plotting as P
 
 # will be made obsolete
-# import os
+import os
 import numpy as np
 
 def main():
