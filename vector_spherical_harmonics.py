@@ -150,7 +150,8 @@ def vector_spherical_harmonic_E(
             + c2 * normalised_associated_Legendre_polynomial (l, m + 1, x)
         ) * np.exp(1j * m * phi)
     
-    # The Derivative Of The Spherical Harmonic Function Y^l_m WRT To Phi Divided By Sin(Theta)
+    # The Derivative Of The Spherical Harmonic Function Y^l_m WRT To Phi
+    # Divided By Sin(Theta)
     c1 = np.sqrt((2 * l + 1) * (l - m + 1) * (l - m + 2) / (2 * l + 3))
     c2 = np.sqrt((2 * l + 1) * (l + m + 1) * (l + m + 2) / (2 * l + 3))
     dY_dphi_over_sin_theta = - ((1 / 2) * (
