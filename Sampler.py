@@ -1,16 +1,22 @@
 import sys
 import numpy as np
-from numba import jit
+from numba import jit, vectorize
+
+import math
 
 from scipy.stats import norm
 
 import cpnest
 import cpnest.model
 
-from scipy.special import erf, logsumexp
-
 import AstrometricData as AD
 import Utils as U
+
+from time import time as unix
+
+@vectorize
+def error_function(x):
+    return math.erf(x)
 
 def R_values(
     data: np.array,
@@ -22,7 +28,11 @@ def R_values(
     covariant matrix
     """
     M = data - model
-    R_values = np.sqrt(np.einsum("...i,...ij,...j->...", M, invcovs, M))
+    R_values = np.sqrt(np.einsum(
+        "...i, ...ij, ...j -> ...",
+        M, invcovs, M,
+        optimize=['einsum_path', (0, 1), (0, 1)],
+    ))
 
     return R_values
 
@@ -49,12 +59,17 @@ def logL_2Dpermissive(R: np.array) -> np.array:
     The modified permissive log-likelihood for 2D data
     A generalisation of the Sivia and Skilling likelihood (p.168) for
     2D data
-    """
-    return (
-        np.log(
-            (np.sqrt(np.pi/2) * erf(R/np.sqrt(2))
-            - R * np.exp(-R**2/2)) / (R**3)
-        )
+    """    
+    # result = (
+    #     np.log(
+    #         (np.sqrt(np.pi/2) * erf(R/np.sqrt(2))
+    #         - R * np.exp(-R**2/2)) / (R**3)
+    #     )
+    # )
+
+    return np.log(
+        (np.sqrt(np.pi/2) * error_function(R/np.sqrt(2))
+        - R * np.exp(-R**2/2)) / (R**3)
     )
 
 @jit(nopython=True, nogil=True, cache=True)
@@ -67,21 +82,23 @@ def logL_goodandbad(R: np.array, beta: float, gamma: float) -> np.array:
     normal distribution with errors larger by a factor of gamma.
     """
     # enforce conditions 0 < beta < 1 and 1 < gamma
-    my_beta = np.clip(beta, 0, 1)
-    my_gamma = np.clip(gamma, 1, 10)
+    # my_beta = np.clip(beta, 0., 1.)
+    # my_gamma = np.clip(gamma, 1., 10.)
+
+    # result = logsumexp(
+    #     [
+    #         -0.5*(R/my_gamma)**2+np.log(my_beta/my_gamma**2),
+    #         -0.5*R**2+np.log(1-my_beta)
+    #     ],
+    #     axis=0,
+    # )
         
-    return logsumexp(
-        [
-            -0.5*(R/my_gamma)**2+np.log(my_beta/my_gamma**2),
-            -0.5*R**2+np.log(1-my_beta)
-        ],
-        axis=0,
+    return np.logaddexp(
+        -0.5 * (R/gamma)**2 + np.log(beta/gamma**2),
+        -0.5 * R**2 + np.log(1 - beta)
     )
 
-def generate_model(
-    almQ: np.ndarray,
-    basis: np.ndarray,
-) -> np.ndarray:
+def generate_model(almQ: np.ndarray, basis: np.ndarray) -> np.ndarray:
     """
     Generate model of proper motions from an array of almQ
     coefficients and some spherical harmonics basis
@@ -93,7 +110,11 @@ def generate_model(
     basis: np.ndarray
     	Array containing the vector spherical harmonics
     """
-    model = np.einsum("i,ijk->jk", almQ, basis)
+    model = np.einsum(
+        "i, ijk -> jk",
+        almQ, basis,
+        optimize=['einsum_path', (0, 1)],
+    )
     return model
 
 class model(cpnest.model.Model):
@@ -159,7 +180,7 @@ class model(cpnest.model.Model):
         self.bounds = [[-prior_bounds, prior_bounds] for name in self.names]
 
         if logL_method == "goodandbad":
-            self.names.extend(['log10_beta', 'log10_gamma'])
+            self.names.extend(["log10_beta", "log10_gamma"])
             self.bounds.extend([[-1.78, -1.20], [-0.08, 0.52]])
 
             self.beta_prior = norm(np.log10(0.03165), 0.05)
@@ -176,9 +197,9 @@ class model(cpnest.model.Model):
         The log-prior function
         """
 
-        if self.logL_method is "goodandbad":
-            log_prior = self.beta_prior.logpdf(params['log10_beta'])
-            log_prior += self.gamma_prior.logpdf(params['log10_gamma'])
+        if self.logL_method == "goodandbad":
+            log_prior = self.beta_prior.logpdf(params["log10_beta"])
+            log_prior += self.gamma_prior.logpdf(params["log10_gamma"])
         else:
             log_prior = 0
 
@@ -191,6 +212,7 @@ class model(cpnest.model.Model):
         """
         The log-likelihood function
         """
+        # START_TIME = unix()
         almQ_ordered = np.array([almQ[name] for name in self.names_ordered])
         model = generate_model(almQ_ordered, self.basis_ordered)
 
@@ -203,10 +225,12 @@ class model(cpnest.model.Model):
         R = np.maximum(R, self.tol)
 
         if self.logL_method == "goodandbad":
-            beta = almQ["beta"]
-            gamma = almQ["gamma"]
+            beta = almQ["log10_beta"]
+            gamma = almQ["log10_gamma"]
             log_likelihood = np.sum(self.logL(R, 10**beta, 10**gamma))
         else:
             log_likelihood = np.sum(self.logL(R))
-
+        
+        # TOTAL_TIME = unix() - START_TIME
+        # print(TOTAL_TIME)
         return log_likelihood
