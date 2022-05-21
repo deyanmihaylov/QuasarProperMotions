@@ -2,13 +2,13 @@
 
 [General]
 
-output_dir = /work/dmihaylov/quasar_pm/test6
+output_dir = /work/dmihaylov/quasar_pm/test33
 verbose = 2
 
 
 [Data]
 
-Lmax = 1
+Lmax = 4
 
 N_obj = 10000
 
@@ -18,7 +18,7 @@ N_obj = 10000
 # (3) - Gaia Data Release 2, type 3
 # (4) - Gaia Data Release 2, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-positions = 1
+positions = 4
 
 positions_seed = 1
 
@@ -39,14 +39,15 @@ positions_method_azimuthal = uniform
 # (3) - Gaia Data Release 2, type 3
 # (4) - Gaia Data Release 2, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-proper_motions = 1
+proper_motions = 4
 
 proper_motions_seed = 1
 
 # mock proper motions:
 injection = {"1,-1,E": 0.1,"1,0,E": 0.3,"1,1,E": 0.2}
 
-# proper_motion_noise: standard deviation of the Gaussian noise to add to the proper motions
+# proper_motion_noise: standard deviation of the Gaussian noise to add
+# to the proper motions
 #proper_motion_noise = 0.1
 
 proper_motion_noise_seed = 1
@@ -57,7 +58,7 @@ proper_motion_noise_seed = 1
 # (3) - Gaia Data Release 2, type 3
 # (4) - Gaia Data Release 2, type 2 and 3
 # (5) - Darling and Truebenbach dataset
-proper_motion_errors = 1
+proper_motion_errors = 4
 
 # mock proper motion errors method:
 # "flat", "adaptive"
@@ -82,7 +83,7 @@ basis = vsh
 # Log-likelihood method: "quadratic", "permissive", "2Dpermissive", "goodandbad"
 logL_method = permissive
 
-nthreads = 16
+nthreads = 8
 nlive = 1024
 maxmcmc = 256
 prior_bounds = 0.5
