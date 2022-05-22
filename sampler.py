@@ -3,13 +3,10 @@ import numpy as np
 import numba as nb
 import bilby
 import math
-
-# from scipy.stats import norm
+from typing import Callable
 
 import AstrometricData as AD
 import Utils as U
-
-from typing import Callable
 
 @nb.vectorize
 def error_function(x):
@@ -100,6 +97,53 @@ def generate_model(almQ: np.ndarray, basis: np.ndarray) -> np.ndarray:
         optimize=['einsum_path', (0, 1)],
     )
     return model
+
+def sample(
+    ADf: AD.AstrometricDataframe,
+    params: dict,
+) -> None:
+    bilby.core.utils.setup_logger(
+        outdir=params['General']['output_dir'],
+        label="bilby_output",
+    )
+
+    names_ordered = [
+        data.almQ_names[lmQ] for lmQ in data.lmQ_ordered
+    ]
+
+    if params['MCMC']["logL_method"] == "goodandbad":
+        names_ordered.extend(["log10_beta", "log10_gamma"])
+
+    priors = {
+        par: bilby.core.prior.Uniform(-0.2, 0.2, par) for par in names_ordered
+    }
+
+    if params['MCMC']["logL_method"] == "goodandbad":
+        priors["log10_beta"] = bilby.core.prior.Uniform(
+            -1.78, -1.20, "log10_beta",
+        )
+        priors["log10_gamma"] = bilby.core.prior.Uniform(
+            -0.08, 0.52, "log10_gamma",
+        )
+
+    likelihood = sampler.QuasarProperMotionLikelihood(
+        data,
+        params = params['MCMC'],
+    )
+
+    result = bilby.run_sampler(
+        outdir=params['General']['output_dir'],
+        label="bilby_output",
+        resume=False,
+        plot=True,
+        likelihood=likelihood,
+        priors=priors,
+        sampler="nessai",
+        # injection_parameters={'x': 0.0, 'y': 0.0},
+        analytic_priors=False,
+        seed=1234,
+        nlive=1024,
+    )
 
 # class model(cpnest.model.Model):
 #     """
