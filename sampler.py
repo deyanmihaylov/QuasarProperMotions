@@ -9,8 +9,6 @@ import math
 import AstrometricData as AD
 import Utils as U
 
-from time import time as unix
-
 from typing import Callable
 
 @nb.vectorize
