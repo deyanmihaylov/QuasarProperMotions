@@ -280,19 +280,6 @@ class QuasarProperMotionLikelihood(bilby.Likelihood):
 
         self.logL = select_log_likelihood_method(self.log_L_method_name)
 
-        # if logL_method == "permissive":
-        #     self.logL = logL_permissive
-        # elif logL_method == "2Dpermissive":
-        #     self.logL = logL_2Dpermissive
-        # elif logL_method == "quadratic":
-        #     self.logL = logL_quadratic
-        # elif logL_method == "goodandbad":
-        #     self.logL = logL_goodandbad
-        # else:
-        #     sys.exit("Oh dear. This doesn't look good.")
-        
-        # self.logL_method = logL_method
-
         self.proper_motions = ADf.proper_motions
         self.inv_proper_motion_error_matrix = ADf.inv_proper_motion_error_matrix
 
@@ -305,12 +292,12 @@ class QuasarProperMotionLikelihood(bilby.Likelihood):
 
         self.bounds = [[-prior_bounds, prior_bounds] for name in self.names]
 
-        if self.log_L_method_name == "goodandbad":
-            self.names.extend(["log10_beta", "log10_gamma"])
-            self.bounds.extend([[-1.78, -1.20], [-0.08, 0.52]])
+        # if self.log_L_method_name == "goodandbad":
+        #     self.names.extend(["log10_beta", "log10_gamma"])
+        #     self.bounds.extend([[-1.78, -1.20], [-0.08, 0.52]])
 
-            self.beta_prior = norm(np.log10(0.03165), 0.05)
-            self.gamma_prior = norm(np.log10(1.6596), 0.05)
+        #     self.beta_prior = norm(np.log10(0.03165), 0.05)
+        #     self.gamma_prior = norm(np.log10(1.6596), 0.05)
 
         U.logger("Searching over the following parameters:")
         U.logger(", ".join(self.names_ordered))
@@ -334,9 +321,9 @@ class QuasarProperMotionLikelihood(bilby.Likelihood):
         R = np.maximum(R, self.tol)
 
         if self.log_L_method_name == "goodandbad":
-            beta = almQ["log10_beta"]
-            gamma = almQ["log10_gamma"]
-            log_likelihood = np.sum(self.logL(R, 10**beta, 10**gamma))
+            beta = 10 ** self.parameters["log10_beta"]
+            gamma = 10 ** self.parameters["log10_gamma"]
+            log_likelihood = np.sum(self.logL(R, beta, gamma))
         else:
             log_likelihood = np.sum(self.logL(R))
         

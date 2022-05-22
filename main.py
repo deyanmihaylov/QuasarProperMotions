@@ -36,25 +36,6 @@ def main():
         data,
         params = params["Data"],
     )
-    
-    # astrometric_model = S.model(
-    #     data,
-    #     params = params['MCMC'],
-    # )
-
-    # nest = cpnest.CPNest(
-    #     astrometric_model,
-    #     output = os.path.join(params['General']['output_dir'], "cpnest_output"),
-    #     # nthreads = params['MCMC']['nthreads'],
-    #     nthreads = 16,
-    #     nlive = params['MCMC']['nlive'],
-    #     maxmcmc = params['MCMC']['maxmcmc'],
-    #     resume = True,
-    #     verbose = params['General']['verbose'],
-    #     # periodic_checkpoint_interval = 43200.0,
-    # )
-
-    # nest.run()
 
     bilby.core.utils.setup_logger(
         outdir=params['General']['output_dir'],
@@ -65,9 +46,16 @@ def main():
         data.almQ_names[lmQ] for lmQ in data.lmQ_ordered
     ]
 
+    if params['MCMC']["logL_method"] == "goodandbad":
+        names_ordered.extend(["log10_beta", "log10_gamma"])
+
     priors = {
         par: bilby.core.prior.Uniform(-0.2, 0.2, par) for par in names_ordered
     }
+
+    if params['MCMC']["logL_method"] == "goodandbad":
+        priors["log10_beta"] = bilby.core.prior.Uniform(-1.78, -1.20, "log10_beta")
+        priors["log10_gamma"] = bilby.core.prior.Uniform(-0.08, 0.52, "log10_gamma")
 
     likelihood = sampler.QuasarProperMotionLikelihood(
         data,
@@ -81,7 +69,7 @@ def main():
         plot=True,
         likelihood=likelihood,
         priors=priors,
-        sampler='nessai',
+        sampler="nessai",
         # injection_parameters={'x': 0.0, 'y': 0.0},
         analytic_priors=False,
         seed=1234,
