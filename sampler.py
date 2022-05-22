@@ -74,16 +74,10 @@ def logL_goodandbad(R: np.array, beta: float, gamma: float) -> np.array:
     normal distribution with errors larger by a factor of gamma.
     """
     # enforce conditions 0 < beta < 1 and 1 < gamma
-    # my_beta = np.clip(beta, 0., 1.)
-    # my_gamma = np.clip(gamma, 1., 10.)
+    if beta < 0: beta = 0
+    if beta > 1: beta = 1
 
-    # result = logsumexp(
-    #     [
-    #         -0.5*(R/my_gamma)**2+np.log(my_beta/my_gamma**2),
-    #         -0.5*R**2+np.log(1-my_beta)
-    #     ],
-    #     axis=0,
-    # )
+    if gamma < 1: gamma = 1
         
     return np.logaddexp(
         -0.5 * (R/gamma)**2 + np.log(beta/gamma**2),
