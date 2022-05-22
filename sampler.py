@@ -1,8 +1,7 @@
 import sys
 import numpy as np
+import numba as nb
 import bilby
-from numba import jit, vectorize
-
 import math
 
 # from scipy.stats import norm
@@ -14,7 +13,7 @@ from time import time as unix
 
 from typing import Callable
 
-@vectorize
+@nb.vectorize
 def error_function(x):
     return math.erf(x)
 
@@ -36,14 +35,14 @@ def compute_R(
 
     return R
 
-@jit(nopython=True, nogil=True, cache=True)
+@nb.jit(nopython=True, nogil=True, cache=True)
 def logL_quadratic(R: np.array) -> np.array:
     """
     The normal log-likelihood
     """
     return -0.5 * (R**2)
 
-@jit(nopython=True, nogil=True, cache=True)
+@nb.jit(nopython=True, nogil=True, cache=True)
 def logL_permissive(R: np.array) -> np.array:
     """
     The permissive log-likelihood
@@ -53,7 +52,7 @@ def logL_permissive(R: np.array) -> np.array:
     half_R_squared = 0.5 * (R**2)
     return np.log((1.-np.exp(-half_R_squared)) / half_R_squared)
 
-@jit(nopython=True, nogil=True, cache=True)
+@nb.jit(nopython=True, nogil=True, cache=True)
 def logL_2Dpermissive(R: np.array) -> np.array:
     """
     The modified permissive log-likelihood for 2D data
@@ -65,7 +64,7 @@ def logL_2Dpermissive(R: np.array) -> np.array:
         - R * np.exp(-R**2/2)) / (R**3)
     )
 
-@jit(nopython=True, nogil=True, cache=True)
+@nb.jit(nopython=True, nogil=True, cache=True)
 def logL_goodandbad(R: np.array, beta: float, gamma: float) -> np.array:
     """
     Following the notation of Sivia and Skilling, this is "the good
@@ -291,13 +290,6 @@ class QuasarProperMotionLikelihood(bilby.Likelihood):
         self.overlap_matrix_Cholesky = ADf.overlap_matrix_Cholesky
 
         self.bounds = [[-prior_bounds, prior_bounds] for name in self.names]
-
-        # if self.log_L_method_name == "goodandbad":
-        #     self.names.extend(["log10_beta", "log10_gamma"])
-        #     self.bounds.extend([[-1.78, -1.20], [-0.08, 0.52]])
-
-        #     self.beta_prior = norm(np.log10(0.03165), 0.05)
-        #     self.gamma_prior = norm(np.log10(1.6596), 0.05)
 
         U.logger("Searching over the following parameters:")
         U.logger(", ".join(self.names_ordered))
