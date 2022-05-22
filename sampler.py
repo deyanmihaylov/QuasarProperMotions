@@ -274,9 +274,7 @@ def select_log_likelihood_method(method: str) -> Callable:
         return logL_goodandbad
     else:
         sys.exit("Oh dear. This doesn't look good.")
-
-# def sampling_priors()
-
+        
 
 class QuasarProperMotionLikelihood(bilby.Likelihood):
     def __init__(
