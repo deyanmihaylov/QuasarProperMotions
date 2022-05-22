@@ -5,7 +5,7 @@ from numba import jit, vectorize
 
 import math
 
-from scipy.stats import norm
+# from scipy.stats import norm
 
 import AstrometricData as AD
 import Utils as U
@@ -18,7 +18,7 @@ from typing import Callable
 def error_function(x):
     return math.erf(x)
 
-def R_values(
+def compute_R(
     data: np.array,
     invcovs: np.array,
     model: np.array,
@@ -28,13 +28,13 @@ def R_values(
     covariant matrix
     """
     M = data - model
-    R_values = np.sqrt(np.einsum(
+    R = np.sqrt(np.einsum(
         "...i, ...ij, ...j -> ...",
         M, invcovs, M,
         optimize=['einsum_path', (0, 1), (0, 1)],
     ))
 
-    return R_values
+    return R
 
 @jit(nopython=True, nogil=True, cache=True)
 def logL_quadratic(R: np.array) -> np.array:
@@ -313,7 +313,7 @@ class QuasarProperMotionLikelihood(bilby.Likelihood):
         ])
         model = generate_model(almQ_ordered, self.basis_ordered)
 
-        R = R_values(
+        R = compute_R(
             self.proper_motions,
             self.inv_proper_motion_error_matrix,
             model,

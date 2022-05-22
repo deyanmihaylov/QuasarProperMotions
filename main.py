@@ -54,8 +54,12 @@ def main():
     }
 
     if params['MCMC']["logL_method"] == "goodandbad":
-        priors["log10_beta"] = bilby.core.prior.Uniform(-1.78, -1.20, "log10_beta")
-        priors["log10_gamma"] = bilby.core.prior.Uniform(-0.08, 0.52, "log10_gamma")
+        priors["log10_beta"] = bilby.core.prior.Uniform(
+            -1.78, -1.20, "log10_beta",
+        )
+        priors["log10_gamma"] = bilby.core.prior.Uniform(
+            -0.08, 0.52, "log10_gamma",
+        )
 
     likelihood = sampler.QuasarProperMotionLikelihood(
         data,
