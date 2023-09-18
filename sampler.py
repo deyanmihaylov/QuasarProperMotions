@@ -3,7 +3,9 @@ import numpy as np
 import numba as nb
 import bilby
 import math
+
 from typing import Callable
+from numpy.typing import NDArray
 
 import AstrometricData as AD
 import Utils as U
@@ -13,10 +15,10 @@ def error_function(x):
     return math.erf(x)
 
 def compute_R(
-    data: np.array,
-    invcovs: np.array,
-    model: np.array,
-) -> np.array:
+    data: NDArray,
+    invcovs: NDArray,
+    model: NDArray,
+) -> NDArray:
     """
     Compute R values from data, model, and the inverse of the
     covariant matrix
@@ -31,14 +33,14 @@ def compute_R(
     return R
 
 @nb.jit(nopython=True, nogil=True, cache=True)
-def logL_quadratic(R: np.array) -> np.array:
+def logL_quadratic(R: NDArray) -> NDArray:
     """
     The normal log-likelihood
     """
     return -0.5 * (R**2)
 
 @nb.jit(nopython=True, nogil=True, cache=True)
-def logL_permissive(R: np.array) -> np.array:
+def logL_permissive(R: NDArray) -> NDArray:
     """
     The permissive log-likelihood
     As used in Darling et al. 2018 and coming from Sivia and Skilling,
@@ -48,7 +50,7 @@ def logL_permissive(R: np.array) -> np.array:
     return np.log((1.-np.exp(-half_R_squared)) / half_R_squared)
 
 @nb.jit(nopython=True, nogil=True, cache=True)
-def logL_2Dpermissive(R: np.array) -> np.array:
+def logL_2Dpermissive(R: NDArray) -> NDArray:
     """
     The modified permissive log-likelihood for 2D data
     A generalisation of the Sivia and Skilling likelihood (p.168) for
@@ -60,7 +62,7 @@ def logL_2Dpermissive(R: np.array) -> np.array:
     )
 
 @nb.jit(nopython=True, nogil=True, cache=True)
-def logL_goodandbad(R: np.array, beta: float, gamma: float) -> np.array:
+def logL_goodandbad(R: NDArray, beta: float, gamma: float) -> NDArray:
     """
     Following the notation of Sivia and Skilling, this is "the good
     and bad data model".
@@ -79,7 +81,7 @@ def logL_goodandbad(R: np.array, beta: float, gamma: float) -> np.array:
         -0.5 * R**2 + np.log(1 - beta)
     )
 
-def generate_model(almQ: np.ndarray, basis: np.ndarray) -> np.ndarray:
+def generate_model(almQ: NDArray, basis: NDArray) -> NDArray:
     """
     Generate model of proper motions from an array of almQ
     coefficients and some spherical harmonics basis
