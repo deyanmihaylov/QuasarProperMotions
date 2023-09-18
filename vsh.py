@@ -19,7 +19,7 @@ They agree with the following Mathematica functions
  n = {Sin[th] Cos[ph], Sin[th] Sin[ph], Cos[th]};
  grad = (DYDTH eth + DYDPH eph/Sin[th]);
  Return[Cross[n,grad]/Sqrt[l (l + 1)]];]
- """
+"""
 
 import numpy as np
 import numpy.typing as npt
