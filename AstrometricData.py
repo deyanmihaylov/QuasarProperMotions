@@ -716,18 +716,9 @@ def import_TD_dataset(path: str) -> pd.DataFrame:
     )
 
     dropna_columns = [
-        'RAh', 'RAm', 'RAs',
-        'e_RAs',
-        'DEd', 'DEm', 'DEs',
-        'e_DEs',
-        'pmRA',
-        'e_pmRA',
-        'o_pmRA',
-        'chi2a',
-        'pmDE',
-        'e_pmDE',
-        'o_pmDE',
-        'chi2d'
+        'RAh', 'RAm', 'RAs', 'e_RAs', 'DEd', 'DEm', 'DEs', 'e_DEs',
+        'pmRA', 'e_pmRA', 'o_pmRA', 'pmDE', 'e_pmDE', 'o_pmDE',
+        'chi2a', 'chi2d',
     ]
 
     dataset.dropna(
