@@ -6,7 +6,6 @@ from scipy.linalg import cholesky
 import pandas as pd
 
 import CoordinateTransformations as CT
-# import VectorSphericalHarmonics as VSH
 import vsh
 import Utils as U
 import model
