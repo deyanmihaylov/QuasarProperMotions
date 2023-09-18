@@ -1,9 +1,9 @@
 import numpy as np
 
 def generate_model(
-		almQ: dict,
-		basis: dict,
-	):
+    almQ: dict,
+    basis: dict,
+):
     """
     Generate model of proper motions from a dictionary of almQ
     coefficients and some spherical harmonics basis
@@ -19,5 +19,5 @@ def generate_model(
         [almQ[key] * basis[key] for key in basis.keys()],
         axis=0,
     )
-
     return model
+    
