@@ -40,7 +40,6 @@ def is_pathname_valid(
 
     except TypeError as exc:
         return False
-
     else:
         return True
 
