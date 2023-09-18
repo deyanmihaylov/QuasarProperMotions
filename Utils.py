@@ -23,9 +23,11 @@ def is_pathname_valid(
 
         _, path_name = os.path.splitdrive(path_name)
 
-        root_dirname = os.environ.get('HOMEDRIVE', 'C:') if sys.platform == 'win32' else os.path.sep
+        if sys.platform == 'win32':
+            root_dirname = os.environ.get('HOMEDRIVE', 'C:')
+        else:
+            root_dirname =  os.path.sep
         assert os.path.isdir(root_dirname)
-
         root_dirname = root_dirname.rstrip(os.path.sep) + os.path.sep
 
         for pathname_part in path_name.split(os.path.sep):
