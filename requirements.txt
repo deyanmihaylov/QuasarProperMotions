@@ -1,0 +1,10 @@
+astroquery==0.4.1
+bilby==1.1.5
+corner==2.1.0
+cpnest==0.11.4.dev8+g4820e7f.d20220414
+matplotlib==3.3.3
+mpmath==1.2.1
+numba==0.55.1
+numpy==1.21.6
+pandas==1.1.4
+scipy==1.6.2
