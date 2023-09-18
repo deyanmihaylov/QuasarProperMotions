@@ -20,4 +20,3 @@ def generate_model(
         axis=0,
     )
     return model
-    
