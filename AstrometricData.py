@@ -7,9 +7,9 @@ import pandas as pd
 
 import CoordinateTransformations as CT
 # import VectorSphericalHarmonics as VSH
-import vector_spherical_harmonics as vsh
+import vsh
 import Utils as U
-import Model as M
+import model
 
 
 class AstrometricDataframe:
@@ -208,7 +208,7 @@ class AstrometricDataframe:
                         else:
                             almQ[(l, m, Q)] = 0
 
-            self.proper_motions = M.generate_model(almQ, self.basis)
+            self.proper_motions = model.generate_model(almQ, self.basis)
     
     def load_Gaia_proper_motions(
         self,
