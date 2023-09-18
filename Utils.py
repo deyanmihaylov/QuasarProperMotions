@@ -10,8 +10,8 @@ from scipy.optimize import broyden1
 import AstrometricData as AD
 
 def is_pathname_valid(
-        path_name: str
-    ) -> bool:
+    path_name: str,
+) -> bool:
     """
     True if the passed path_name is a valid path_name for the current OS;
     False otherwise.
