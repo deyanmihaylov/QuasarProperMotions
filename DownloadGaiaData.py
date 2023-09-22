@@ -1,9 +1,9 @@
 from astroquery.gaia import Gaia
 
 def download_Gaia_data(
-    query,
-    file_name
-):
+    query: str,
+    file_name: str,
+) -> bool:
     output_file = f"./data/{file_name}"
 
     try:
